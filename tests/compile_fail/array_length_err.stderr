@@ -1,0 +1,11 @@
+error: `ArrayLength` type can only be used within a struct containing a runtime-sized array marked as `#[size(runtime)]`!
+ --> tests/compile_fail/array_length_err.rs:7:8
+  |
+7 |     a: ArrayLength,
+  |        ^^^^^^^^^^^
+
+error: only one field can use the `ArrayLength` type!
+ --> tests/compile_fail/array_length_err.rs:8:8
+  |
+8 |     b: ArrayLength,
+  |        ^^^^^^^^^^^
