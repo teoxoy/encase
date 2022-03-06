@@ -25,6 +25,9 @@ codegen-units = 1
 name = "troughput"
 harness = false
 
+[workspace]
+members = ["derive"]
+
 [patch.crates-io]
 criterion = { git = "https://github.com/bheisler/criterion.rs", rev = "6929f48e4828360de038f4e9732066d85b9a57c6" }
 
