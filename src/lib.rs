@@ -16,6 +16,9 @@
     variant_size_differences
 )]
 #![doc = include_str!("../README.md")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/teoxoy/encase/c49010446d7efed242b47d940317bc997503c162/logo.svg"
+)]
 
 /// Used to implement `WgslType` for structs
 ///
