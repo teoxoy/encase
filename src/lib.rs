@@ -17,7 +17,7 @@
 )]
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/teoxoy/encase/c49010446d7efed242b47d940317bc997503c162/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/teoxoy/encase/3d6d2e4d7670863e97463a15ceeafac6d13ee73e/logo.svg"
 )]
 
 /// Used to implement `WgslType` for structs
