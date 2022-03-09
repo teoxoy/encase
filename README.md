@@ -135,22 +135,22 @@ assert_eq!(offsets, [0, 64, 192]);
 
 [host-shareable types]: https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types
 [features]: https://docs.rs/crate/encase/latest/features
-[`WgslType`]: https://docs.rs/crate/encase/latest/encase/trait.WgslType.html
+[`WgslType`]: https://docs.rs/encase/latest/encase/trait.WgslType.html
 
-[`WriteInto`]: https://docs.rs/crate/encase/latest/encase/internal/trait.WriteInto.html
-[`ReadFrom`]: https://docs.rs/crate/encase/latest/encase/internal/trait.ReadFrom.html
-[`CreateFrom`]: https://docs.rs/crate/encase/latest/encase/internal/trait.CreateFrom.html
+[`WriteInto`]: https://docs.rs/encase/latest/encase/internal/trait.WriteInto.html
+[`ReadFrom`]: https://docs.rs/encase/latest/encase/internal/trait.ReadFrom.html
+[`CreateFrom`]: https://docs.rs/encase/latest/encase/internal/trait.CreateFrom.html
 
-[`impl_vector!`]: https://docs.rs/crate/encase/latest/encase/macro.impl_vector.html
-[`impl_matrix!`]: https://docs.rs/crate/encase/latest/encase/macro.impl_matrix.html
-[`impl_rts_array!`]: https://docs.rs/crate/encase/latest/encase/macro.impl_rts_array.html
-[`impl_wrapper!`]: https://docs.rs/crate/encase/latest/encase/macro.impl_wrapper.html
-[derive@WgslType]: https://docs.rs/crate/encase/latest/encase/derive.WgslType.html
+[`impl_vector!`]: https://docs.rs/encase/latest/encase/macro.impl_vector.html
+[`impl_matrix!`]: https://docs.rs/encase/latest/encase/macro.impl_matrix.html
+[`impl_rts_array!`]: https://docs.rs/encase/latest/encase/macro.impl_rts_array.html
+[`impl_wrapper!`]: https://docs.rs/encase/latest/encase/macro.impl_wrapper.html
+[derive@WgslType]: https://docs.rs/encase/latest/encase/derive.WgslType.html
 
-[`UniformBuffer`]: https://docs.rs/crate/encase/latest/encase/struct.UniformBuffer.html
-[`StorageBuffer`]: https://docs.rs/crate/encase/latest/encase/struct.StorageBuffer.html
-[`DynamicUniformBuffer`]: https://docs.rs/crate/encase/latest/encase/struct.DynamicUniformBuffer.html
-[`DynamicStorageBuffer`]: https://docs.rs/crate/encase/latest/encase/struct.DynamicStorageBuffer.html
+[`UniformBuffer`]: https://docs.rs/encase/latest/encase/struct.UniformBuffer.html
+[`StorageBuffer`]: https://docs.rs/encase/latest/encase/struct.StorageBuffer.html
+[`DynamicUniformBuffer`]: https://docs.rs/encase/latest/encase/struct.DynamicUniformBuffer.html
+[`DynamicStorageBuffer`]: https://docs.rs/encase/latest/encase/struct.DynamicStorageBuffer.html
 
-[`BufferRef`]: https://docs.rs/crate/encase/latest/encase/internal/trait.BufferRef.html
-[`BufferMut`]: https://docs.rs/crate/encase/latest/encase/internal/trait.BufferMut.html
+[`BufferRef`]: https://docs.rs/encase/latest/encase/internal/trait.BufferRef.html
+[`BufferMut`]: https://docs.rs/encase/latest/encase/internal/trait.BufferMut.html
