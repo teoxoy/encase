@@ -136,6 +136,7 @@ macro_rules! impl_matrix_inner {
 
                 $crate::private::Metadata {
                     alignment,
+                    has_uniform_min_alignment: false,
                     min_size: size,
                     extra: $crate::private::MatrixMetadata {
                         row_padding,

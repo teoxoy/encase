@@ -220,7 +220,6 @@ pub mod private {
     pub use super::core::SizeValue;
     pub use super::core::WriteInto;
     pub use super::core::Writer;
-    pub use super::core::MIN_UNIFORM_ALIGNMENT;
     pub use super::types::array::ArrayMetadata;
     pub use super::types::matrix::*;
     pub use super::types::r#struct::StructMetadata;

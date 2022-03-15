@@ -337,17 +337,48 @@ fn emit(input: DeriveInput) -> TokenStream {
         };
         let ident = data.ident();
         let name = ident.to_string();
-        let field_check = quote_spanned! {ident.span()=> {
-            let offset = <Self as #root::WgslType>::METADATA.offset(#i);
-            #root::concat_assert!(
-                #root::MIN_UNIFORM_ALIGNMENT.is_aligned(offset),
-                "offset of field '", #name, "' must be a multiple of ", #root::MIN_UNIFORM_ALIGNMENT.get(),
-                " (current offset: ", offset, ")"
-            )
-        }};
+        let field_offset_check = quote_spanned! {ident.span()=>
+            if let ::core::option::Option::Some(min_alignment) =
+                <#ty as #root::WgslType>::METADATA.uniform_min_alignment()
+            {
+                let offset = <Self as #root::WgslType>::METADATA.offset(#i);
+
+                #root::concat_assert!(
+                    min_alignment.is_aligned(offset),
+                    "offset of field '", #name, "' must be a multiple of ", min_alignment.get(),
+                    " (current offset: ", offset, ")"
+                )
+            }
+        };
+        let field_offset_diff = if i != 0 {
+            let prev_field = &field_data[i - 1];
+            let prev_field_ty = &prev_field.field.ty;
+            let prev_ident_name = prev_field.ident().to_string();
+            quote_spanned! {ident.span()=>
+                if let ::core::option::Option::Some(min_alignment) =
+                    <#prev_field_ty as #root::WgslType>::METADATA.uniform_min_alignment()
+                {
+                    let prev_offset = <Self as #root::WgslType>::METADATA.offset(#i - 1);
+                    let offset = <Self as #root::WgslType>::METADATA.offset(#i);
+                    let diff = offset - prev_offset;
+
+                    let prev_size = <#prev_field_ty as #root::Size>::SIZE.get();
+                    let prev_size = min_alignment.round_up(prev_size);
+
+                    #root::concat_assert!(
+                        diff >= prev_size,
+                        "offset between fields '", #prev_ident_name, "' and '", #name, "' must be at least ",
+                        min_alignment.get(), " (currently: ", diff, ")"
+                    )
+                }
+            }
+        } else {
+            quote! {()}
+        };
         quote! {
             #ty_check,
-            #field_check
+            #field_offset_check,
+            #field_offset_diff
         }
     });
 
@@ -579,6 +610,7 @@ fn emit(input: DeriveInput) -> TokenStream {
 
                 #root::Metadata {
                     alignment: struct_alignment,
+                    has_uniform_min_alignment: true,
                     min_size,
                     extra,
                 }

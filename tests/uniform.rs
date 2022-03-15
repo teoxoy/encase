@@ -4,7 +4,6 @@ use encase::{UniformBuffer, WgslType};
 #[assert_uniform_compat]
 struct TestUniform {
     a: u32,
-    #[align(16)]
     b: u32,
 }
 

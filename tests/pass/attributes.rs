@@ -5,8 +5,8 @@ fn main() {}
 #[derive(WgslType)]
 #[assert_uniform_compat]
 struct TestAttributes {
-    a: u32,
     #[align(16)]
+    a: u32,
     #[size(8)]
     b: u32,
 }

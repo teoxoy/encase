@@ -2,10 +2,11 @@ use std::num::NonZeroU64;
 
 use super::{AlignmentValue, BufferMut, BufferRef, Reader, SizeValue, Writer};
 
-pub const MIN_UNIFORM_ALIGNMENT: AlignmentValue = AlignmentValue::new(16);
+const UNIFORM_MIN_ALIGNMENT: AlignmentValue = AlignmentValue::new(16);
 
 pub struct Metadata<E> {
     pub alignment: AlignmentValue,
+    pub has_uniform_min_alignment: bool,
     pub min_size: SizeValue,
     pub extra: E,
 }
@@ -14,6 +15,7 @@ impl Metadata<()> {
     pub const fn from_alignment_and_size(alignment: u64, size: u64) -> Self {
         Self {
             alignment: AlignmentValue::new(alignment),
+            has_uniform_min_alignment: false,
             min_size: SizeValue::new(size),
             extra: (),
         }
@@ -28,6 +30,15 @@ impl<E> Metadata<E> {
         let value = self.alignment;
         core::mem::forget(self);
         value
+    }
+
+    pub const fn uniform_min_alignment(self) -> Option<AlignmentValue> {
+        let value = self.has_uniform_min_alignment;
+        core::mem::forget(self);
+        match value {
+            true => Some(UNIFORM_MIN_ALIGNMENT),
+            false => None,
+        }
     }
 
     pub const fn min_size(self) -> SizeValue {

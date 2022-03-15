@@ -1,6 +1,6 @@
 use crate::core::{
     BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, Size, SizeValue, WgslType,
-    WriteInto, Writer, MIN_UNIFORM_ALIGNMENT,
+    WriteInto, Writer,
 };
 
 pub struct ArrayMetadata {
@@ -34,6 +34,7 @@ impl<T: WgslType + Size, const N: usize> WgslType for [T; N] {
 
         Metadata {
             alignment,
+            has_uniform_min_alignment: true,
             min_size: size,
             extra: ArrayMetadata { stride, el_padding },
         }
@@ -41,14 +42,16 @@ impl<T: WgslType + Size, const N: usize> WgslType for [T; N] {
 
     const UNIFORM_COMPAT_ASSERT: () = crate::utils::consume_zsts([
         <T as WgslType>::UNIFORM_COMPAT_ASSERT,
-        const_panic::concat_assert!(
-            MIN_UNIFORM_ALIGNMENT.is_aligned(Self::METADATA.stride().get()),
-            "array stride must be a multiple of ",
-            MIN_UNIFORM_ALIGNMENT.get(),
-            " (current stride: ",
-            Self::METADATA.stride().get(),
-            ")"
-        ),
+        if let Some(min_alignment) = Self::METADATA.uniform_min_alignment() {
+            const_panic::concat_assert!(
+                min_alignment.is_aligned(Self::METADATA.stride().get()),
+                "array stride must be a multiple of ",
+                min_alignment.get(),
+                " (current stride: ",
+                Self::METADATA.stride().get(),
+                ")"
+            )
+        },
     ]);
 }
 

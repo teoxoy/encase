@@ -1,0 +1,57 @@
+error[E0080]: evaluation of constant value failed
+  --> tests/compile_fail/assert_uniform_compat.rs:16:10
+   |
+16 | #[derive(WgslType)]
+   |          ^^^^^^^^ the evaluated program panicked at 'offset of field 'b' must be a multiple of 16 (current offset: 4)', $DIR/tests/compile_fail/assert_uniform_compat.rs:16:10
+   |
+   = note: this error originates in the macro `$crate::concat_panic` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0080]: evaluation of constant value failed
+  --> tests/compile_fail/assert_uniform_compat.rs:23:10
+   |
+23 | #[derive(WgslType)]
+   |          ^^^^^^^^ the evaluated program panicked at 'offset of field 'b' must be a multiple of 16 (current offset: 4)', $DIR/tests/compile_fail/assert_uniform_compat.rs:23:10
+   |
+   = note: this error originates in the macro `$crate::concat_panic` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0080]: evaluation of constant value failed
+  --> tests/compile_fail/assert_uniform_compat.rs:30:10
+   |
+30 | #[derive(WgslType)]
+   |          ^^^^^^^^ the evaluated program panicked at 'offset between fields 'a' and 'b' must be at least 16 (currently: 4)', $DIR/tests/compile_fail/assert_uniform_compat.rs:30:10
+   |
+   = note: this error originates in the macro `$crate::concat_panic` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0080]: evaluation of `encase::types::array::<impl encase::WgslType for [u32; 8]>::UNIFORM_COMPAT_ASSERT` failed
+  --> src/types/array.rs
+   |
+   | /             const_panic::concat_assert!(
+   | |                 min_alignment.is_aligned(Self::METADATA.stride().get()),
+   | |                 "array stride must be a multiple of ",
+   | |                 min_alignment.get(),
+...  |
+   | |                 ")"
+   | |             )
+   | |_____________^ the evaluated program panicked at 'array stride must be a multiple of 16 (current stride: 4)', $DIR/src/types/array.rs:46:13
+   |
+   = note: this error originates in the macro `$crate::concat_panic` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0080]: erroneous constant used
+  --> tests/compile_fail/assert_uniform_compat.rs:40:8
+   |
+40 |     a: [u32; 8],
+   |        ^^^^^^^^ referenced constant has errors
+
+error[E0080]: evaluation of `encase::types::runtime_sized_array::<impl encase::WgslType for std::vec::Vec<f32>>::UNIFORM_COMPAT_ASSERT` failed
+   --> src/types/runtime_sized_array.rs
+    |
+    | impl_rts_array!(Vec<T>; using len truncate);
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at 'runtime-sized array can't be used in uniform buffers', $DIR/src/types/runtime_sized_array.rs:249:1
+    |
+    = note: this error originates in the macro `$crate::panic::panic_2021` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0080]: erroneous constant used
+  --> tests/compile_fail/assert_uniform_compat.rs:47:8
+   |
+47 |     a: Vec<f32>,
+   |        ^^^^^^^^ referenced constant has errors
