@@ -102,15 +102,20 @@
 /// }
 /// ```
 ///
-/// _Will not compile_
+/// _Will not compile since the inner struct's size must be a multiple of 16_
 ///
 /// ```compile_fail,E0080
 /// # use crate::encase::WgslType;
 /// #[derive(WgslType)]
+/// struct S {
+///     x: f32,
+/// }
+///
+/// #[derive(WgslType)]
 /// #[assert_uniform_compat]
 /// struct Invalid {
 ///     a: f32,
-///     b: f32, // invalid: offset of b is 4 bytes, but must be at least 16
+///     b: S, // offset between fields 'a' and 'b' must be at least 16 (currently: 4)
 /// }
 /// ```
 ///
@@ -118,12 +123,17 @@
 ///
 /// ```
 /// # use crate::encase::WgslType;
+/// # #[derive(WgslType)]
+/// # struct S {
+/// #     x: f32,
+/// # }
+///
 /// #[derive(WgslType)]
 /// #[assert_uniform_compat]
 /// struct Valid {
 ///     a: f32,
 ///     #[align(16)]
-///     b: f32, // valid: offset of b is 16 bytes
+///     b: S,
 /// }
 /// ```
 ///
@@ -131,12 +141,17 @@
 ///
 /// ```
 /// # use crate::encase::WgslType;
+/// # #[derive(WgslType)]
+/// # struct S {
+/// #     x: f32,
+/// # }
+///
 /// #[derive(WgslType)]
 /// #[assert_uniform_compat]
 /// struct Valid {
 ///     #[size(16)]
 ///     a: f32,
-///     b: f32, // valid: offset of b is 16 bytes
+///     b: S,
 /// }
 /// ```
 ///
