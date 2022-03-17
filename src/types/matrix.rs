@@ -4,12 +4,12 @@ pub trait MatrixScalar {}
 impl_marker_trait_for_f32!(MatrixScalar);
 
 pub struct MatrixMetadata {
-    pub row_padding: u64,
+    pub col_padding: u64,
 }
 
 impl Metadata<MatrixMetadata> {
-    pub const fn row_padding(self) -> u64 {
-        self.extra.row_padding
+    pub const fn col_padding(self) -> u64 {
+        self.extra.col_padding
     }
 }
 
@@ -129,17 +129,17 @@ macro_rules! impl_matrix_inner {
         {
             type ExtraMetadata = $crate::private::MatrixMetadata;
             const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = {
-                let row_size = $crate::private::SizeValue::from(<$el_ty as $crate::private::Size>::SIZE).mul($r);
-                let alignment = $crate::private::AlignmentValue::from_next_power_of_two_size(row_size);
-                let size = alignment.round_up_size(row_size).mul($c);
-                let row_padding = alignment.padding_needed_for(row_size.get());
+                let col_size = $crate::private::SizeValue::from(<$el_ty as $crate::private::Size>::SIZE).mul($r);
+                let alignment = $crate::private::AlignmentValue::from_next_power_of_two_size(col_size);
+                let size = alignment.round_up_size(col_size).mul($c);
+                let col_padding = alignment.padding_needed_for(col_size.get());
 
                 $crate::private::Metadata {
                     alignment,
                     has_uniform_min_alignment: false,
                     min_size: size,
                     extra: $crate::private::MatrixMetadata {
-                        row_padding,
+                        col_padding,
                     },
                 }
             };
@@ -157,11 +157,11 @@ macro_rules! impl_matrix_inner {
         {
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let columns = $crate::private::AsRefMatrixParts::<$el_ty, $c, $r>::as_ref_parts(self);
-                for row in columns {
-                    for el in row {
+                for col in columns {
+                    for el in col {
                         $crate::private::WriteInto::write_into(el, writer);
                     }
-                    writer.advance(<Self as $crate::private::WgslType>::METADATA.row_padding() as ::core::primitive::usize);
+                    writer.advance(<Self as $crate::private::WgslType>::METADATA.col_padding() as ::core::primitive::usize);
                 }
             }
         }
@@ -173,11 +173,11 @@ macro_rules! impl_matrix_inner {
         {
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let columns = $crate::private::AsMutMatrixParts::<$el_ty, $c, $r>::as_mut_parts(self);
-                for row in columns {
-                    for el in row {
+                for col in columns {
+                    for el in col {
                         $crate::private::ReadFrom::read_from(el, reader);
                     }
-                    reader.advance(<Self as $crate::private::WgslType>::METADATA.row_padding() as ::core::primitive::usize);
+                    reader.advance(<Self as $crate::private::WgslType>::METADATA.col_padding() as ::core::primitive::usize);
                 }
             }
         }
@@ -189,11 +189,11 @@ macro_rules! impl_matrix_inner {
         {
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
                 let columns = $crate::private::ArrayExt::from_fn(|_| {
-                    let row = $crate::private::ArrayExt::from_fn(|_| {
+                    let col = $crate::private::ArrayExt::from_fn(|_| {
                         $crate::private::CreateFrom::create_from(reader)
                     });
-                    reader.advance(<Self as $crate::private::WgslType>::METADATA.row_padding() as ::core::primitive::usize);
-                    row
+                    reader.advance(<Self as $crate::private::WgslType>::METADATA.col_padding() as ::core::primitive::usize);
+                    col
                 });
 
                 $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
