@@ -1,5 +1,5 @@
 use super::{
-    AlignmentValue, BufferMut, BufferRef, CreateFrom, ReadFrom, Reader, Result, WgslType,
+    AlignmentValue, BufferMut, BufferRef, CreateFrom, ReadFrom, Reader, Result, ShaderType,
     WriteInto, Writer,
 };
 
@@ -39,7 +39,7 @@ impl<B> AsMut<B> for StorageBuffer<B> {
 impl<B: BufferMut> StorageBuffer<B> {
     pub fn write<T>(&mut self, value: &T) -> Result<()>
     where
-        T: WgslType + WriteInto,
+        T: ShaderType + WriteInto,
     {
         let mut writer = Writer::new(value, &mut self.inner, 0)?;
         value.write_into(&mut writer);
@@ -50,7 +50,7 @@ impl<B: BufferMut> StorageBuffer<B> {
 impl<B: BufferRef> StorageBuffer<B> {
     pub fn read<T>(&self, value: &mut T) -> Result<()>
     where
-        T: WgslType + ReadFrom,
+        T: ShaderType + ReadFrom,
     {
         let mut writer = Reader::new::<T>(&self.inner, 0)?;
         value.read_from(&mut writer);
@@ -59,7 +59,7 @@ impl<B: BufferRef> StorageBuffer<B> {
 
     pub fn create<T>(&self) -> Result<T>
     where
-        T: WgslType + CreateFrom,
+        T: ShaderType + CreateFrom,
     {
         let mut writer = Reader::new::<T>(&self.inner, 0)?;
         Ok(T::create_from(&mut writer))
@@ -104,7 +104,7 @@ impl<B> AsMut<B> for UniformBuffer<B> {
 impl<B: BufferMut> UniformBuffer<B> {
     pub fn write<T>(&mut self, value: &T) -> Result<()>
     where
-        T: WgslType + WriteInto,
+        T: ShaderType + WriteInto,
     {
         T::assert_uniform_compat();
         self.inner.write(value)
@@ -114,7 +114,7 @@ impl<B: BufferMut> UniformBuffer<B> {
 impl<B: BufferRef> UniformBuffer<B> {
     pub fn read<T>(&self, value: &mut T) -> Result<()>
     where
-        T: WgslType + ReadFrom,
+        T: ShaderType + ReadFrom,
     {
         T::assert_uniform_compat();
         self.inner.read(value)
@@ -122,7 +122,7 @@ impl<B: BufferRef> UniformBuffer<B> {
 
     pub fn create<T>(&self) -> Result<T>
     where
-        T: WgslType + CreateFrom,
+        T: ShaderType + CreateFrom,
     {
         T::assert_uniform_compat();
         self.inner.create()
@@ -187,7 +187,7 @@ impl<B> AsMut<B> for DynamicStorageBuffer<B> {
 impl<B: BufferMut> DynamicStorageBuffer<B> {
     pub fn write<T>(&mut self, value: &T) -> Result<u64>
     where
-        T: WgslType + WriteInto,
+        T: ShaderType + WriteInto,
     {
         let offset = self.offset;
 
@@ -203,7 +203,7 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
 impl<B: BufferRef> DynamicStorageBuffer<B> {
     pub fn read<T>(&mut self, value: &mut T) -> Result<()>
     where
-        T: WgslType + ReadFrom,
+        T: ShaderType + ReadFrom,
     {
         let mut writer = Reader::new::<T>(&self.inner, self.offset)?;
         value.read_from(&mut writer);
@@ -215,7 +215,7 @@ impl<B: BufferRef> DynamicStorageBuffer<B> {
 
     pub fn create<T>(&mut self) -> Result<T>
     where
-        T: WgslType + CreateFrom,
+        T: ShaderType + CreateFrom,
     {
         let mut writer = Reader::new::<T>(&self.inner, self.offset)?;
         let value = T::create_from(&mut writer);
@@ -272,7 +272,7 @@ impl<B> AsMut<B> for DynamicUniformBuffer<B> {
 impl<B: BufferMut> DynamicUniformBuffer<B> {
     pub fn write<T>(&mut self, value: &T) -> Result<u64>
     where
-        T: WgslType + WriteInto,
+        T: ShaderType + WriteInto,
     {
         T::assert_uniform_compat();
         self.inner.write(value)
@@ -282,7 +282,7 @@ impl<B: BufferMut> DynamicUniformBuffer<B> {
 impl<B: BufferRef> DynamicUniformBuffer<B> {
     pub fn read<T>(&mut self, value: &mut T) -> Result<()>
     where
-        T: WgslType + ReadFrom,
+        T: ShaderType + ReadFrom,
     {
         T::assert_uniform_compat();
         self.inner.read(value)
@@ -290,7 +290,7 @@ impl<B: BufferRef> DynamicUniformBuffer<B> {
 
     pub fn create<T>(&mut self) -> Result<T>
     where
-        T: WgslType + CreateFrom,
+        T: ShaderType + CreateFrom,
     {
         T::assert_uniform_compat();
         self.inner.create()

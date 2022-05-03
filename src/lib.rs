@@ -20,7 +20,7 @@
     html_logo_url = "https://raw.githubusercontent.com/teoxoy/encase/3d6d2e4d7670863e97463a15ceeafac6d13ee73e/logo.svg"
 )]
 
-/// Used to implement `WgslType` for structs
+/// Used to implement `ShaderType` for structs
 ///
 /// # Attributes
 ///
@@ -51,8 +51,8 @@
 ///
 /// ```
 /// # use mint;
-/// # use crate::encase::WgslType;
-/// #[derive(WgslType)]
+/// # use crate::encase::ShaderType;
+/// #[derive(ShaderType)]
 /// struct AffineTransform2D {
 ///     matrix: mint::ColumnMatrix2<f32>,
 ///     translate: mint::Vector2<f32>
@@ -65,9 +65,9 @@
 ///
 /// ```
 /// # use mint;
-/// # use crate::encase::WgslType;
+/// # use crate::encase::ShaderType;
 /// # use crate::encase::ArrayLength;
-/// #[derive(WgslType)]
+/// #[derive(ShaderType)]
 /// struct Positions {
 ///     length: ArrayLength,
 ///     #[size(runtime)]
@@ -78,13 +78,13 @@
 /// Complex
 ///
 /// ```
-/// # use crate::encase::WgslType;
-/// #[derive(WgslType)]
+/// # use crate::encase::ShaderType;
+/// #[derive(ShaderType)]
 /// struct Complex<
 ///     'a,
 ///     'b: 'a,
-///     E: 'a + WgslType + encase::Size,
-///     T: 'b + WgslType + encase::Size,
+///     E: 'a + ShaderType + encase::Size,
+///     T: 'b + ShaderType + encase::Size,
 ///     const N: usize,
 /// > {
 ///     array: [&'a mut E; N],
@@ -93,7 +93,7 @@
 /// }
 /// ```
 ///
-pub use encase_derive::WgslType;
+pub use encase_derive::ShaderType;
 
 #[macro_use]
 mod utils;
@@ -103,8 +103,8 @@ mod types;
 mod impls;
 
 pub use crate::core::{
-    CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, Size, StorageBuffer,
-    UniformBuffer, WgslType,
+    CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderType, Size, StorageBuffer,
+    UniformBuffer,
 };
 pub use types::runtime_sized_array::ArrayLength;
 
@@ -115,14 +115,14 @@ pub mod internal {
     };
 }
 
-/// Module containing items necessary to implement `WgslType` for runtime-sized arrays
+/// Module containing items necessary to implement `ShaderType` for runtime-sized arrays
 pub mod rts_array {
     #[doc(inline)]
     pub use super::impl_rts_array;
     pub use super::types::runtime_sized_array::{Length, Truncate};
 }
 
-/// Module containing items necessary to implement `WgslType` for vectors
+/// Module containing items necessary to implement `ShaderType` for vectors
 pub mod vector {
     #[doc(inline)]
     pub use super::impl_vector;
@@ -131,7 +131,7 @@ pub mod vector {
     };
 }
 
-/// Module containing items necessary to implement `WgslType` for matrices
+/// Module containing items necessary to implement `ShaderType` for matrices
 pub mod matrix {
     #[doc(inline)]
     pub use super::impl_matrix;
@@ -163,7 +163,7 @@ pub mod private {
     pub use super::utils::consume_zsts;
     pub use super::utils::ArrayExt;
     pub use super::CalculateSizeFor;
+    pub use super::ShaderType;
     pub use super::Size;
-    pub use super::WgslType;
     pub use const_panic::concat_assert;
 }

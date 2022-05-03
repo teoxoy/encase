@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion, Throughput};
-use encase::{StorageBuffer, WgslType};
+use encase::{ShaderType, StorageBuffer};
 use pprof::criterion::{Output, PProfProfiler};
 
 #[global_allocator]
@@ -32,7 +32,7 @@ macro_rules! gen_inner {
     }};
 }
 
-#[derive(Debug, WgslType, PartialEq, Clone, Copy)]
+#[derive(Debug, ShaderType, PartialEq, Clone, Copy)]
 struct A {
     f: f32,
     u: u32,

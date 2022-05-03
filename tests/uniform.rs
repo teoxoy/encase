@@ -1,6 +1,6 @@
-use encase::{UniformBuffer, WgslType};
+use encase::{ShaderType, UniformBuffer};
 
-#[derive(Debug, WgslType, PartialEq, Eq)]
+#[derive(Debug, ShaderType, PartialEq, Eq)]
 struct TestUniform {
     a: u32,
     b: u32,

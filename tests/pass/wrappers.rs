@@ -1,12 +1,12 @@
 #![feature(trivial_bounds)]
 
 use core::cell::Cell;
-use encase::WgslType;
+use encase::ShaderType;
 use std::{borrow::Cow, rc::Rc, sync::Arc};
 
 fn main() {}
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct Test<'a> {
     a: &'a u32,
     b: &'a mut u32,

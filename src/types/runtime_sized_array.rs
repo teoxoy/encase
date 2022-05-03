@@ -4,9 +4,9 @@ use crate::core::{
     BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, RuntimeSizedArray, Size,
     WriteInto, Writer,
 };
-use crate::WgslType;
+use crate::ShaderType;
 
-/// Helper type meant to be used together with the [`derive@WgslType`] derive macro
+/// Helper type meant to be used together with the [`derive@ShaderType`] derive macro
 ///
 /// This type should be interpreted as an [`u32`] in the shader
 ///
@@ -23,7 +23,7 @@ use crate::WgslType;
 ///
 /// # Solution
 ///
-/// Using this type on a field of a struct with the [`derive@WgslType`] derive macro will automatically:
+/// Using this type on a field of a struct with the [`derive@ShaderType`] derive macro will automatically:
 ///
 /// - on write, write the length of the contained runtime-sized array as an [`u32`] to the buffer
 ///
@@ -31,7 +31,7 @@ use crate::WgslType;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ArrayLength;
 
-impl WgslType for ArrayLength {
+impl ShaderType for ArrayLength {
     type ExtraMetadata = ();
     const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
 }
@@ -68,14 +68,14 @@ pub trait Truncate {
     fn truncate(&mut self, _len: usize);
 }
 
-/// Used to implement `WgslType` for the given runtime-sized array type
+/// Used to implement `ShaderType` for the given runtime-sized array type
 ///
 /// The given runtime-sized array type should implement [`Length`] and optionally [`Truncate`]
 /// depending on needed capability (they can also be derived via `$using`)
 ///
 /// # Args
 ///
-/// - `$type` the type (representing a runtime-sized array) for which `WgslType` will be imeplemented for
+/// - `$type` the type (representing a runtime-sized array) for which `ShaderType` will be imeplemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
@@ -120,9 +120,9 @@ macro_rules! impl_rts_array_inner {
         }
     };
     (__main, $type:ty, $($generics:tt)*) => {
-        impl<$($generics)*> $crate::private::WgslType for $type
+        impl<$($generics)*> $crate::private::ShaderType for $type
         where
-            T: $crate::private::WgslType + $crate::private::Size,
+            T: $crate::private::ShaderType + $crate::private::Size,
             Self: $crate::private::Length,
         {
             type ExtraMetadata = $crate::private::ArrayMetadata;
@@ -164,19 +164,19 @@ macro_rules! impl_rts_array_inner {
 
         impl<$($generics)*> $crate::private::CalculateSizeFor for $type
         where
-            Self: $crate::private::WgslType<ExtraMetadata = $crate::private::ArrayMetadata>,
+            Self: $crate::private::ShaderType<ExtraMetadata = $crate::private::ArrayMetadata>,
         {
             fn calculate_size_for(nr_of_el: ::core::primitive::u64) -> ::core::num::NonZeroU64 {
                 use ::core::cmp::Ord;
 
-                <Self as $crate::private::WgslType>::METADATA.stride().mul(nr_of_el.max(1)).0
+                <Self as $crate::private::ShaderType>::METADATA.stride().mul(nr_of_el.max(1)).0
             }
         }
 
         impl<$($generics)*> $crate::private::WriteInto for $type
         where
             T: $crate::private::WriteInto,
-            Self: $crate::private::WgslType<ExtraMetadata = $crate::private::ArrayMetadata>,
+            Self: $crate::private::ShaderType<ExtraMetadata = $crate::private::ArrayMetadata>,
             for<'a> &'a Self: ::core::iter::IntoIterator<Item = &'a T>,
         {
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
@@ -184,7 +184,7 @@ macro_rules! impl_rts_array_inner {
 
                 for item in self.into_iter() {
                     $crate::private::WriteInto::write_into(item, writer);
-                    writer.advance(<Self as $crate::private::WgslType>::METADATA.el_padding() as ::core::primitive::usize);
+                    writer.advance(<Self as $crate::private::ShaderType>::METADATA.el_padding() as ::core::primitive::usize);
                 }
             }
         }
@@ -192,7 +192,7 @@ macro_rules! impl_rts_array_inner {
         impl<$($generics)*> $crate::private::ReadFrom for $type
         where
             T: $crate::private::ReadFrom + $crate::private::CreateFrom,
-            Self: $crate::private::Truncate + $crate::private::Length + ::core::iter::Extend<T> + $crate::private::WgslType<ExtraMetadata = $crate::private::ArrayMetadata>,
+            Self: $crate::private::Truncate + $crate::private::Length + ::core::iter::Extend<T> + $crate::private::ShaderType<ExtraMetadata = $crate::private::ArrayMetadata>,
             for<'a> &'a mut Self: ::core::iter::IntoIterator<Item = &'a mut T>,
         {
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
@@ -200,19 +200,19 @@ macro_rules! impl_rts_array_inner {
                 use ::core::iter::{IntoIterator, Extend, Iterator};
 
                 let max = reader.ctx.rts_array_max_el_to_read.unwrap_or(::core::primitive::u32::MAX) as ::core::primitive::usize;
-                let count = max.min(reader.remaining() / <Self as $crate::private::WgslType>::METADATA.stride().get() as ::core::primitive::usize);
+                let count = max.min(reader.remaining() / <Self as $crate::private::ShaderType>::METADATA.stride().get() as ::core::primitive::usize);
                 $crate::private::Truncate::truncate(self, count);
 
                 for item in self.into_iter() {
                     $crate::private::ReadFrom::read_from(item, reader);
-                    reader.advance(<Self as $crate::private::WgslType>::METADATA.el_padding() as ::core::primitive::usize);
+                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.el_padding() as ::core::primitive::usize);
                 }
 
                 let remaining = count - $crate::private::Length::length(self);
                 self.extend(
                     ::core::iter::repeat_with(|| {
                         let el = $crate::private::CreateFrom::create_from(reader);
-                        reader.advance(<Self as $crate::private::WgslType>::METADATA.el_padding() as ::core::primitive::usize);
+                        reader.advance(<Self as $crate::private::ShaderType>::METADATA.el_padding() as ::core::primitive::usize);
                         el
                     })
                     .take(remaining),
@@ -223,19 +223,19 @@ macro_rules! impl_rts_array_inner {
         impl<$($generics)*> $crate::private::CreateFrom for $type
         where
             T: $crate::private::CreateFrom,
-            Self: ::core::iter::FromIterator<T> + $crate::private::WgslType<ExtraMetadata = $crate::private::ArrayMetadata>,
+            Self: ::core::iter::FromIterator<T> + $crate::private::ShaderType<ExtraMetadata = $crate::private::ArrayMetadata>,
         {
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
                 use ::core::cmp::Ord;
                 use ::core::iter::Iterator;
 
                 let max = reader.ctx.rts_array_max_el_to_read.unwrap_or(::core::primitive::u32::MAX) as ::core::primitive::usize;
-                let count = max.min(reader.remaining() / <Self as $crate::private::WgslType>::METADATA.stride().get() as ::core::primitive::usize);
+                let count = max.min(reader.remaining() / <Self as $crate::private::ShaderType>::METADATA.stride().get() as ::core::primitive::usize);
 
                 ::core::iter::FromIterator::from_iter(
                     ::core::iter::repeat_with(|| {
                         let el = $crate::private::CreateFrom::create_from(reader);
-                        reader.advance(<Self as $crate::private::WgslType>::METADATA.el_padding() as ::core::primitive::usize);
+                        reader.advance(<Self as $crate::private::ShaderType>::METADATA.el_padding() as ::core::primitive::usize);
                         el
                     })
                     .take(count),

@@ -94,16 +94,16 @@ mod impl_rts_array {
 
 ::encase::impl_rts_array!(impl_rts_array::Test<A>; (T, A: impl_rts_array::Array<Item = T>); using len truncate);
 
-#[derive(::encase::WgslType)]
+#[derive(::encase::ShaderType)]
 struct Test {
     a: [::mint::Vector3<::core::primitive::f32>; 2],
     b: ::core::primitive::u32,
 }
 
-#[derive(::encase::WgslType)]
+#[derive(::encase::ShaderType)]
 struct TestGeneric<
     'a,
-    T: 'a + ::encase::WgslType + ::encase::Size,
+    T: 'a + ::encase::ShaderType + ::encase::Size,
     const N: ::core::primitive::usize,
 > {
     #[size(90)]

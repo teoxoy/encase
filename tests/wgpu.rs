@@ -1,11 +1,12 @@
 use encase::{
-    ArrayLength, DynamicStorageBuffer, DynamicUniformBuffer, StorageBuffer, UniformBuffer, WgslType,
+    ArrayLength, DynamicStorageBuffer, DynamicUniformBuffer, ShaderType, StorageBuffer,
+    UniformBuffer,
 };
 use futures::executor::block_on;
 use mint::{Vector2, Vector3};
 use wgpu::{include_wgsl, util::DeviceExt};
 
-#[derive(Debug, WgslType, PartialEq)]
+#[derive(Debug, ShaderType, PartialEq)]
 struct A {
     u: u32,
     v: u32,
@@ -16,7 +17,7 @@ struct A {
     xx: u32,
 }
 
-#[derive(Debug, WgslType, PartialEq)]
+#[derive(Debug, ShaderType, PartialEq)]
 struct B {
     a: Vector2<u32>,
     b: Vector3<u32>,
@@ -118,7 +119,7 @@ fn test_wgpu() {
 
 #[test]
 fn array_length() {
-    #[derive(Debug, WgslType, PartialEq)]
+    #[derive(Debug, ShaderType, PartialEq)]
     struct A {
         array_length: ArrayLength,
         array_length_call_ret_val: u32,
@@ -152,7 +153,7 @@ fn array_length() {
     assert_eq!(in_value, out_val);
 }
 
-fn in_out<IN: encase::WgslType, OUT: encase::WgslType>(
+fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
     shader: &wgpu::ShaderModuleDescriptor,
     data: &[u8],
     is_uniform: bool,

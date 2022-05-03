@@ -16,7 +16,7 @@ Having to manually lay out data into GPU buffers can become very tedious and err
 
 ## Design
 
-The core trait is [`WgslType`] which mainly contains metadata about the given type.
+The core trait is [`ShaderType`] which mainly contains metadata about the given type.
 
 The [`WriteInto`], [`ReadFrom`] and [`CreateFrom`] traits represent the ability of a type to be written into the buffer, read from the buffer and created from the buffer respectively.
 
@@ -26,7 +26,7 @@ Most data types can implement the above traits via their respective macros:
   - [`impl_matrix!`] for matrices
   - [`impl_rts_array!`] for runtime-sized arrays
   - [`impl_wrapper!`] for wrappers
-  - [`WgslType`][derive@WgslType] for structs
+  - [`ShaderType`][derive@ShaderType] for structs
 
 The [`UniformBuffer`], [`StorageBuffer`], [`DynamicUniformBuffer`] and [`DynamicStorageBuffer`] structs are wrappers around an underlying raw buffer (a type implementing [`BufferRef`] and/or [`BufferMut`] depending on required capability). They facilitate the read/write/create operations.
 
@@ -35,9 +35,9 @@ The [`UniformBuffer`], [`StorageBuffer`], [`DynamicUniformBuffer`] and [`Dynamic
 Write affine transform to uniform buffer
 
 ```rust
-use encase::{WgslType, UniformBuffer};
+use encase::{ShaderType, UniformBuffer};
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct AffineTransform2D {
     matrix: glam::Mat2,
     translate: glam::Vec2
@@ -76,9 +76,9 @@ assert_eq!(vector, mint::Vector2 { x: 16843009, y: 16843009 });
 Write and read back data from storage buffer
 
 ```rust
-use encase::{WgslType, ArrayLength, StorageBuffer};
+use encase::{ShaderType, ArrayLength, StorageBuffer};
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct Positions {
     length: ArrayLength,
     #[size(runtime)]
@@ -116,7 +116,7 @@ assert_eq!(positions.positions.len(), 2);
 Write different data types to dynamic storage buffer
 
 ```rust
-use encase::{WgslType, DynamicStorageBuffer};
+use encase::{ShaderType, DynamicStorageBuffer};
 
 let mut byte_buffer = Vec::new();
 
@@ -135,7 +135,7 @@ assert_eq!(offsets, [0, 64, 192]);
 
 [host-shareable types]: https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types
 [features]: https://docs.rs/crate/encase/latest/features
-[`WgslType`]: https://docs.rs/encase/latest/encase/trait.WgslType.html
+[`ShaderType`]: https://docs.rs/encase/latest/encase/trait.ShaderType.html
 
 [`WriteInto`]: https://docs.rs/encase/latest/encase/internal/trait.WriteInto.html
 [`ReadFrom`]: https://docs.rs/encase/latest/encase/internal/trait.ReadFrom.html
@@ -145,7 +145,7 @@ assert_eq!(offsets, [0, 64, 192]);
 [`impl_matrix!`]: https://docs.rs/encase/latest/encase/macro.impl_matrix.html
 [`impl_rts_array!`]: https://docs.rs/encase/latest/encase/macro.impl_rts_array.html
 [`impl_wrapper!`]: https://docs.rs/encase/latest/encase/macro.impl_wrapper.html
-[derive@WgslType]: https://docs.rs/encase/latest/encase/derive.WgslType.html
+[derive@ShaderType]: https://docs.rs/encase/latest/encase/derive.ShaderType.html
 
 [`UniformBuffer`]: https://docs.rs/encase/latest/encase/struct.UniformBuffer.html
 [`StorageBuffer`]: https://docs.rs/encase/latest/encase/struct.StorageBuffer.html

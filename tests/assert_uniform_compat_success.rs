@@ -1,31 +1,31 @@
-use encase::WgslType;
+use encase::ShaderType;
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct S {
     x: f32,
 }
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct WrappedF32 {
     #[size(16)]
     elem: f32,
 }
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct TestStruct {
     a: u32,
     #[align(16)]
     b: S,
 }
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct TestArray {
     a: u32,
     #[align(16)]
     b: [WrappedF32; 1],
 }
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct TestStructFirst {
     a: S,
     #[align(16)]

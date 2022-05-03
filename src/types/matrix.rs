@@ -28,7 +28,7 @@ pub trait FromMatrixParts<T: MatrixScalar, const C: usize, const R: usize> {
     fn from_parts(parts: [[T; R]; C]) -> Self;
 }
 
-/// Used to implement `WgslType` for the given matrix type
+/// Used to implement `ShaderType` for the given matrix type
 ///
 /// The given matrix type should implement any combination of
 /// [`AsRefMatrixParts`], [`AsMutMatrixParts`], [`FromMatrixParts`]
@@ -40,7 +40,7 @@ pub trait FromMatrixParts<T: MatrixScalar, const C: usize, const R: usize> {
 ///
 /// - `$r` nr of rows the given matrix contains
 ///
-/// - `$type` the type (representing a matrix) for which `WgslType` will be imeplemented for
+/// - `$type` the type (representing a matrix) for which `ShaderType` will be imeplemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
@@ -123,7 +123,7 @@ macro_rules! impl_matrix_inner {
             "Matrix should have at least 2 rows and at most 4!",
         );
 
-        impl<$($generics)*> $crate::private::WgslType for $type
+        impl<$($generics)*> $crate::private::ShaderType for $type
         where
             $el_ty: $crate::private::Size,
         {
@@ -152,7 +152,7 @@ macro_rules! impl_matrix_inner {
 
         impl<$($generics)*> $crate::private::WriteInto for $type
         where
-            Self: $crate::private::AsRefMatrixParts<$el_ty, $c, $r> + $crate::private::WgslType<ExtraMetadata = $crate::private::MatrixMetadata>,
+            Self: $crate::private::AsRefMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
             $el_ty: $crate::private::MatrixScalar + $crate::private::WriteInto,
         {
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
@@ -161,14 +161,14 @@ macro_rules! impl_matrix_inner {
                     for el in col {
                         $crate::private::WriteInto::write_into(el, writer);
                     }
-                    writer.advance(<Self as $crate::private::WgslType>::METADATA.col_padding() as ::core::primitive::usize);
+                    writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                 }
             }
         }
 
         impl<$($generics)*> $crate::private::ReadFrom for $type
         where
-            Self: $crate::private::AsMutMatrixParts<$el_ty, $c, $r> + $crate::private::WgslType<ExtraMetadata = $crate::private::MatrixMetadata>,
+            Self: $crate::private::AsMutMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
             $el_ty: $crate::private::MatrixScalar + $crate::private::ReadFrom,
         {
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
@@ -177,14 +177,14 @@ macro_rules! impl_matrix_inner {
                     for el in col {
                         $crate::private::ReadFrom::read_from(el, reader);
                     }
-                    reader.advance(<Self as $crate::private::WgslType>::METADATA.col_padding() as ::core::primitive::usize);
+                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                 }
             }
         }
 
         impl<$($generics)*> $crate::private::CreateFrom for $type
         where
-            Self: $crate::private::FromMatrixParts<$el_ty, $c, $r> + $crate::private::WgslType<ExtraMetadata = $crate::private::MatrixMetadata>,
+            Self: $crate::private::FromMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
             $el_ty: $crate::private::MatrixScalar + $crate::private::CreateFrom,
         {
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
@@ -192,7 +192,7 @@ macro_rules! impl_matrix_inner {
                     let col = $crate::private::ArrayExt::from_fn(|_| {
                         $crate::private::CreateFrom::create_from(reader)
                     });
-                    reader.advance(<Self as $crate::private::WgslType>::METADATA.col_padding() as ::core::primitive::usize);
+                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                     col
                 });
 

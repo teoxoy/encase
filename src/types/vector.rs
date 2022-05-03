@@ -18,7 +18,7 @@ pub trait FromVectorParts<T: VectorScalar, const N: usize> {
     fn from_parts(parts: [T; N]) -> Self;
 }
 
-/// Used to implement `WgslType` for the given vector type
+/// Used to implement `ShaderType` for the given vector type
 ///
 /// The given vector type should implement any combination of
 /// [`AsRefVectorParts`], [`AsMutVectorParts`], [`FromVectorParts`]
@@ -28,7 +28,7 @@ pub trait FromVectorParts<T: VectorScalar, const N: usize> {
 ///
 /// - `$n` nr of elements the given vector contains
 ///
-/// - `$type` the type (representing a vector) for which `WgslType` will be imeplemented for
+/// - `$type` the type (representing a vector) for which `ShaderType` will be imeplemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
@@ -107,7 +107,7 @@ macro_rules! impl_vector_inner {
             "Vector should have at least 2 elements and at most 4!",
         );
 
-        impl<$($generics)*> $crate::private::WgslType for $type
+        impl<$($generics)*> $crate::private::ShaderType for $type
         where
             $el_ty: $crate::private::Size,
         {

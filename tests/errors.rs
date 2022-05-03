@@ -1,8 +1,8 @@
-use encase::{internal::Error, StorageBuffer, WgslType};
+use encase::{internal::Error, StorageBuffer, ShaderType};
 
 #[test]
 fn buffer_too_small() {
-    #[derive(WgslType)]
+    #[derive(ShaderType)]
     struct Test {
         a: u32,
     }

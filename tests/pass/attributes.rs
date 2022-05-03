@@ -1,8 +1,8 @@
-use encase::WgslType;
+use encase::ShaderType;
 
 fn main() {}
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct TestAttributes {
     #[align(16)]
     a: u32,
@@ -10,7 +10,7 @@ struct TestAttributes {
     b: u32,
 }
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct TestRtArray {
     #[size(8)]
     a: u32,

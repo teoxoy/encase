@@ -9,7 +9,7 @@ use syn::{
     Data, DataStruct, DeriveInput, Error, Fields, FieldsNamed, GenericParam, LitInt, Path, Type,
 };
 
-#[proc_macro_derive(WgslType, attributes(align, size))]
+#[proc_macro_derive(ShaderType, attributes(align, size))]
 pub fn derive_wgsl_struct(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let expanded = emit(input);
@@ -46,7 +46,7 @@ impl FieldData {
         } else {
             let ty = &self.field.ty;
             quote! {
-                <#ty as #root::WgslType>::METADATA.alignment()
+                <#ty as #root::ShaderType>::METADATA.alignment()
             }
         }
     }
@@ -74,7 +74,7 @@ impl FieldData {
         } else {
             let ty = &self.field.ty;
             quote! {
-                <#ty as #root::WgslType>::METADATA.min_size().get()
+                <#ty as #root::ShaderType>::METADATA.min_size().get()
             }
         }
     }
@@ -263,11 +263,11 @@ fn emit(input: DeriveInput) -> TokenStream {
         &input,
         &field_data,
         if is_runtime_sized {
-            quote!(#root::WgslType + #root::RuntimeSizedArray)
+            quote!(#root::ShaderType + #root::RuntimeSizedArray)
         } else {
-            quote!(#root::WgslType + #root::Size)
+            quote!(#root::ShaderType + #root::Size)
         },
-        quote!(#root::WgslType + #root::Size),
+        quote!(#root::ShaderType + #root::Size),
     );
 
     let mut lifetimes = input.generics.clone();
@@ -289,7 +289,7 @@ fn emit(input: DeriveInput) -> TokenStream {
                         #[track_caller]
                         #[allow(clippy::extra_unused_lifetimes)]
                         const fn check #impl_generics () {
-                            let alignment = <#ty as #root::WgslType>::METADATA.alignment().get();
+                            let alignment = <#ty as #root::ShaderType>::METADATA.alignment().get();
                             #root::concat_assert!(
                                 alignment <= #align,
                                 "align attribute value must be at least ", alignment, " (field's type alignment)"
@@ -328,15 +328,15 @@ fn emit(input: DeriveInput) -> TokenStream {
     let uniform_check = field_data.iter().enumerate().map(|(i, data)| {
         let ty = &data.field.ty;
         let ty_check = quote_spanned! {ty.span()=>
-            <#ty as #root::WgslType>::UNIFORM_COMPAT_ASSERT()
+            <#ty as #root::ShaderType>::UNIFORM_COMPAT_ASSERT()
         };
         let ident = data.ident();
         let name = ident.to_string();
         let field_offset_check = quote_spanned! {ident.span()=>
             if let ::core::option::Option::Some(min_alignment) =
-                <#ty as #root::WgslType>::METADATA.uniform_min_alignment()
+                <#ty as #root::ShaderType>::METADATA.uniform_min_alignment()
             {
-                let offset = <Self as #root::WgslType>::METADATA.offset(#i);
+                let offset = <Self as #root::ShaderType>::METADATA.offset(#i);
 
                 #root::concat_assert!(
                     min_alignment.is_aligned(offset),
@@ -351,10 +351,10 @@ fn emit(input: DeriveInput) -> TokenStream {
             let prev_ident_name = prev_field.ident().to_string();
             quote_spanned! {ident.span()=>
                 if let ::core::option::Option::Some(min_alignment) =
-                    <#prev_field_ty as #root::WgslType>::METADATA.uniform_min_alignment()
+                    <#prev_field_ty as #root::ShaderType>::METADATA.uniform_min_alignment()
                 {
-                    let prev_offset = <Self as #root::WgslType>::METADATA.offset(#i - 1);
-                    let offset = <Self as #root::WgslType>::METADATA.offset(#i);
+                    let prev_offset = <Self as #root::ShaderType>::METADATA.offset(#i - 1);
+                    let offset = <Self as #root::ShaderType>::METADATA.offset(#i);
                     let diff = offset - prev_offset;
 
                     let prev_size = <#prev_field_ty as #root::Size>::SIZE.get();
@@ -457,7 +457,7 @@ fn emit(input: DeriveInput) -> TokenStream {
 
             let padding = {
                 let i = Literal::usize_suffixed(i);
-                quote! { <Self as #root::WgslType>::METADATA.padding(#i) }
+                quote! { <Self as #root::ShaderType>::METADATA.padding(#i) }
             };
 
             let main = get_main(ident);
@@ -545,13 +545,13 @@ fn emit(input: DeriveInput) -> TokenStream {
         true => quote! {
             impl #impl_generics #root::CalculateSizeFor for #name #ty_generics
             where
-                Self: #root::WgslType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
+                Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
                 #last_field_type: #root::CalculateSizeFor,
             {
                 fn calculate_size_for(nr_of_el: ::core::primitive::u64) -> ::core::num::NonZeroU64 {
-                    let mut offset = <Self as #root::WgslType>::METADATA.last_offset();
+                    let mut offset = <Self as #root::ShaderType>::METADATA.last_offset();
                     offset += <#last_field_type as #root::CalculateSizeFor>::calculate_size_for(nr_of_el).get();
-                    #root::SizeValue::new(<Self as #root::WgslType>::METADATA.alignment().round_up(offset)).0
+                    #root::SizeValue::new(<Self as #root::ShaderType>::METADATA.alignment().round_up(offset)).0
                 }
             }
         },
@@ -570,10 +570,10 @@ fn emit(input: DeriveInput) -> TokenStream {
 
         #( #size_check )*
 
-        impl #impl_generics #root::WgslType for #name #ty_generics #where_clause
+        impl #impl_generics #root::ShaderType for #name #ty_generics #where_clause
         where
-            #( #all_other: #root::WgslType + #root::Size, )*
-            #last_field_type: #root::WgslType,
+            #( #all_other: #root::ShaderType + #root::Size, )*
+            #last_field_type: #root::ShaderType,
         {
             type ExtraMetadata = #root::StructMetadata<#nr_of_fields>;
             const METADATA: #root::Metadata<Self::ExtraMetadata> = {
@@ -607,14 +607,14 @@ fn emit(input: DeriveInput) -> TokenStream {
 
             fn size(&self) -> ::core::num::NonZeroU64 {
                 let mut offset = Self::METADATA.last_offset();
-                offset += #root::WgslType::size(&self.#last_field_ident).get();
+                offset += #root::ShaderType::size(&self.#last_field_ident).get();
                 #root::SizeValue::new(Self::METADATA.alignment().round_up(offset)).0
             }
         }
 
         impl #impl_generics #root::WriteInto for #name #ty_generics
         where
-            Self: #root::WgslType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
+            Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
             #( #field_types_2: #root::WriteInto, )*
         {
             fn write_into<B: #root::BufferMut>(&self, writer: &mut #root::Writer<B>) {
@@ -625,7 +625,7 @@ fn emit(input: DeriveInput) -> TokenStream {
 
         impl #impl_generics #root::ReadFrom for #name #ty_generics
         where
-            Self: #root::WgslType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
+            Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
             #( #field_types_3: #root::ReadFrom, )*
         {
             fn read_from<B: #root::BufferRef>(&mut self, reader: &mut #root::Reader<B>) {
@@ -635,7 +635,7 @@ fn emit(input: DeriveInput) -> TokenStream {
 
         impl #impl_generics #root::CreateFrom for #name #ty_generics
         where
-            Self: #root::WgslType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
+            Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
             #( #field_types_4: #root::CreateFrom, )*
         {
             fn create_from<B: #root::BufferRef>(reader: &mut #root::Reader<B>) -> Self {

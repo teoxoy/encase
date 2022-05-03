@@ -1,11 +1,11 @@
-use encase::WgslType;
+use encase::ShaderType;
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct S {
     x: f32,
 }
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct WrappedF32 {
     #[size(16)]
     elem: f32,
@@ -14,7 +14,7 @@ struct WrappedF32 {
 #[test]
 #[should_panic]
 fn test_struct() {
-    #[derive(WgslType)]
+    #[derive(ShaderType)]
     struct TestStruct {
         a: u32,
         b: S,
@@ -26,7 +26,7 @@ fn test_struct() {
 #[test]
 #[should_panic]
 fn test_array() {
-    #[derive(WgslType)]
+    #[derive(ShaderType)]
     struct TestArray {
         a: u32,
         b: [WrappedF32; 1],
@@ -38,7 +38,7 @@ fn test_array() {
 #[test]
 #[should_panic]
 fn test_struct_first() {
-    #[derive(WgslType)]
+    #[derive(ShaderType)]
     struct TestStructFirst {
         a: S,
         b: f32,
@@ -50,7 +50,7 @@ fn test_struct_first() {
 #[test]
 #[should_panic]
 fn test_array_stride() {
-    #[derive(WgslType)]
+    #[derive(ShaderType)]
     struct TestArrayStride {
         a: [u32; 8],
     }
@@ -61,7 +61,7 @@ fn test_array_stride() {
 #[test]
 #[should_panic]
 fn test_rts_array() {
-    #[derive(WgslType)]
+    #[derive(ShaderType)]
     struct TestRTSArray {
         #[size(runtime)]
         a: Vec<f32>,

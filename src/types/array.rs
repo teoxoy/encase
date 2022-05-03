@@ -1,5 +1,5 @@
 use crate::core::{
-    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, Size, SizeValue, WgslType,
+    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderType, Size, SizeValue,
     WriteInto, Writer,
 };
 
@@ -18,7 +18,7 @@ impl Metadata<ArrayMetadata> {
     }
 }
 
-impl<T: WgslType + Size, const N: usize> WgslType for [T; N] {
+impl<T: ShaderType + Size, const N: usize> ShaderType for [T; N] {
     type ExtraMetadata = ArrayMetadata;
     const METADATA: Metadata<Self::ExtraMetadata> = {
         let alignment = T::METADATA.alignment();
@@ -42,7 +42,7 @@ impl<T: WgslType + Size, const N: usize> WgslType for [T; N] {
 
     const UNIFORM_COMPAT_ASSERT: fn() = || {
         crate::utils::consume_zsts([
-            <T as WgslType>::UNIFORM_COMPAT_ASSERT(),
+            <T as ShaderType>::UNIFORM_COMPAT_ASSERT(),
             if let Some(min_alignment) = Self::METADATA.uniform_min_alignment() {
                 const_panic::concat_assert!(
                     min_alignment.is_aligned(Self::METADATA.stride().get()),
@@ -61,7 +61,7 @@ impl<T: Size, const N: usize> Size for [T; N] {}
 
 impl<T: WriteInto, const N: usize> WriteInto for [T; N]
 where
-    Self: WgslType<ExtraMetadata = ArrayMetadata>,
+    Self: ShaderType<ExtraMetadata = ArrayMetadata>,
 {
     fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
         for item in self {
@@ -73,7 +73,7 @@ where
 
 impl<T: ReadFrom, const N: usize> ReadFrom for [T; N]
 where
-    Self: WgslType<ExtraMetadata = ArrayMetadata>,
+    Self: ShaderType<ExtraMetadata = ArrayMetadata>,
 {
     fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
         for elem in self {
@@ -85,7 +85,7 @@ where
 
 impl<T: CreateFrom, const N: usize> CreateFrom for [T; N]
 where
-    Self: WgslType<ExtraMetadata = ArrayMetadata>,
+    Self: ShaderType<ExtraMetadata = ArrayMetadata>,
 {
     fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
         crate::utils::ArrayExt::from_fn(|_| {

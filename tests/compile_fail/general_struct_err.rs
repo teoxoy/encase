@@ -1,6 +1,6 @@
-use encase::WgslType;
+use encase::ShaderType;
 
 fn main() {}
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct Test;

@@ -1,8 +1,8 @@
-/// Used to implement `WgslType` for the given wrapper type
+/// Used to implement `ShaderType` for the given wrapper type
 ///
 /// # Args
 ///
-/// - `$type` the type (representing a wrapper) for which `WgslType` will be imeplemented for
+/// - `$type` the type (representing a wrapper) for which `ShaderType` will be imeplemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
@@ -36,9 +36,9 @@ macro_rules! impl_wrapper_inner {
     (__inner, ($type:ty, $($generics:tt)*); ) => {};
 
     (__ref, ($type:ty, $($generics:tt)*); { $($get_ref:tt)* }) => {
-        impl<$($generics)*> $crate::private::WgslType for $type
+        impl<$($generics)*> $crate::private::ShaderType for $type
         where
-            T: $crate::private::WgslType
+            T: $crate::private::ShaderType
         {
             type ExtraMetadata = T::ExtraMetadata;
             const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = T::METADATA;
@@ -46,7 +46,7 @@ macro_rules! impl_wrapper_inner {
             const UNIFORM_COMPAT_ASSERT: fn() = T::UNIFORM_COMPAT_ASSERT;
 
             fn size(&self) -> ::core::num::NonZeroU64 {
-                <T as $crate::private::WgslType>::size(&self$($get_ref)*)
+                <T as $crate::private::ShaderType>::size(&self$($get_ref)*)
             }
         }
         impl<$($generics)*> $crate::private::Size for $type

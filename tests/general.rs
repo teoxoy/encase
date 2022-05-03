@@ -1,4 +1,4 @@
-use encase::{ArrayLength, CalculateSizeFor, StorageBuffer, WgslType};
+use encase::{ArrayLength, CalculateSizeFor, StorageBuffer, ShaderType};
 
 macro_rules! gen {
     ($rng:ident, $ty:ty) => {{
@@ -27,7 +27,7 @@ macro_rules! gen_inner {
     }};
 }
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct A {
     f: f32,
     u: u32,

@@ -49,7 +49,7 @@ impl<E> Metadata<E> {
 }
 
 /// Base trait for all [WGSL host-shareable types](https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types)
-pub trait WgslType {
+pub trait ShaderType {
     #[doc(hidden)]
     type ExtraMetadata;
     #[doc(hidden)]
@@ -93,21 +93,21 @@ pub trait WgslType {
     /// uniform address space restrictions on stored values
     ///
     /// ```should_panic
-    /// # use crate::encase::WgslType;
+    /// # use crate::encase::ShaderType;
     /// <Vec<mint::Vector4<f32>>>::assert_uniform_compat();
     /// ```
     ///
     /// Will panic since the stride is 4 bytes
     ///
     /// ```should_panic
-    /// # use crate::encase::WgslType;
+    /// # use crate::encase::ShaderType;
     /// <[f32; 2]>::assert_uniform_compat();
     /// ```
     ///
     /// Will not panic since the stride is 16 bytes
     ///
     /// ```
-    /// # use crate::encase::WgslType;
+    /// # use crate::encase::ShaderType;
     /// # use mint;
     /// <[mint::Vector4<f32>; 2]>::assert_uniform_compat();
     /// ```
@@ -118,9 +118,9 @@ pub trait WgslType {
     /// uniform address space restrictions on stored values
     ///
     /// ```should_panic
-    /// # use crate::encase::WgslType;
+    /// # use crate::encase::ShaderType;
     /// # use mint;
-    /// #[derive(WgslType)]
+    /// #[derive(ShaderType)]
     /// struct Invalid {
     ///     #[size(runtime)]
     ///     vec: Vec<mint::Vector4<f32>>
@@ -131,13 +131,13 @@ pub trait WgslType {
     /// Will panic since the inner struct's size must be a multiple of 16
     ///
     /// ```should_panic
-    /// # use crate::encase::WgslType;
-    /// #[derive(WgslType)]
+    /// # use crate::encase::ShaderType;
+    /// #[derive(ShaderType)]
     /// struct S {
     ///     x: f32,
     /// }
     ///
-    /// #[derive(WgslType)]
+    /// #[derive(ShaderType)]
     /// struct Invalid {
     ///     a: f32,
     ///     b: S, // offset between fields 'a' and 'b' must be at least 16 (currently: 4)
@@ -148,12 +148,12 @@ pub trait WgslType {
     /// Will not panic (fixed via align attribute)
     ///
     /// ```
-    /// # use crate::encase::WgslType;
-    /// # #[derive(WgslType)]
+    /// # use crate::encase::ShaderType;
+    /// # #[derive(ShaderType)]
     /// # struct S {
     /// #     x: f32,
     /// # }
-    /// #[derive(WgslType)]
+    /// #[derive(ShaderType)]
     /// struct Valid {
     ///     a: f32,
     ///     #[align(16)]
@@ -165,12 +165,12 @@ pub trait WgslType {
     /// Will not panic (fixed via size attribute)
     ///
     /// ```
-    /// # use crate::encase::WgslType;
-    /// # #[derive(WgslType)]
+    /// # use crate::encase::ShaderType;
+    /// # #[derive(ShaderType)]
     /// # struct S {
     /// #     x: f32,
     /// # }
-    /// #[derive(WgslType)]
+    /// #[derive(ShaderType)]
     /// struct Valid {
     ///     #[size(16)]
     ///     a: f32,
@@ -202,8 +202,8 @@ pub trait WgslType {
 }
 
 /// Trait implemented for all [WGSL fixed-footprint types](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types)
-pub trait Size: WgslType {
-    /// Represents [WGSL Size](https://gpuweb.github.io/gpuweb/wgsl/#alignment-and-size) (equivalent to [`WgslType::min_size`])
+pub trait Size: ShaderType {
+    /// Represents [WGSL Size](https://gpuweb.github.io/gpuweb/wgsl/#alignment-and-size) (equivalent to [`ShaderType::min_size`])
     const SIZE: NonZeroU64 = Self::METADATA.min_size().0;
 }
 

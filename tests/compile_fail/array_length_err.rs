@@ -1,8 +1,8 @@
-use encase::{ArrayLength, WgslType};
+use encase::{ArrayLength, ShaderType};
 
 fn main() {}
 
-#[derive(WgslType)]
+#[derive(ShaderType)]
 struct Test {
     a: ArrayLength,
     b: ArrayLength,
