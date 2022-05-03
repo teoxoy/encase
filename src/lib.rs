@@ -24,15 +24,6 @@
 ///
 /// # Attributes
 ///
-/// Struct attributes
-///
-/// - `#[assert_uniform_compat]`
-/// used to assert at compile time that the struct meets the requirements of the
-/// [uniform address space restrictions on stored values](https://gpuweb.github.io/gpuweb/wgsl/#address-spaces-uniform) and the
-/// [uniform address space layout constraints](https://gpuweb.github.io/gpuweb/wgsl/#address-space-layout-constraints).
-///
-///     You can also use [`WgslType::assert_uniform_compat()`] instead
-///
 /// Field attributes
 ///
 /// - `#[align(X)]` where `X` is a power of 2 [`u32`] literal (equivalent to [WGSL align attribute](https://gpuweb.github.io/gpuweb/wgsl/#attribute-align))
@@ -50,8 +41,6 @@
 /// # Note about generics
 ///
 /// While structs using generic type parameters are supported by this derive macro
-///
-/// - the `#[assert_uniform_compat]` attribute won't work with such a struct
 ///
 /// - the `#[align(X)]` and `#[size(X)]` attributes will only work
 /// if they are attached to fields whose type contains no generic type parameters
@@ -83,75 +72,6 @@
 ///     length: ArrayLength,
 ///     #[size(runtime)]
 ///     positions: Vec<mint::Point2<f32>>
-/// }
-/// ```
-///
-/// Assert uniform address space requirements
-///
-/// _Will not compile since runtime-sized arrays are not compatible with the
-/// uniform address space restrictions on stored values_
-///
-/// ```compile_fail,E0080
-/// # use crate::encase::WgslType;
-/// # use mint;
-/// #[derive(WgslType)]
-/// #[assert_uniform_compat]
-/// struct Invalid {
-///     #[size(runtime)]
-///     vec: Vec<mint::Vector4<f32>>
-/// }
-/// ```
-///
-/// _Will not compile since the inner struct's size must be a multiple of 16_
-///
-/// ```compile_fail,E0080
-/// # use crate::encase::WgslType;
-/// #[derive(WgslType)]
-/// struct S {
-///     x: f32,
-/// }
-///
-/// #[derive(WgslType)]
-/// #[assert_uniform_compat]
-/// struct Invalid {
-///     a: f32,
-///     b: S, // offset between fields 'a' and 'b' must be at least 16 (currently: 4)
-/// }
-/// ```
-///
-/// _Will compile (fixed via align attribute)_
-///
-/// ```
-/// # use crate::encase::WgslType;
-/// # #[derive(WgslType)]
-/// # struct S {
-/// #     x: f32,
-/// # }
-///
-/// #[derive(WgslType)]
-/// #[assert_uniform_compat]
-/// struct Valid {
-///     a: f32,
-///     #[align(16)]
-///     b: S,
-/// }
-/// ```
-///
-/// _Will compile (fixed via size attribute)_
-///
-/// ```
-/// # use crate::encase::WgslType;
-/// # #[derive(WgslType)]
-/// # struct S {
-/// #     x: f32,
-/// # }
-///
-/// #[derive(WgslType)]
-/// #[assert_uniform_compat]
-/// struct Valid {
-///     #[size(16)]
-///     a: f32,
-///     b: S,
 /// }
 /// ```
 ///

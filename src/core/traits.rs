@@ -79,38 +79,107 @@ pub trait WgslType {
     }
 
     #[doc(hidden)]
-    const UNIFORM_COMPAT_ASSERT: () = ();
+    const UNIFORM_COMPAT_ASSERT: fn() = || {};
 
-    /// Asserts at compile time that `Self` meets the requirements of the
+    /// Asserts that `Self` meets the requirements of the
     /// [uniform address space restrictions on stored values](https://gpuweb.github.io/gpuweb/wgsl/#address-spaces-uniform) and the
     /// [uniform address space layout constraints](https://gpuweb.github.io/gpuweb/wgsl/#address-space-layout-constraints)
     ///
     /// # Examples
     ///
-    /// Will not compile since runtime-sized arrays are not compatible with the
+    /// ## Array
+    ///
+    /// Will panic since runtime-sized arrays are not compatible with the
     /// uniform address space restrictions on stored values
     ///
-    /// ```compile_fail,E0080
+    /// ```should_panic
     /// # use crate::encase::WgslType;
     /// <Vec<mint::Vector4<f32>>>::assert_uniform_compat();
     /// ```
     ///
-    /// Will not compile since the stride is 4 bytes
+    /// Will panic since the stride is 4 bytes
     ///
-    /// ```compile_fail,E0080
+    /// ```should_panic
     /// # use crate::encase::WgslType;
     /// <[f32; 2]>::assert_uniform_compat();
     /// ```
     ///
-    /// Will compile since the stride is 16 bytes
+    /// Will not panic since the stride is 16 bytes
     ///
     /// ```
     /// # use crate::encase::WgslType;
     /// # use mint;
     /// <[mint::Vector4<f32>; 2]>::assert_uniform_compat();
     /// ```
+    ///
+    /// ## Struct
+    ///
+    /// Will panic since runtime-sized arrays are not compatible with the
+    /// uniform address space restrictions on stored values
+    ///
+    /// ```should_panic
+    /// # use crate::encase::WgslType;
+    /// # use mint;
+    /// #[derive(WgslType)]
+    /// struct Invalid {
+    ///     #[size(runtime)]
+    ///     vec: Vec<mint::Vector4<f32>>
+    /// }
+    /// Invalid::assert_uniform_compat();
+    /// ```
+    ///
+    /// Will panic since the inner struct's size must be a multiple of 16
+    ///
+    /// ```should_panic
+    /// # use crate::encase::WgslType;
+    /// #[derive(WgslType)]
+    /// struct S {
+    ///     x: f32,
+    /// }
+    ///
+    /// #[derive(WgslType)]
+    /// struct Invalid {
+    ///     a: f32,
+    ///     b: S, // offset between fields 'a' and 'b' must be at least 16 (currently: 4)
+    /// }
+    /// Invalid::assert_uniform_compat();
+    /// ```
+    ///
+    /// Will not panic (fixed via align attribute)
+    ///
+    /// ```
+    /// # use crate::encase::WgslType;
+    /// # #[derive(WgslType)]
+    /// # struct S {
+    /// #     x: f32,
+    /// # }
+    /// #[derive(WgslType)]
+    /// struct Valid {
+    ///     a: f32,
+    ///     #[align(16)]
+    ///     b: S,
+    /// }
+    /// Valid::assert_uniform_compat();
+    /// ```
+    ///
+    /// Will not panic (fixed via size attribute)
+    ///
+    /// ```
+    /// # use crate::encase::WgslType;
+    /// # #[derive(WgslType)]
+    /// # struct S {
+    /// #     x: f32,
+    /// # }
+    /// #[derive(WgslType)]
+    /// struct Valid {
+    ///     #[size(16)]
+    ///     a: f32,
+    ///     b: S,
+    /// }
+    /// Valid::assert_uniform_compat();
+    /// ```
     fn assert_uniform_compat() {
-        Self::UNIFORM_COMPAT_ASSERT
+        Self::UNIFORM_COMPAT_ASSERT()
     }
 
     // fn assert_can_write_into()

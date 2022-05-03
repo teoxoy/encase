@@ -1,7 +1,6 @@
 use encase::{UniformBuffer, WgslType};
 
 #[derive(Debug, WgslType, PartialEq, Eq)]
-#[assert_uniform_compat]
 struct TestUniform {
     a: u32,
     b: u32,

@@ -9,7 +9,7 @@ use syn::{
     Data, DataStruct, DeriveInput, Error, Fields, FieldsNamed, GenericParam, LitInt, Path, Type,
 };
 
-#[proc_macro_derive(WgslType, attributes(assert_uniform_compat, align, size))]
+#[proc_macro_derive(WgslType, attributes(align, size))]
 pub fn derive_wgsl_struct(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let expanded = emit(input);
@@ -174,11 +174,6 @@ fn emit(input: DeriveInput) -> TokenStream {
         Err(e) => return e.into_compile_error(),
     };
 
-    let assert_uniform_compat = input
-        .attrs
-        .iter()
-        .any(|attr| attr.path.is_ident("assert_uniform_compat"));
-
     let last_field_index = fields.named.len() - 1;
 
     let mut errors = Errors::new();
@@ -333,7 +328,7 @@ fn emit(input: DeriveInput) -> TokenStream {
     let uniform_check = field_data.iter().enumerate().map(|(i, data)| {
         let ty = &data.field.ty;
         let ty_check = quote_spanned! {ty.span()=>
-            <#ty as #root::WgslType>::UNIFORM_COMPAT_ASSERT
+            <#ty as #root::WgslType>::UNIFORM_COMPAT_ASSERT()
         };
         let ident = data.ident();
         let name = ident.to_string();
@@ -535,14 +530,6 @@ fn emit(input: DeriveInput) -> TokenStream {
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
-    let assert_uniform_compat = if assert_uniform_compat {
-        quote! {
-            const _: () = <#name as #root::WgslType>::UNIFORM_COMPAT_ASSERT;
-        }
-    } else {
-        TokenStream::new()
-    };
-
     let set_contained_rt_sized_array_length = if is_runtime_sized {
         quote! {
             writer.ctx.rts_array_length = ::core::option::Option::Some(
@@ -583,8 +570,6 @@ fn emit(input: DeriveInput) -> TokenStream {
 
         #( #size_check )*
 
-        #assert_uniform_compat
-
         impl #impl_generics #root::WgslType for #name #ty_generics #where_clause
         where
             #( #all_other: #root::WgslType + #root::Size, )*
@@ -616,7 +601,7 @@ fn emit(input: DeriveInput) -> TokenStream {
                 }
             };
 
-            const UNIFORM_COMPAT_ASSERT: () = #root::consume_zsts([
+            const UNIFORM_COMPAT_ASSERT: fn() = || #root::consume_zsts([
                 #( #uniform_check, )*
             ]);
 

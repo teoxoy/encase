@@ -3,7 +3,6 @@ use encase::WgslType;
 fn main() {}
 
 #[derive(WgslType)]
-#[assert_uniform_compat]
 struct TestAttributes {
     #[align(16)]
     a: u32,

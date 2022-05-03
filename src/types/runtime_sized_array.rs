@@ -141,7 +141,7 @@ macro_rules! impl_rts_array_inner {
                 }
             };
 
-            const UNIFORM_COMPAT_ASSERT: () =
+            const UNIFORM_COMPAT_ASSERT: fn() = ||
                 ::core::panic!("runtime-sized array can't be used in uniform buffers");
 
             fn size(&self) -> ::core::num::NonZeroU64 {

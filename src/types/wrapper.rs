@@ -43,7 +43,7 @@ macro_rules! impl_wrapper_inner {
             type ExtraMetadata = T::ExtraMetadata;
             const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = T::METADATA;
 
-            const UNIFORM_COMPAT_ASSERT: () = T::UNIFORM_COMPAT_ASSERT;
+            const UNIFORM_COMPAT_ASSERT: fn() = T::UNIFORM_COMPAT_ASSERT;
 
             fn size(&self) -> ::core::num::NonZeroU64 {
                 <T as $crate::private::WgslType>::size(&self$($get_ref)*)

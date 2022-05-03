@@ -40,19 +40,21 @@ impl<T: WgslType + Size, const N: usize> WgslType for [T; N] {
         }
     };
 
-    const UNIFORM_COMPAT_ASSERT: () = crate::utils::consume_zsts([
-        <T as WgslType>::UNIFORM_COMPAT_ASSERT,
-        if let Some(min_alignment) = Self::METADATA.uniform_min_alignment() {
-            const_panic::concat_assert!(
-                min_alignment.is_aligned(Self::METADATA.stride().get()),
-                "array stride must be a multiple of ",
-                min_alignment.get(),
-                " (current stride: ",
-                Self::METADATA.stride().get(),
-                ")"
-            )
-        },
-    ]);
+    const UNIFORM_COMPAT_ASSERT: fn() = || {
+        crate::utils::consume_zsts([
+            <T as WgslType>::UNIFORM_COMPAT_ASSERT(),
+            if let Some(min_alignment) = Self::METADATA.uniform_min_alignment() {
+                const_panic::concat_assert!(
+                    min_alignment.is_aligned(Self::METADATA.stride().get()),
+                    "array stride must be a multiple of ",
+                    min_alignment.get(),
+                    " (current stride: ",
+                    Self::METADATA.stride().get(),
+                    ")"
+                )
+            },
+        ])
+    };
 }
 
 impl<T: Size, const N: usize> Size for [T; N] {}
