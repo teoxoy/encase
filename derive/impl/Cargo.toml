@@ -1,17 +1,16 @@
 [package]
-name = "encase_derive"
+name = "encase_derive_impl"
 version = "0.1.3"
 edition = "2021"
 
 license = "MIT-0"
-description = "Derive macro for encase"
+description = "Derive macro implementation for encase"
 repository = "https://github.com/teoxoy/encase"
 documentation = "https://docs.rs/encase"
 keywords = ["wgsl", "wgpu"]
 categories = ["rendering"]
 
-[lib]
-proc-macro = true
-
 [dependencies]
-encase_derive_impl = { version = "=0.1.3", path = "./impl" }
+syn = "1.0.56"
+quote = "1"
+proc-macro2 = "1"
