@@ -1,6 +1,6 @@
 [package]
 name = "encase_derive"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 
 license = "MIT-0"
@@ -14,4 +14,4 @@ categories = ["rendering"]
 proc-macro = true
 
 [dependencies]
-encase_derive_impl = { version = "=0.1.3", path = "./impl" }
+encase_derive_impl = { version = "=0.2.0", path = "./impl" }

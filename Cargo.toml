@@ -1,6 +1,6 @@
 [package]
 name = "encase"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.57"
 
@@ -32,7 +32,7 @@ members = ["derive", "derive/impl"]
 criterion = { git = "https://github.com/bheisler/criterion.rs", rev = "6929f48e4828360de038f4e9732066d85b9a57c6" }
 
 [dependencies]
-encase_derive = { version = "=0.1.3", path = "derive" }
+encase_derive = { version = "=0.2.0", path = "derive" }
 
 thiserror = { version = "1", default-features = false }
 const_panic = { version = "0.2", default-features = false }
