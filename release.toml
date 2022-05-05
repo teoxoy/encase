@@ -1,0 +1,3 @@
+shared-version = true
+tag-name = "v{{version}}"
+tag-message = ""
