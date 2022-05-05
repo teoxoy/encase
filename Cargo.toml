@@ -40,7 +40,7 @@ const_panic = { version = "0.2", default-features = false }
 mint = { version = "0.5.9", default-features = false, optional = true }
 cgmath = { version = "0.18", default-features = false, optional = true }
 glam = { version = "0.20", features = [ "num-traits" ], default-features = false, optional = true }
-nalgebra = { version = "0.30", default-features = false, optional = true }
+nalgebra = { version = "0.31", default-features = false, optional = true }
 ultraviolet = { version = "0.9", features = [ "int" ], default-features = false, optional = true }
 vek = { version = "0.15", default-features = false, optional = true }
 smallvec = { version = "1.8.0", features = ["const_generics"], default-features = false, optional = true }
@@ -51,7 +51,7 @@ rpds = { version = "0.11", default-features = false, optional = true }
 archery = { version = "0.4", default-features = false, optional = true }
 im = { version = "15", default-features = false, optional = true }
 im-rc = { version = "15", default-features = false, optional = true }
-imbl = { version = "1", default-features = false, optional = true }
+imbl = { version = "2", default-features = false, optional = true }
 static-rc = { version = "0.5", features = ["alloc"], default-features = false, optional = true }
 
 [dev-dependencies]
@@ -60,5 +60,5 @@ rand = { version = "0.8", features = ["std_rng"], default-features = false }
 mimalloc = { version = "0.1", default-features = false }
 wgpu = { version = "0.12", default-features = false }
 futures = { version = "0.3", features = ["executor"], default-features = false }
-pprof = { version = "0.6", features = ["criterion", "flamegraph"], default-features = false }
+pprof = { version = "0.8", features = ["criterion", "flamegraph"], default-features = false }
 trybuild = { version = "1", default-features = false }
