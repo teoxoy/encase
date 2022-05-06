@@ -1,7 +1,4 @@
-use encase::{
-    ArrayLength, DynamicStorageBuffer, DynamicUniformBuffer, ShaderType, StorageBuffer,
-    UniformBuffer,
-};
+use encase::{ArrayLength, ShaderType, StorageBuffer};
 use futures::executor::block_on;
 use mint::{Vector2, Vector3};
 use wgpu::{include_wgsl, util::DeviceExt};

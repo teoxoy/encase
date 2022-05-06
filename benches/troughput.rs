@@ -117,7 +117,7 @@ fn bench(c: &mut Criterion) {
 
     const KB: usize = 1024;
     const MB: usize = KB * KB;
-    const GB: usize = MB * KB;
+    // const GB: usize = MB * KB;
 
     let sizes = [
         // ("16B", 16),
@@ -148,7 +148,7 @@ fn bench(c: &mut Criterion) {
         group.bench_function(format!("{}_create", name), |b| {
             b.iter_batched_ref(
                 || create_vecs(a, size),
-                |(src, dst)| dst.create::<Vec<A>>().unwrap(),
+                |(_src, dst)| dst.create::<Vec<A>>().unwrap(),
                 criterion::BatchSize::LargeInput,
             )
         });
@@ -173,6 +173,7 @@ fn bench(c: &mut Criterion) {
 
 fn manual_memcpy(src: &mut [u8], dst: &[u8]) {
     assert_eq!(src.len(), dst.len());
+    #[allow(clippy::manual_memcpy)]
     for i in 0..src.len() {
         src[i] = dst[i];
     }
