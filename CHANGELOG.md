@@ -2,6 +2,10 @@
 
 <!-- ## Unreleased -->
 
+## v0.2.1 (2022-06-14)
+
+- Fix padding not being generated for one field structs
+
 ## v0.2.0 (2022-05-05)
 
 - Renamed `WgslType` to `ShaderType`
