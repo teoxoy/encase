@@ -385,72 +385,52 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
 
     let alignments = field_data.iter().map(|data| data.alignment(root));
 
-    let paddings = field_data
-        .iter()
-        .take(last_field_index)
-        .zip(field_data.iter().skip(1))
-        .enumerate()
-        .map(|(i, (prev, current))| {
-            let is_first = i == 0;
-            let is_last = i == last_field_index - 1;
+    let paddings = field_data.iter().enumerate().map(|(i, current)| {
+        let is_first = i == 0;
+        let is_last = i == field_data.len() - 1;
+
+        let mut out = TokenStream::new();
+
+        if !is_first {
+            let prev_i = i - 1;
 
             let alignment = current.alignment(root);
-            let size = current.size(root);
 
-            let curr_i = Literal::usize_suffixed(i);
-            let curr_offset_i = Literal::usize_suffixed(i + 1);
-            let mut padding = quote! {
-                offsets[#curr_offset_i] = #alignment.round_up(offset);
+            let extra_padding = field_data
+                .get(prev_i)
+                .and_then(|prev| prev.extra_padding(root))
+                .map(|extra_padding| quote!(+ #extra_padding));
+
+            out.extend(quote! {
+                offsets[#i] = #alignment.round_up(offset);
 
                 let padding = #alignment.padding_needed_for(offset);
-                paddings[#curr_i] = padding;
-            };
-            let extra_padding_for_prev_field = prev.extra_padding(root);
-            if let Some(extra_padding) = extra_padding_for_prev_field {
-                padding.extend(quote! {
-                    paddings[#curr_i] += #extra_padding;
-                });
-            }
+                offset += padding;
+                paddings[#prev_i] = padding #extra_padding;
+            });
+        };
 
-            if is_first {
-                let prev_size = prev.size(root);
-                padding = quote! {
-                    offset += #prev_size;
-                    #padding
-                }
-            }
+        if is_last && is_runtime_sized {
+            return out;
+        }
 
-            let padding_add_to_offset = quote! {
-                #padding
-                offset += padding + #size;
-            };
-
-            if is_last {
-                let last_i = Literal::usize_suffixed(i + 1);
-                if is_runtime_sized {
-                    quote! {
-                        #padding
-                        offset += padding;
-                    }
-                } else {
-                    let mut base = quote! {
-                        #padding_add_to_offset
-                        paddings[#last_i] = struct_alignment.padding_needed_for(offset);
-                    };
-
-                    let extra_padding_for_curr_field = current.extra_padding(root);
-                    if let Some(extra_padding) = extra_padding_for_curr_field {
-                        base.extend(quote! {
-                            paddings[#last_i] += #extra_padding;
-                        });
-                    }
-
-                    base
-                }
-            } else {
-                padding_add_to_offset
-            }
+        let size = current.size(root);
+        out.extend(quote! {
+            offset += #size;
         });
+
+        if is_last {
+            let extra_padding = current
+                .extra_padding(root)
+                .map(|extra_padding| quote!(+ #extra_padding));
+
+            out.extend(quote! {
+                paddings[#i] = struct_alignment.padding_needed_for(offset) #extra_padding;
+            });
+        }
+
+        out
+    });
 
     fn gen_body<'a>(
         field_data: &'a [FieldData],
