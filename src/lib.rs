@@ -78,13 +78,13 @@
 /// Complex
 ///
 /// ```
-/// # use crate::encase::ShaderType;
+/// # use crate::encase::{ShaderType, ShaderSize};
 /// #[derive(ShaderType)]
 /// struct Complex<
 ///     'a,
 ///     'b: 'a,
-///     E: 'a + ShaderType + encase::Size,
-///     T: 'b + ShaderType + encase::Size,
+///     E: 'a + ShaderType + ShaderSize,
+///     T: 'b + ShaderType + ShaderSize,
 ///     const N: usize,
 /// > {
 ///     array: [&'a mut E; N],
@@ -103,8 +103,8 @@ mod types;
 mod impls;
 
 pub use crate::core::{
-    CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderType, Size, StorageBuffer,
-    UniformBuffer,
+    CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,
+    StorageBuffer, UniformBuffer,
 };
 pub use types::runtime_sized_array::ArrayLength;
 
@@ -163,7 +163,7 @@ pub mod private {
     pub use super::utils::consume_zsts;
     pub use super::utils::ArrayExt;
     pub use super::CalculateSizeFor;
+    pub use super::ShaderSize;
     pub use super::ShaderType;
-    pub use super::Size;
     pub use const_panic::concat_assert;
 }

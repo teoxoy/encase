@@ -1,7 +1,7 @@
 use std::collections::{LinkedList, VecDeque};
 
 use crate::core::{
-    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, RuntimeSizedArray, Size,
+    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, RuntimeSizedArray, ShaderSize,
     WriteInto, Writer,
 };
 use crate::ShaderType;
@@ -36,7 +36,7 @@ impl ShaderType for ArrayLength {
     const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
 }
 
-impl Size for ArrayLength {}
+impl ShaderSize for ArrayLength {}
 
 impl WriteInto for ArrayLength {
     fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
@@ -122,13 +122,13 @@ macro_rules! impl_rts_array_inner {
     (__main, $type:ty, $($generics:tt)*) => {
         impl<$($generics)*> $crate::private::ShaderType for $type
         where
-            T: $crate::private::ShaderType + $crate::private::Size,
+            T: $crate::private::ShaderType + $crate::private::ShaderSize,
             Self: $crate::private::Length,
         {
             type ExtraMetadata = $crate::private::ArrayMetadata;
             const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = {
                 let alignment = T::METADATA.alignment();
-                let el_size = $crate::private::SizeValue::from(T::SIZE);
+                let el_size = $crate::private::SizeValue::from(T::SHADER_SIZE);
 
                 let stride = alignment.round_up_size(el_size);
                 let el_padding = alignment.padding_needed_for(el_size.get());

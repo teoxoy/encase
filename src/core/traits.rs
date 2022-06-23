@@ -59,7 +59,7 @@ pub trait ShaderType {
     ///
     /// For [WGSL fixed-footprint types](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types)
     /// it represents [WGSL Size](https://gpuweb.github.io/gpuweb/wgsl/#alignment-and-size)
-    /// (equivalent to [`Size::SIZE`])
+    /// (equivalent to [`ShaderSize::SHADER_SIZE`])
     ///
     /// For
     /// [WGSL runtime-sized arrays](https://gpuweb.github.io/gpuweb/wgsl/#runtime-sized) and
@@ -73,7 +73,7 @@ pub trait ShaderType {
     /// Returns the size of `Self` at runtime
     ///
     /// For [WGSL fixed-footprint types](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types)
-    /// it's equivalent to [`Self::min_size`] and [`Size::SIZE`]
+    /// it's equivalent to [`Self::min_size`] and [`ShaderSize::SHADER_SIZE`]
     fn size(&self) -> NonZeroU64 {
         Self::METADATA.min_size().0
     }
@@ -202,9 +202,9 @@ pub trait ShaderType {
 }
 
 /// Trait implemented for all [WGSL fixed-footprint types](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types)
-pub trait Size: ShaderType {
+pub trait ShaderSize: ShaderType {
     /// Represents [WGSL Size](https://gpuweb.github.io/gpuweb/wgsl/#alignment-and-size) (equivalent to [`ShaderType::min_size`])
-    const SIZE: NonZeroU64 = Self::METADATA.min_size().0;
+    const SHADER_SIZE: NonZeroU64 = Self::METADATA.min_size().0;
 }
 
 /// Trait implemented for
