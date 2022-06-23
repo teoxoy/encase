@@ -66,7 +66,7 @@ impl FieldData {
         } else {
             let ty = &self.field.ty;
             quote! {
-                <#ty as #root::Size>::SIZE.get()
+                <#ty as #root::ShaderSize>::SHADER_SIZE.get()
             }
         }
     }
@@ -89,7 +89,7 @@ impl FieldData {
         self.size.as_ref().map(|(size, _)| {
             let size = Literal::u64_suffixed(*size as u64);
             let ty = &self.field.ty;
-            let original_size = quote! { <#ty as #root::Size>::SIZE.get() };
+            let original_size = quote! { <#ty as #root::ShaderSize>::SHADER_SIZE.get() };
             quote!(#size.saturating_sub(#original_size))
         })
     }
@@ -271,9 +271,9 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         if is_runtime_sized {
             quote!(#root::ShaderType + #root::RuntimeSizedArray)
         } else {
-            quote!(#root::ShaderType + #root::Size)
+            quote!(#root::ShaderType + #root::ShaderSize)
         },
-        quote!(#root::ShaderType + #root::Size),
+        quote!(#root::ShaderType + #root::ShaderSize),
     );
 
     let mut lifetimes = input.generics.clone();
@@ -319,7 +319,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                         #[track_caller]
                         #[allow(clippy::extra_unused_lifetimes)]
                         const fn check #impl_generics () {
-                            let size = <#ty as #root::Size>::SIZE.get();
+                            let size = <#ty as #root::ShaderSize>::SHADER_SIZE.get();
                             #root::concat_assert!(
                                 size <= #size,
                                 "size attribute value must be at least ", size, " (field's type size)"
@@ -363,7 +363,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                     let offset = <Self as #root::ShaderType>::METADATA.offset(#i);
                     let diff = offset - prev_offset;
 
-                    let prev_size = <#prev_field_ty as #root::Size>::SIZE.get();
+                    let prev_size = <#prev_field_ty as #root::ShaderSize>::SHADER_SIZE.get();
                     let prev_size = min_alignment.round_up(prev_size);
 
                     #root::concat_assert!(
@@ -542,9 +542,9 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
             }
         },
         false => quote! {
-            impl #impl_generics #root::Size for #name #ty_generics
+            impl #impl_generics #root::ShaderSize for #name #ty_generics
             where
-                #( #field_types: #root::Size, )*
+                #( #field_types: #root::ShaderSize, )*
             {}
         },
     };
@@ -558,7 +558,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
 
         impl #impl_generics #root::ShaderType for #name #ty_generics #where_clause
         where
-            #( #all_other: #root::ShaderType + #root::Size, )*
+            #( #all_other: #root::ShaderType + #root::ShaderSize, )*
             #last_field_type: #root::ShaderType,
         {
             type ExtraMetadata = #root::StructMetadata<#nr_of_fields>;

@@ -49,11 +49,11 @@ macro_rules! impl_wrapper_inner {
                 <T as $crate::private::ShaderType>::size(&self$($get_ref)*)
             }
         }
-        impl<$($generics)*> $crate::private::Size for $type
+        impl<$($generics)*> $crate::private::ShaderSize for $type
         where
-            T: $crate::private::Size
+            T: $crate::private::ShaderSize
         {
-            const SIZE: ::core::num::NonZeroU64 = T::SIZE;
+            const SHADER_SIZE: ::core::num::NonZeroU64 = T::SHADER_SIZE;
         }
 
         impl<$($generics)*> $crate::private::RuntimeSizedArray for $type

@@ -1,6 +1,6 @@
 use crate::core::{
-    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderType, Size, SizeValue,
-    WriteInto, Writer,
+    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderSize, ShaderType,
+    SizeValue, WriteInto, Writer,
 };
 
 pub struct ArrayMetadata {
@@ -18,11 +18,11 @@ impl Metadata<ArrayMetadata> {
     }
 }
 
-impl<T: ShaderType + Size, const N: usize> ShaderType for [T; N] {
+impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
     type ExtraMetadata = ArrayMetadata;
     const METADATA: Metadata<Self::ExtraMetadata> = {
         let alignment = T::METADATA.alignment();
-        let el_size = SizeValue::from(T::SIZE);
+        let el_size = SizeValue::from(T::SHADER_SIZE);
 
         let stride = alignment.round_up_size(el_size);
         let el_padding = alignment.padding_needed_for(el_size.get());
@@ -57,7 +57,7 @@ impl<T: ShaderType + Size, const N: usize> ShaderType for [T; N] {
     };
 }
 
-impl<T: Size, const N: usize> Size for [T; N] {}
+impl<T: ShaderSize, const N: usize> ShaderSize for [T; N] {}
 
 impl<T: WriteInto, const N: usize> WriteInto for [T; N]
 where

@@ -103,7 +103,7 @@ struct Test {
 #[derive(::encase::ShaderType)]
 struct TestGeneric<
     'a,
-    T: 'a + ::encase::ShaderType + ::encase::Size,
+    T: 'a + ::encase::ShaderType + ::encase::ShaderSize,
     const N: ::core::primitive::usize,
 > {
     #[size(90)]

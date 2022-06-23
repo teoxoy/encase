@@ -109,11 +109,11 @@ macro_rules! impl_vector_inner {
 
         impl<$($generics)*> $crate::private::ShaderType for $type
         where
-            $el_ty: $crate::private::Size,
+            $el_ty: $crate::private::ShaderSize,
         {
             type ExtraMetadata = ();
             const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = {
-                let size = $crate::private::SizeValue::from(<$el_ty as $crate::private::Size>::SIZE).mul($n);
+                let size = $crate::private::SizeValue::from(<$el_ty as $crate::private::ShaderSize>::SHADER_SIZE).mul($n);
                 let alignment = $crate::private::AlignmentValue::from_next_power_of_two_size(size);
 
                 $crate::private::Metadata {
@@ -125,9 +125,9 @@ macro_rules! impl_vector_inner {
             };
         }
 
-        impl<$($generics)*> $crate::private::Size for $type
+        impl<$($generics)*> $crate::private::ShaderSize for $type
         where
-            $el_ty: $crate::private::Size
+            $el_ty: $crate::private::ShaderSize
         {}
 
         impl<$($generics)*> $crate::private::WriteInto for $type

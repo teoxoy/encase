@@ -1,6 +1,6 @@
 use crate::core::{
-    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderType, Size, WriteInto,
-    Writer,
+    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderSize, ShaderType,
+    WriteInto, Writer,
 };
 use core::num::{NonZeroI32, NonZeroU32, Wrapping};
 use core::sync::atomic::{AtomicI32, AtomicU32};
@@ -12,7 +12,7 @@ macro_rules! impl_basic_traits {
             const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
         }
 
-        impl Size for $type {}
+        impl ShaderSize for $type {}
     };
 }
 
