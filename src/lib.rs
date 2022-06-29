@@ -165,5 +165,4 @@ pub mod private {
     pub use super::CalculateSizeFor;
     pub use super::ShaderType;
     pub use super::Size;
-    pub use const_panic::concat_assert;
 }

@@ -296,9 +296,9 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                         #[allow(clippy::extra_unused_lifetimes)]
                         const fn check #impl_generics () {
                             let alignment = <#ty as #root::ShaderType>::METADATA.alignment().get();
-                            #root::concat_assert!(
+                            ::core::assert!(
                                 alignment <= #align,
-                                "align attribute value must be at least ", alignment, " (field's type alignment)"
+                                "align attribute value must be at least {} (field's type alignment)", alignment
                             )
                         }
                         check();
@@ -320,7 +320,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                         #[allow(clippy::extra_unused_lifetimes)]
                         const fn check #impl_generics () {
                             let size = <#ty as #root::Size>::SIZE.get();
-                            #root::concat_assert!(
+                            ::core::assert!(
                                 size <= #size,
                                 "size attribute value must be at least ", size, " (field's type size)"
                             )
@@ -344,10 +344,10 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
             {
                 let offset = <Self as #root::ShaderType>::METADATA.offset(#i);
 
-                #root::concat_assert!(
+                ::core::assert!(
                     min_alignment.is_aligned(offset),
-                    "offset of field '", #name, "' must be a multiple of ", min_alignment.get(),
-                    " (current offset: ", offset, ")"
+                    "offset of field '{}' must be a multiple of {} (current offset: {})",
+                    #name, min_alignment.get(), offset
                 )
             }
         };
@@ -366,10 +366,10 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                     let prev_size = <#prev_field_ty as #root::Size>::SIZE.get();
                     let prev_size = min_alignment.round_up(prev_size);
 
-                    #root::concat_assert!(
+                    ::core::assert!(
                         diff >= prev_size,
-                        "offset between fields '", #prev_ident_name, "' and '", #name, "' must be at least ",
-                        min_alignment.get(), " (currently: ", diff, ")"
+                        "offset between fields '{}' and '{}' must be at least {} (currently: {})",
+                        #prev_ident_name, #name, min_alignment.get(), diff
                     )
                 }
             }

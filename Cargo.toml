@@ -35,7 +35,6 @@ criterion = { git = "https://github.com/bheisler/criterion.rs", rev = "6929f48e4
 encase_derive = { version = "=0.2.1", path = "derive" }
 
 thiserror = { version = "1", default-features = false }
-const_panic = { version = "0.2", default-features = false }
 
 mint = { version = "0.5.9", default-features = false, optional = true }
 cgmath = { version = "0.18", default-features = false, optional = true }

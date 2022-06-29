@@ -44,13 +44,11 @@ impl<T: ShaderType + Size, const N: usize> ShaderType for [T; N] {
         crate::utils::consume_zsts([
             <T as ShaderType>::UNIFORM_COMPAT_ASSERT(),
             if let Some(min_alignment) = Self::METADATA.uniform_min_alignment() {
-                const_panic::concat_assert!(
+                assert!(
                     min_alignment.is_aligned(Self::METADATA.stride().get()),
-                    "array stride must be a multiple of ",
+                    "array stride must be a multiple of {} (current stride: {})",
                     min_alignment.get(),
-                    " (current stride: ",
                     Self::METADATA.stride().get(),
-                    ")"
                 )
             },
         ])

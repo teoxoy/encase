@@ -102,8 +102,9 @@ fn gen_a(rng: &mut rand::rngs::StdRng) -> A {
     }
 }
 
-const _: () = const_panic::concat_assert!(
-    A::METADATA.min_size().get() == 4096,
+const _: () = assert_eq!(
+    A::METADATA.min_size().get(),
+    4096,
     A::METADATA.min_size().get()
 );
 
