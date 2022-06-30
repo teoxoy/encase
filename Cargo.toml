@@ -2,7 +2,7 @@
 name = "encase"
 version = "0.2.1"
 edition = "2021"
-rust-version = "1.58.1"
+rust-version = "1.58"
 
 license = "MIT-0"
 readme = "./README.md"
