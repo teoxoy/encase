@@ -1,6 +1,11 @@
 # Changelog
 
-<!-- ## Unreleased -->
+## v0.3.0 (2022-07-03)
+
+- Renamed `Size::SIZE` to `ShaderSize::SHADER_SIZE`
+- Updated `glam` to v0.21
+- Increased MSRV to 1.58
+- Fix `clippy::missing_const_for_fn` warning
 
 ## v0.2.1 (2022-06-14)
 
