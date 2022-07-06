@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_INCREMENTAL: false
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+  NIGHTLY: nightly-2022-06-24
+
+jobs:
+  msrv_and_minimal_versions:
+    name: Check MSRV and minimal-versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install tools
+        uses: taiki-e/install-action@v1
+        with:
+          tool: sd,cargo-hack
+
+      # workaround for https://github.com/rust-lang/rustup/issues/2925
+      - name: Set environment variables
+        run: |
+          echo "MSRV=$(cargo metadata --format-version=1 --no-deps --offline | sd '.*"rust_version":"([.0-9]+?)".*' '$1')" >> $GITHUB_ENV
+
+      - name: Install MSRV toolchain
+        run: rustup toolchain install $MSRV --no-self-update --profile=minimal
+
+      - name: Install nightly toolchain
+        run: rustup toolchain install $NIGHTLY --no-self-update --profile=minimal
+
+      # -Z avoid-dev-deps doesn't work
+      - run: cargo +$NIGHTLY hack generate-lockfile --remove-dev-deps -Z minimal-versions --offline
+
+      - run: cargo +$MSRV check --workspace --all-features
+
+  format:
+    name: Check format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: cargo fmt --check --all
+
+  clippy:
+    name: Check clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: cargo clippy --all-targets --workspace --all-features -- -D warnings
+
+  doc_tests:
+    name: Run doc tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: cargo test --doc --workspace --features mint,glam
+
+  docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: --cfg docs
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install nightly toolchain
+        run: rustup toolchain install $NIGHTLY --no-self-update --profile=minimal
+
+      - run: cargo +$NIGHTLY doc --workspace --all-features
+
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install tools
+        uses: taiki-e/install-action@v1
+        with:
+          tool: cargo-llvm-cov,cargo-nextest
+
+      - name: Install nightly toolchain
+        run: rustup toolchain install $NIGHTLY --no-self-update --profile=minimal -c llvm-tools-preview
+
+      - name: Install llvmpipe and lavapipe
+        run: |
+          sudo apt-get update -y -qq
+          sudo add-apt-repository ppa:oibaf/graphics-drivers -y
+          sudo apt-get update
+          sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
+
+      - run: cargo +$NIGHTLY llvm-cov nextest --workspace --features mint,glam --fail-under-lines 80
