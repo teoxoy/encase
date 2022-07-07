@@ -105,7 +105,7 @@ fn test_wgpu() {
     assert_eq!(in_byte_buffer.len(), b.size().get() as _);
 
     let shader = include_wgsl!("./shaders/general.wgsl");
-    let out_byte_buffer = in_out::<B, B>(&shader, &in_byte_buffer, false);
+    let out_byte_buffer = in_out::<B, B>(shader, &in_byte_buffer, false);
 
     assert_eq!(in_byte_buffer, out_byte_buffer);
 
@@ -140,7 +140,7 @@ fn array_length() {
     assert_eq!(in_byte_buffer.len(), in_value.size().get() as _);
 
     let shader = include_wgsl!("./shaders/array_length.wgsl");
-    let out_byte_buffer = in_out::<A, A>(&shader, &in_byte_buffer, false);
+    let out_byte_buffer = in_out::<A, A>(shader, &in_byte_buffer, false);
 
     assert_eq!(in_byte_buffer, out_byte_buffer);
 
@@ -151,7 +151,7 @@ fn array_length() {
 }
 
 fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
-    shader: &wgpu::ShaderModuleDescriptor,
+    shader: wgpu::ShaderModuleDescriptor,
     data: &[u8],
     is_uniform: bool,
 ) -> Vec<u8> {
@@ -246,16 +246,15 @@ fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
         let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor::default());
         cpass.set_pipeline(&compute_pipeline);
         cpass.set_bind_group(0, &bind_group, &[]);
-        cpass.dispatch(1, 1, 1);
+        cpass.dispatch_workgroups(1, 1, 1);
     }
 
     queue.submit(core::iter::once(encoder.finish()));
 
     let output_slice = output_gpu_buffer.slice(..);
-    let output_future = output_slice.map_async(wgpu::MapMode::Read);
+    output_slice.map_async(wgpu::MapMode::Read, |_| {});
 
     device.poll(wgpu::Maintain::Wait);
-    block_on(output_future).unwrap();
 
     let output = output_slice.get_mapped_range().to_vec();
     output_gpu_buffer.unmap();
