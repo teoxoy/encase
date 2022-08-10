@@ -189,7 +189,9 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
     where
         T: ShaderType + WriteInto,
     {
-        let offset = self.offset;
+        // Round up the offset to the next multiple of this T's alignment. This allows
+        // T to have a greater alignment than self.alignment.
+        let offset = T::METADATA.alignment.round_up(self.offset as u64) as usize;
 
         let mut writer = Writer::new(value, &mut self.inner, offset)?;
         value.write_into(&mut writer);
