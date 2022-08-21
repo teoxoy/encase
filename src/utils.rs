@@ -70,7 +70,32 @@ pub(crate) trait ByteVecExt {
     ) -> Result<(), std::collections::TryReserveError>;
 }
 
+#[cfg(not(feature = "allocator_api"))]
 impl ByteVecExt for Vec<u8> {
+    fn try_extend_zeroed(
+        &mut self,
+        new_len: usize,
+    ) -> Result<(), std::collections::TryReserveError> {
+        let additional = new_len.saturating_sub(self.len());
+        if additional > 0 {
+            self.try_reserve(additional)?;
+
+            let end = self.as_mut_ptr_range().end;
+            // SAFETY
+            // 1. dst ptr is valid for writes of count * size_of::<T>() bytes since the call to Vec::reserve() succeeded
+            // 2. dst ptr is properly aligned since we got it via Vec::as_mut_ptr_range()
+            unsafe { end.write_bytes(u8::MIN, additional) }
+            // SAFETY
+            // 1. new_len is less than or equal to Vec::capacity() since we reserved at least `additional` elements
+            // 2. The elements at old_len..new_len are initialized since we wrote `additional` bytes
+            unsafe { self.set_len(new_len) }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(feature = "allocator_api")]
+impl<A: std::alloc::Allocator> ByteVecExt for Vec<u8, A> {
     fn try_extend_zeroed(
         &mut self,
         new_len: usize,

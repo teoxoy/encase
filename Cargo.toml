@@ -31,6 +31,9 @@ members = ["derive", "derive/impl"]
 [patch.crates-io]
 criterion = { git = "https://github.com/bheisler/criterion.rs", rev = "6929f48e4828360de038f4e9732066d85b9a57c6" }
 
+[features]
+allocator_api = []
+
 [dependencies]
 encase_derive = { version = "=0.3.0", path = "derive" }
 

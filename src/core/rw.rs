@@ -188,7 +188,19 @@ impl<const LEN: usize> BufferRef for [u8; LEN] {
     }
 }
 
+#[cfg(not(feature = "allocator_api"))]
 impl BufferRef for Vec<u8> {
+    fn len(&self) -> usize {
+        <[u8] as BufferRef>::len(self)
+    }
+
+    fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
+        <[u8] as BufferRef>::read(self, offset)
+    }
+}
+
+#[cfg(feature = "allocator_api")]
+impl<A: std::alloc::Allocator> BufferRef for Vec<u8, A> {
     fn len(&self) -> usize {
         <[u8] as BufferRef>::len(self)
     }
@@ -219,7 +231,24 @@ impl<const LEN: usize> BufferMut for [u8; LEN] {
     }
 }
 
+#[cfg(not(feature = "allocator_api"))]
 impl BufferMut for Vec<u8> {
+    fn capacity(&self) -> usize {
+        self.capacity()
+    }
+
+    fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
+        <[u8] as BufferMut>::write(self, offset, val)
+    }
+
+    fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
+        use crate::utils::ByteVecExt;
+        self.try_extend_zeroed(wanted).map_err(EnlargeError::from)
+    }
+}
+
+#[cfg(feature = "allocator_api")]
+impl<A: std::alloc::Allocator> BufferMut for Vec<u8, A> {
     fn capacity(&self) -> usize {
         self.capacity()
     }

@@ -1,5 +1,6 @@
 #![cfg_attr(docs, feature(doc_cfg))]
 #![cfg_attr(coverage, feature(no_coverage))]
+#![cfg_attr(feature = "allocator_api", feature(allocator_api))]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![warn(
     future_incompatible,
