@@ -176,7 +176,14 @@ fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
     let output_gpu_buffer = device.create_buffer(&wgpu::BufferDescriptor {
         label: Some("Output Buffer"),
         size: data.len() as _,
-        usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::MAP_READ,
+        usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
+        mapped_at_creation: false,
+    });
+
+    let mapping_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some("Mapping Buffer"),
+        size: data.len() as _,
+        usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
         mapped_at_creation: false,
     });
 
@@ -249,14 +256,16 @@ fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
         cpass.dispatch_workgroups(1, 1, 1);
     }
 
+    encoder.copy_buffer_to_buffer(&output_gpu_buffer, 0, &mapping_buffer, 0, data.len() as _);
+
     queue.submit(core::iter::once(encoder.finish()));
 
-    let output_slice = output_gpu_buffer.slice(..);
+    let output_slice = mapping_buffer.slice(..);
     output_slice.map_async(wgpu::MapMode::Read, |_| {});
 
     device.poll(wgpu::Maintain::Wait);
 
     let output = output_slice.get_mapped_range().to_vec();
-    output_gpu_buffer.unmap();
+    mapping_buffer.unmap();
     output
 }

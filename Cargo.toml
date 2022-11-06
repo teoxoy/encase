@@ -58,7 +58,7 @@ static-rc = { version = "0.5", features = ["alloc"], default-features = false, o
 criterion = { version = "0.3", features = ["cargo_bench_support", "html_reports"], default-features = false }
 rand = { version = "0.8", features = ["std_rng"], default-features = false }
 mimalloc = { version = "0.1", default-features = false }
-wgpu = { version = "0.13", default-features = false }
+wgpu = { version = "0.14", default-features = false }
 futures = { version = "0.3", features = ["executor"], default-features = false }
 pprof = { version = "0.8", features = ["criterion", "flamegraph"], default-features = false }
 trybuild = { version = "1", default-features = false }
