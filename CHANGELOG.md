@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0 (2022-11-06)
+
+- Updated `glam` to v0.22
+- Updated `rpds` to v0.12
+- Updated `static-rc` to v0.6
+
 ## v0.3.0 (2022-07-03)
 
 - Renamed `Size::SIZE` to `ShaderSize::SHADER_SIZE`
