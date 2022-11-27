@@ -1,5 +1,5 @@
 #![cfg_attr(docs, feature(doc_cfg))]
-#![cfg_attr(coverage, feature(no_coverage))]
+#![cfg_attr(coverage_nightly, feature(no_coverage))]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![warn(
     future_incompatible,

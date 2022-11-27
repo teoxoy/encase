@@ -1,3 +1,4 @@
+#![cfg(feature="mint")]
 use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer};
 
 macro_rules! gen {
