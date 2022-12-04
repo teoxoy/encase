@@ -1,4 +1,3 @@
-#![cfg(feature = "mint")]
 #![no_implicit_prelude]
 #![allow(non_camel_case_types)]
 

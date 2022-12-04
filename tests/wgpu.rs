@@ -1,4 +1,3 @@
-#![cfg(feature = "mint")]
 use encase::{ArrayLength, ShaderType, StorageBuffer};
 use futures::executor::block_on;
 use mint::{Vector2, Vector3};
