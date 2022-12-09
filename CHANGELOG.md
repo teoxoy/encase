@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.1 (2022-12-09)
+
+- Renamed `coverage` cfg to `coverage_nightly`
+
 ## v0.4.0 (2022-11-06)
 
 - Updated `glam` to v0.22
