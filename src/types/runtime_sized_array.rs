@@ -61,7 +61,7 @@ impl CreateFrom for ArrayLength {
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct MaxCapacityArray<T>(T, usize);
+pub struct MaxCapacityArray<T>(pub T, pub usize);
 
 impl<T> ShaderType for MaxCapacityArray<T>
 where

@@ -106,7 +106,7 @@ pub use crate::core::{
     CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,
     StorageBuffer, UniformBuffer,
 };
-pub use types::runtime_sized_array::ArrayLength;
+pub use types::runtime_sized_array::{ArrayLength, MaxCapacityArray};
 
 pub mod internal {
     pub use super::core::{
