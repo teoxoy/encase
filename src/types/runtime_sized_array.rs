@@ -60,6 +60,74 @@ impl CreateFrom for ArrayLength {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub struct MaxCapacityArray<T>(T, usize);
+
+impl<T> ShaderType for MaxCapacityArray<T>
+where
+    T: ShaderType<ExtraMetadata = super::array::ArrayMetadata>,
+{
+    type ExtraMetadata = super::array::ArrayMetadata;
+
+    const METADATA: Metadata<Self::ExtraMetadata> = T::METADATA;
+
+    fn size(&self) -> ::core::num::NonZeroU64 {
+        Self::METADATA.stride().mul(self.1.max(1) as u64).0
+    }
+}
+
+impl<T> RuntimeSizedArray for MaxCapacityArray<T>
+where
+    T: RuntimeSizedArray,
+{
+    fn len(&self) -> usize {
+        debug_assert!(self.0.len() <= self.1);
+        self.0.len()
+    }
+}
+
+impl<T> crate::CalculateSizeFor for MaxCapacityArray<T>
+where
+    T: crate::CalculateSizeFor,
+{
+    fn calculate_size_for(nr_of_el: u64) -> ::core::num::NonZeroU64 {
+        T::calculate_size_for(nr_of_el)
+    }
+}
+
+impl<T> WriteInto for MaxCapacityArray<T>
+where
+    T: WriteInto + RuntimeSizedArray,
+{
+    fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
+        debug_assert!(self.0.len() <= self.1);
+        self.0.write_into(writer)
+    }
+}
+
+impl<T> ReadFrom for MaxCapacityArray<T>
+where
+    T: ReadFrom,
+{
+    fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
+        let cap: u32 = self.1.try_into().unwrap();
+        reader.ctx.rts_array_max_el_to_read =
+            Some(reader.ctx.rts_array_max_el_to_read.unwrap_or(cap).min(cap));
+        self.0.read_from(reader)
+    }
+}
+
+impl<T> CreateFrom for MaxCapacityArray<T>
+where
+    T: CreateFrom + RuntimeSizedArray,
+{
+    fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
+        let inner = T::create_from(reader);
+        let cap = inner.len();
+        Self(inner, cap)
+    }
+}
+
 pub trait Length {
     fn length(&self) -> usize;
 }
