@@ -131,35 +131,35 @@ fn bench(c: &mut Criterion) {
     ];
     for (name, size) in sizes {
         group.throughput(Throughput::Bytes(size as u64));
-        group.bench_function(format!("{}_write", name), |b| {
+        group.bench_function(format!("{name}_write"), |b| {
             b.iter_batched_ref(
                 || create_vecs(a, size),
                 |(src, dst)| dst.write(src).unwrap(),
                 criterion::BatchSize::LargeInput,
             )
         });
-        group.bench_function(format!("{}_read", name), |b| {
+        group.bench_function(format!("{name}_read"), |b| {
             b.iter_batched_ref(
                 || create_vecs(a, size),
                 |(src, dst)| dst.read(src).unwrap(),
                 criterion::BatchSize::LargeInput,
             )
         });
-        group.bench_function(format!("{}_create", name), |b| {
+        group.bench_function(format!("{name}_create"), |b| {
             b.iter_batched_ref(
                 || create_vecs(a, size),
                 |(_src, dst)| dst.create::<Vec<A>>().unwrap(),
                 criterion::BatchSize::LargeInput,
             )
         });
-        group.bench_function(format!("{}_manual", name), |b| {
+        group.bench_function(format!("{name}_manual"), |b| {
             b.iter_batched_ref(
                 || create_aligned_vecs(size),
                 |(dst, src)| manual_memcpy(dst, src),
                 criterion::BatchSize::LargeInput,
             )
         });
-        group.bench_function(format!("{}_stdlib", name), |b| {
+        group.bench_function(format!("{name}_stdlib"), |b| {
             b.iter_batched_ref(
                 || create_aligned_vecs(size),
                 |(dst, src)| dst.copy_from_slice(src),

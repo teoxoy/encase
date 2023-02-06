@@ -68,6 +68,6 @@ mod test {
 
         assert!(size == size_clone);
 
-        assert_eq!(format!("{:?}", size), "SizeValue(8)");
+        assert_eq!(format!("{size:?}"), "SizeValue(8)");
     }
 }

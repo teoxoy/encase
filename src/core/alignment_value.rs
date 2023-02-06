@@ -141,6 +141,6 @@ mod test {
 
         assert!(alignment == alignment_clone);
 
-        assert_eq!(format!("{:?}", alignment), "AlignmentValue(8)");
+        assert_eq!(format!("{alignment:?}"), "AlignmentValue(8)");
     }
 }

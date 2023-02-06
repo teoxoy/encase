@@ -266,6 +266,6 @@ mod array_length {
     fn derived_traits() {
         assert_eq!(ArrayLength::default(), ArrayLength.clone());
 
-        assert_eq!(format!("{:?}", ArrayLength), "ArrayLength");
+        assert_eq!(format!("{ArrayLength:?}"), "ArrayLength");
     }
 }
