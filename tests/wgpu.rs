@@ -155,7 +155,10 @@ fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
     data: &[u8],
     is_uniform: bool,
 ) -> Vec<u8> {
-    let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
+    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+        backends: wgpu::Backends::PRIMARY,
+        dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
+    });
     let adapter = block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
         power_preference: wgpu::PowerPreference::default(),
         ..Default::default()
