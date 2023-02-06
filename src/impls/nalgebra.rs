@@ -3,48 +3,48 @@ use crate::{
     vector::{impl_vector, AsMutVectorParts, AsRefVectorParts, FromVectorParts, VectorScalar},
 };
 
-impl_vector!(2, nalgebra::VectorSlice2<'_, T>);
-impl_vector!(2, nalgebra::VectorSliceMut2<'_, T>);
+impl_vector!(2, nalgebra::VectorView2<'_, T>);
+impl_vector!(2, nalgebra::VectorViewMut2<'_, T>);
 impl_vector!(2, nalgebra::Vector2<T>);
 
-impl_vector!(3, nalgebra::VectorSlice3<'_, T>);
-impl_vector!(3, nalgebra::VectorSliceMut3<'_, T>);
+impl_vector!(3, nalgebra::VectorView3<'_, T>);
+impl_vector!(3, nalgebra::VectorViewMut3<'_, T>);
 impl_vector!(3, nalgebra::Vector3<T>);
 
-impl_vector!(4, nalgebra::VectorSlice4<'_, T>);
-impl_vector!(4, nalgebra::VectorSliceMut4<'_, T>);
+impl_vector!(4, nalgebra::VectorView4<'_, T>);
+impl_vector!(4, nalgebra::VectorViewMut4<'_, T>);
 impl_vector!(4, nalgebra::Vector4<T>);
 
-impl_matrix!(2, 2, nalgebra::MatrixSlice2<'_, T>);
-impl_matrix!(2, 2, nalgebra::MatrixSliceMut2<'_, T>);
+impl_matrix!(2, 2, nalgebra::MatrixView2<'_, T>);
+impl_matrix!(2, 2, nalgebra::MatrixViewMut2<'_, T>);
 impl_matrix!(2, 2, nalgebra::Matrix2<T>);
 
-impl_matrix!(3, 2, nalgebra::MatrixSlice2x3<'_, T>);
-impl_matrix!(4, 2, nalgebra::MatrixSlice2x4<'_, T>);
-impl_matrix!(2, 3, nalgebra::MatrixSlice3x2<'_, T>);
-impl_matrix!(3, 2, nalgebra::MatrixSliceMut2x3<'_, T>);
-impl_matrix!(4, 2, nalgebra::MatrixSliceMut2x4<'_, T>);
-impl_matrix!(2, 3, nalgebra::MatrixSliceMut3x2<'_, T>);
+impl_matrix!(3, 2, nalgebra::MatrixView2x3<'_, T>);
+impl_matrix!(4, 2, nalgebra::MatrixView2x4<'_, T>);
+impl_matrix!(2, 3, nalgebra::MatrixView3x2<'_, T>);
+impl_matrix!(3, 2, nalgebra::MatrixViewMut2x3<'_, T>);
+impl_matrix!(4, 2, nalgebra::MatrixViewMut2x4<'_, T>);
+impl_matrix!(2, 3, nalgebra::MatrixViewMut3x2<'_, T>);
 impl_matrix!(3, 2, nalgebra::Matrix2x3<T>);
 impl_matrix!(4, 2, nalgebra::Matrix2x4<T>);
 impl_matrix!(2, 3, nalgebra::Matrix3x2<T>);
 
-impl_matrix!(3, 3, nalgebra::MatrixSlice3<'_, T>);
-impl_matrix!(3, 3, nalgebra::MatrixSliceMut3<'_, T>);
+impl_matrix!(3, 3, nalgebra::MatrixView3<'_, T>);
+impl_matrix!(3, 3, nalgebra::MatrixViewMut3<'_, T>);
 impl_matrix!(3, 3, nalgebra::Matrix3<T>);
 
-impl_matrix!(4, 3, nalgebra::MatrixSlice3x4<'_, T>);
-impl_matrix!(2, 4, nalgebra::MatrixSlice4x2<'_, T>);
-impl_matrix!(3, 4, nalgebra::MatrixSlice4x3<'_, T>);
-impl_matrix!(4, 3, nalgebra::MatrixSliceMut3x4<'_, T>);
-impl_matrix!(2, 4, nalgebra::MatrixSliceMut4x2<'_, T>);
-impl_matrix!(3, 4, nalgebra::MatrixSliceMut4x3<'_, T>);
+impl_matrix!(4, 3, nalgebra::MatrixView3x4<'_, T>);
+impl_matrix!(2, 4, nalgebra::MatrixView4x2<'_, T>);
+impl_matrix!(3, 4, nalgebra::MatrixView4x3<'_, T>);
+impl_matrix!(4, 3, nalgebra::MatrixViewMut3x4<'_, T>);
+impl_matrix!(2, 4, nalgebra::MatrixViewMut4x2<'_, T>);
+impl_matrix!(3, 4, nalgebra::MatrixViewMut4x3<'_, T>);
 impl_matrix!(4, 3, nalgebra::Matrix3x4<T>);
 impl_matrix!(2, 4, nalgebra::Matrix4x2<T>);
 impl_matrix!(3, 4, nalgebra::Matrix4x3<T>);
 
-impl_matrix!(4, 4, nalgebra::MatrixSlice4<'_, T>);
-impl_matrix!(4, 4, nalgebra::MatrixSliceMut4<'_, T>);
+impl_matrix!(4, 4, nalgebra::MatrixView4<'_, T>);
+impl_matrix!(4, 4, nalgebra::MatrixViewMut4<'_, T>);
 impl_matrix!(4, 4, nalgebra::Matrix4<T>);
 
 impl<T: VectorScalar, S, const N: usize> AsRefVectorParts<T, N>

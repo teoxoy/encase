@@ -2,7 +2,7 @@
 name = "encase"
 version = "0.4.1"
 edition = "2021"
-rust-version = "1.58"
+rust-version = "1.61"
 
 license = "MIT-0"
 readme = "./README.md"
@@ -37,7 +37,7 @@ const_panic = { version = "0.2", default-features = false }
 mint = { version = "0.5.9", default-features = false, optional = true }
 cgmath = { version = "0.18", default-features = false, optional = true }
 glam = { version = "0.22", features = [ "std" ], default-features = false, optional = true }
-nalgebra = { version = "0.31", default-features = false, optional = true }
+nalgebra = { version = "0.32", default-features = false, optional = true }
 ultraviolet = { version = "0.9", features = [ "int" ], default-features = false, optional = true }
 vek = { version = "0.15", default-features = false, optional = true }
 smallvec = { version = "1.8.0", features = ["const_generics"], default-features = false, optional = true }
