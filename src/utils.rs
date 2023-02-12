@@ -93,59 +93,6 @@ impl ByteVecExt for Vec<u8> {
     }
 }
 
-pub trait ArrayExt<T, const N: usize> {
-    /// Copies all elements from `src` into `self`, using memcpy.
-    fn copy_from(&mut self, src: &Self)
-    where
-        T: Copy;
-
-    /// Creates an array `[T; N]` where each array element `T` is returned by the `cb` call.
-    ///
-    /// # Arguments
-    ///
-    /// * `cb`: Callback where the passed argument is the current array index.
-    fn from_fn<F>(cb: F) -> Self
-    where
-        Self: Sized,
-        F: FnMut(usize) -> T;
-}
-
-impl<T, const N: usize> ArrayExt<T, N> for [T; N] {
-    fn copy_from(&mut self, src: &Self)
-    where
-        T: Copy,
-    {
-        // SAFETY
-        // 1. src is valid for reads of count * size_of::<T>() bytes
-        //      since it's a shared pointer to an array with count elements
-        // 2. dst is valid for writes of count * size_of::<T>() bytes
-        //      since it's a mutable pointer to an array with count elements
-        // 3. Both src and dst are properly aligned
-        //      since they are both pointers to arrays with the same element type T
-        // 4. The region of memory beginning at src with a size of count * size_of::<T>() bytes
-        // does not overlap with the region of memory beginning at dst with the same size
-        //      since dst is a mutable reference (therefore exclusive)
-        unsafe {
-            std::ptr::copy_nonoverlapping(src.as_ptr(), self.as_mut_ptr(), N);
-        }
-    }
-
-    // from rust core lib https://github.com/rust-lang/rust/blob/d5a9bc947617babe3833458f3e09f3d6d5e3d736/library/core/src/array/mod.rs#L41
-    // track #![feature(array_from_fn)] (https://github.com/rust-lang/rust/issues/89379)
-
-    fn from_fn<F>(mut cb: F) -> Self
-    where
-        F: FnMut(usize) -> T,
-    {
-        let mut idx = 0;
-        [(); N].map(|_| {
-            let res = cb(idx);
-            idx += 1;
-            res
-        })
-    }
-}
-
 pub(crate) trait SliceExt<T> {
     /// Returns a "window" (shared reference to an array of length `N`) into this slice.
     ///
@@ -160,18 +107,12 @@ pub(crate) trait SliceExt<T> {
     ///
     /// Panics if the range `offset..offset + N` is out of bounds.
     fn array_mut<const N: usize>(&mut self, offset: usize) -> &mut [T; N];
-
-    /// Copies all elements from `src` into `self`, using memcpy.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the range `offset..offset + N` is out of bounds.
-    fn copy_from_array<const N: usize>(&mut self, offset: usize, src: &[T; N])
-    where
-        T: Copy;
 }
 
 impl<T> SliceExt<T> for [T] {
+    // from rust core lib https://github.com/rust-lang/rust/blob/11d96b59307b1702fffe871bfc2d0145d070881e/library/core/src/slice/mod.rs#L1794
+    // track #![feature(split_array)] (https://github.com/rust-lang/rust/issues/90091)
+
     fn array<const N: usize>(&self, offset: usize) -> &[T; N] {
         let src = &self[offset..offset + N];
 
@@ -180,20 +121,15 @@ impl<T> SliceExt<T> for [T] {
         unsafe { &*(src.as_ptr() as *const [T; N]) }
     }
 
+    // from rust core lib https://github.com/rust-lang/rust/blob/11d96b59307b1702fffe871bfc2d0145d070881e/library/core/src/slice/mod.rs#L1827
+    // track #![feature(split_array)] (https://github.com/rust-lang/rust/issues/90091)
+
     fn array_mut<const N: usize>(&mut self, offset: usize) -> &mut [T; N] {
         let src = &mut self[offset..offset + N];
 
         // SAFETY
         // casting to &mut [T; N] is safe since src is a &mut [T] of length N
         unsafe { &mut *(src.as_mut_ptr() as *mut [T; N]) }
-    }
-
-    fn copy_from_array<const N: usize>(&mut self, offset: usize, src: &[T; N])
-    where
-        T: Copy,
-    {
-        let dst = self.array_mut(offset);
-        dst.copy_from(src);
     }
 }
 
@@ -229,30 +165,6 @@ mod byte_vec_ext {
 }
 
 #[cfg(test)]
-mod array_ext {
-    use crate::utils::ArrayExt;
-
-    #[test]
-    fn copy_from() {
-        let src = [1, 3, 7, 6];
-        let mut dst = [0; 4];
-
-        assert_ne!(src, dst);
-
-        dst.copy_from(&src);
-
-        assert_eq!(src, dst);
-    }
-
-    #[test]
-    fn from_fn() {
-        let arr: [usize; 5] = ArrayExt::from_fn(|i| i);
-
-        assert_eq!(arr, [0, 1, 2, 3, 4]);
-    }
-}
-
-#[cfg(test)]
 mod slice_ext {
     use crate::utils::SliceExt;
 
@@ -274,16 +186,5 @@ mod slice_ext {
         let sub_arr: &mut [i32; 2] = slice.array_mut(3);
 
         assert_eq!(sub_arr, &mut [6, 9]);
-    }
-
-    #[test]
-    fn copy_from_array() {
-        let src = [1, 3, 7];
-        let mut arr = [0; 6];
-        let slice = arr.as_mut();
-
-        slice.copy_from_array(3, &src);
-
-        assert_eq!(arr, [0, 0, 0, 1, 3, 7]);
     }
 }

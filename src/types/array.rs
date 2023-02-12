@@ -88,7 +88,7 @@ where
     Self: ShaderType<ExtraMetadata = ArrayMetadata>,
 {
     fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
-        crate::utils::ArrayExt::from_fn(|_| {
+        core::array::from_fn(|_| {
             let res = CreateFrom::create_from(reader);
             reader.advance(Self::METADATA.el_padding() as usize);
             res

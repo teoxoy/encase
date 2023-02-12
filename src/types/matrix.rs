@@ -188,8 +188,8 @@ macro_rules! impl_matrix_inner {
             $el_ty: $crate::private::MatrixScalar + $crate::private::CreateFrom,
         {
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                let columns = $crate::private::ArrayExt::from_fn(|_| {
-                    let col = $crate::private::ArrayExt::from_fn(|_| {
+                let columns = ::core::array::from_fn(|_| {
+                    let col = ::core::array::from_fn(|_| {
                         $crate::private::CreateFrom::create_from(reader)
                     });
                     reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);

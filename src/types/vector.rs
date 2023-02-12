@@ -162,7 +162,7 @@ macro_rules! impl_vector_inner {
             $el_ty: $crate::private::VectorScalar + $crate::private::CreateFrom,
         {
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                let elements = $crate::private::ArrayExt::from_fn(|_| {
+                let elements = ::core::array::from_fn(|_| {
                     $crate::private::CreateFrom::create_from(reader)
                 });
 
