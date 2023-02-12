@@ -84,9 +84,6 @@ jobs:
         with:
           tool: cargo-llvm-cov,cargo-nextest
 
-      - name: Install nightly toolchain
-        run: rustup toolchain install $NIGHTLY --no-self-update --profile=minimal -c llvm-tools-preview
-
       - name: Install llvmpipe and lavapipe
         run: |
           sudo apt-get update -y -qq
@@ -94,4 +91,4 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 
-      - run: cargo +$NIGHTLY llvm-cov nextest --workspace --features mint,glam --fail-under-lines 80
+      - run: cargo llvm-cov nextest --workspace --features mint,glam --fail-under-lines 80
