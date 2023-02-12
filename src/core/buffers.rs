@@ -137,11 +137,21 @@ pub struct DynamicStorageBuffer<B> {
 }
 
 impl<B> DynamicStorageBuffer<B> {
+    /// Creates a new dynamic storage buffer wrapper with an alignment of 256
+    /// (default alignment in the WebGPU spec).
     pub const fn new(buffer: B) -> Self {
         Self::new_with_alignment(buffer, 256)
     }
 
+    /// Creates a new dynamic storage buffer wrapper with a given alignment.
+    /// # Panics
+    ///
+    /// - if `alignment` is not a power of two.
+    /// - if `alignment` is less than 32 (min alignment imposed by the WebGPU spec).
     pub const fn new_with_alignment(buffer: B, alignment: u64) -> Self {
+        if alignment < 32 {
+            panic!("Alignment must be at least 32!");
+        }
         Self {
             inner: buffer,
             alignment: AlignmentValue::new(alignment),
@@ -232,10 +242,19 @@ pub struct DynamicUniformBuffer<B> {
 }
 
 impl<B> DynamicUniformBuffer<B> {
+    /// Creates a new dynamic uniform buffer wrapper with an alignment of 256
+    /// (default alignment in the WebGPU spec).
     pub const fn new(buffer: B) -> Self {
-        Self::new_with_alignment(buffer, 256)
+        Self {
+            inner: DynamicStorageBuffer::new(buffer),
+        }
     }
 
+    /// Creates a new dynamic uniform buffer wrapper with a given alignment.
+    /// # Panics
+    ///
+    /// - if `alignment` is not a power of two.
+    /// - if `alignment` is less than 32 (min alignment imposed by the WebGPU spec).
     pub const fn new_with_alignment(buffer: B, alignment: u64) -> Self {
         Self {
             inner: DynamicStorageBuffer::new_with_alignment(buffer, alignment),
