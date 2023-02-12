@@ -1,5 +1,3 @@
-#![feature(trivial_bounds)]
-
 use core::cell::Cell;
 use encase::ShaderType;
 use std::{borrow::Cow, rc::Rc, sync::Arc};

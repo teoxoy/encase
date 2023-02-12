@@ -549,6 +549,11 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         },
     };
 
+    // Note:
+    // The unused HRTBs on WriteInto, ReadFrom and CreateFrom are there
+    // to avoid #![feature(trivial_bounds)].
+    // Workaround found here: https://github.com/rust-lang/rust/issues/48214#issuecomment-1150463333
+
     quote! {
         #( #field_trait_constraints )*
 
@@ -601,7 +606,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         impl #impl_generics #root::WriteInto for #name #ty_generics
         where
             Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
-            #( #field_types_2: #root::WriteInto, )*
+            #( for<'__> #field_types_2: #root::WriteInto, )*
         {
             fn write_into<B: #root::BufferMut>(&self, writer: &mut #root::Writer<B>) {
                 #set_contained_rt_sized_array_length
@@ -612,7 +617,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         impl #impl_generics #root::ReadFrom for #name #ty_generics
         where
             Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
-            #( #field_types_3: #root::ReadFrom, )*
+            #( for<'__> #field_types_3: #root::ReadFrom, )*
         {
             fn read_from<B: #root::BufferRef>(&mut self, reader: &mut #root::Reader<B>) {
                 #( #read_from_buffer_body )*
@@ -622,7 +627,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         impl #impl_generics #root::CreateFrom for #name #ty_generics
         where
             Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
-            #( #field_types_4: #root::CreateFrom, )*
+            #( for<'__> #field_types_4: #root::CreateFrom, )*
         {
             fn create_from<B: #root::BufferRef>(reader: &mut #root::Reader<B>) -> Self {
                 #( #create_from_buffer_body )*
