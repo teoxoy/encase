@@ -1,5 +1,4 @@
 #[track_caller]
-#[cfg_attr(coverage_nightly, no_coverage)]
 pub const fn consume_zsts<const N: usize>(_: [(); N]) {}
 
 #[doc(hidden)]
