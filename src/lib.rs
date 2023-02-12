@@ -161,7 +161,6 @@ pub mod private {
     pub use super::types::runtime_sized_array::{ArrayLength, Length, Truncate};
     pub use super::types::vector::*;
     pub use super::utils::consume_zsts;
-    pub use super::utils::ArrayExt;
     pub use super::CalculateSizeFor;
     pub use super::ShaderSize;
     pub use super::ShaderType;
