@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.0 (2023-03-04)
+
+- Check dynamic buffer alignment is not less than 32
+- Work around `trivial_bounds` error
+- Increased MSRV to 1.63
+- Updated `glam` to v0.23
+- Updated `nalgebra` to v0.32
+
 ## v0.4.1 (2022-12-09)
 
 - Renamed `coverage` cfg to `coverage_nightly`
