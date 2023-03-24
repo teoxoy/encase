@@ -1,5 +1,5 @@
 use proc_macro2::{Ident, Literal, Span, TokenStream};
-use quote::{quote, quote_spanned};
+use quote::{quote, quote_spanned, ToTokens};
 use syn::{
     parse::{Parse, ParseStream},
     parse_quote,
@@ -197,15 +197,15 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 align: None,
             };
             for attr in &field.attrs {
-                let span = attr.tokens.span();
-                if attr.path.is_ident("align") {
+                let span = attr.to_token_stream().span();
+                if attr.path().is_ident("align") {
                     let res = attr.parse_args::<AlignmentAttr>();
                     let res = res.map_err(|err| syn::Error::new(span, err));
                     match res {
                         Ok(val) => data.align = Some((val.0, span)),
                         Err(err) => errors.append(err),
                     }
-                } else if attr.path.is_ident("size") {
+                } else if attr.path().is_ident("size") {
                     let res = if i == last_field_index {
                         attr.parse_args::<SizeAttr>().map(|val| match val {
                             SizeAttr::Runtime => {
