@@ -63,6 +63,7 @@ impl<T: WriteInto, const N: usize> WriteInto for [T; N]
 where
     Self: ShaderType<ExtraMetadata = ArrayMetadata>,
 {
+    #[inline]
     fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
         for item in self {
             WriteInto::write_into(item, writer);
@@ -75,6 +76,7 @@ impl<T: ReadFrom, const N: usize> ReadFrom for [T; N]
 where
     Self: ShaderType<ExtraMetadata = ArrayMetadata>,
 {
+    #[inline]
     fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
         for elem in self {
             ReadFrom::read_from(elem, reader);
@@ -87,6 +89,7 @@ impl<T: CreateFrom, const N: usize> CreateFrom for [T; N]
 where
     Self: ShaderType<ExtraMetadata = ArrayMetadata>,
 {
+    #[inline]
     fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
         core::array::from_fn(|_| {
             let res = CreateFrom::create_from(reader);
