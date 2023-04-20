@@ -21,18 +21,21 @@ macro_rules! impl_traits {
         impl_basic_traits!($type);
 
         impl WriteInto for $type {
+            #[inline]
             fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
                 writer.write(&<$type>::to_le_bytes(*self));
             }
         }
 
         impl ReadFrom for $type {
+            #[inline]
             fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
                 *self = <$type>::from_le_bytes(*reader.read());
             }
         }
 
         impl CreateFrom for $type {
+            #[inline]
             fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
                 <$type>::from_le_bytes(*reader.read())
             }
@@ -49,6 +52,7 @@ macro_rules! impl_traits_for_non_zero_option {
         impl_basic_traits!(Option<$type>);
 
         impl WriteInto for Option<$type> {
+            #[inline]
             fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
                 let value = self.map(|num| num.get()).unwrap_or(0);
                 WriteInto::write_into(&value, writer);
@@ -56,12 +60,14 @@ macro_rules! impl_traits_for_non_zero_option {
         }
 
         impl ReadFrom for Option<$type> {
+            #[inline]
             fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
                 *self = <$type>::new(CreateFrom::create_from(reader));
             }
         }
 
         impl CreateFrom for Option<$type> {
+            #[inline]
             fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
                 <$type>::new(CreateFrom::create_from(reader))
             }
@@ -77,18 +83,21 @@ macro_rules! impl_traits_for_wrapping {
         impl_basic_traits!($type);
 
         impl WriteInto for $type {
+            #[inline]
             fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
                 WriteInto::write_into(&self.0, writer);
             }
         }
 
         impl ReadFrom for $type {
+            #[inline]
             fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
                 ReadFrom::read_from(&mut self.0, reader);
             }
         }
 
         impl CreateFrom for $type {
+            #[inline]
             fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
                 Wrapping(CreateFrom::create_from(reader))
             }
@@ -104,6 +113,7 @@ macro_rules! impl_traits_for_atomic {
         impl_basic_traits!($type);
 
         impl WriteInto for $type {
+            #[inline]
             fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
                 let value = self.load(std::sync::atomic::Ordering::Relaxed);
                 WriteInto::write_into(&value, writer);
@@ -111,12 +121,14 @@ macro_rules! impl_traits_for_atomic {
         }
 
         impl ReadFrom for $type {
+            #[inline]
             fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
                 ReadFrom::read_from(self.get_mut(), reader);
             }
         }
 
         impl CreateFrom for $type {
+            #[inline]
             fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
                 <$type>::new(CreateFrom::create_from(reader))
             }

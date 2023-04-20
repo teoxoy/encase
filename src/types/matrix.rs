@@ -8,6 +8,7 @@ pub struct MatrixMetadata {
 }
 
 impl Metadata<MatrixMetadata> {
+    #[inline]
     pub const fn col_padding(self) -> u64 {
         self.extra.col_padding
     }
@@ -85,6 +86,7 @@ macro_rules! impl_matrix_inner {
             Self: ::core::convert::AsRef<[[$el_ty; $r]; $c]>,
             $el_ty: $crate::private::MatrixScalar,
         {
+            #[inline]
             fn as_ref_parts(&self) -> &[[$el_ty; $r]; $c] {
                 ::core::convert::AsRef::as_ref(self)
             }
@@ -96,6 +98,7 @@ macro_rules! impl_matrix_inner {
             Self: ::core::convert::AsMut<[[$el_ty; $r]; $c]>,
             $el_ty: $crate::private::MatrixScalar,
         {
+            #[inline]
             fn as_mut_parts(&mut self) -> &mut [[$el_ty; $r]; $c] {
                 ::core::convert::AsMut::as_mut(self)
             }
@@ -107,6 +110,7 @@ macro_rules! impl_matrix_inner {
             Self: ::core::convert::From<[[$el_ty; $r]; $c]>,
             $el_ty: $crate::private::MatrixScalar,
         {
+            #[inline]
             fn from_parts(parts: [[$el_ty; $r]; $c]) -> Self {
                 ::core::convert::From::from(parts)
             }
@@ -155,6 +159,7 @@ macro_rules! impl_matrix_inner {
             Self: $crate::private::AsRefMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
             $el_ty: $crate::private::MatrixScalar + $crate::private::WriteInto,
         {
+            #[inline]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let columns = $crate::private::AsRefMatrixParts::<$el_ty, $c, $r>::as_ref_parts(self);
                 for col in columns {
@@ -171,6 +176,7 @@ macro_rules! impl_matrix_inner {
             Self: $crate::private::AsMutMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
             $el_ty: $crate::private::MatrixScalar + $crate::private::ReadFrom,
         {
+            #[inline]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let columns = $crate::private::AsMutMatrixParts::<$el_ty, $c, $r>::as_mut_parts(self);
                 for col in columns {
@@ -187,6 +193,7 @@ macro_rules! impl_matrix_inner {
             Self: $crate::private::FromMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
             $el_ty: $crate::private::MatrixScalar + $crate::private::CreateFrom,
         {
+            #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
                 let columns = ::core::array::from_fn(|_| {
                     let col = ::core::array::from_fn(|_| {

@@ -73,6 +73,7 @@ macro_rules! impl_vector_inner {
             Self: ::core::convert::AsRef<[$el_ty; $n]>,
             $el_ty: $crate::private::VectorScalar,
         {
+            #[inline]
             fn as_ref_parts(&self) -> &[$el_ty; $n] {
                 ::core::convert::AsRef::as_ref(self)
             }
@@ -84,6 +85,7 @@ macro_rules! impl_vector_inner {
             Self: ::core::convert::AsMut<[$el_ty; $n]>,
             $el_ty: $crate::private::VectorScalar,
         {
+            #[inline]
             fn as_mut_parts(&mut self) -> &mut [$el_ty; $n] {
                 ::core::convert::AsMut::as_mut(self)
             }
@@ -95,6 +97,7 @@ macro_rules! impl_vector_inner {
             Self: ::core::convert::From<[$el_ty; $n]>,
             $el_ty: $crate::private::VectorScalar,
         {
+            #[inline]
             fn from_parts(parts: [$el_ty; $n]) -> Self {
                 ::core::convert::From::from(parts)
             }
@@ -135,6 +138,7 @@ macro_rules! impl_vector_inner {
             Self: $crate::private::AsRefVectorParts<$el_ty, $n>,
             $el_ty: $crate::private::VectorScalar + $crate::private::WriteInto,
         {
+            #[inline]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
                 for el in elements {
@@ -148,6 +152,7 @@ macro_rules! impl_vector_inner {
             Self: $crate::private::AsMutVectorParts<$el_ty, $n>,
             $el_ty: $crate::private::VectorScalar + $crate::private::ReadFrom,
         {
+            #[inline]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let elements = $crate::private::AsMutVectorParts::<$el_ty, $n>::as_mut_parts(self);
                 for el in elements {
@@ -161,6 +166,7 @@ macro_rules! impl_vector_inner {
             Self: $crate::private::FromVectorParts<$el_ty, $n>,
             $el_ty: $crate::private::VectorScalar + $crate::private::CreateFrom,
         {
+            #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
                 let elements = ::core::array::from_fn(|_| {
                     $crate::private::CreateFrom::create_from(reader)

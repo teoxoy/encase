@@ -26,12 +26,14 @@ impl Metadata<()> {
 // track #![feature(const_precise_live_drops)] (https://github.com/rust-lang/rust/issues/73255)
 
 impl<E> Metadata<E> {
+    #[inline]
     pub const fn alignment(self) -> AlignmentValue {
         let value = self.alignment;
         core::mem::forget(self);
         value
     }
 
+    #[inline]
     pub const fn uniform_min_alignment(self) -> Option<AlignmentValue> {
         let value = self.has_uniform_min_alignment;
         core::mem::forget(self);
@@ -41,6 +43,7 @@ impl<E> Metadata<E> {
         }
     }
 
+    #[inline]
     pub const fn min_size(self) -> SizeValue {
         let value = self.min_size;
         core::mem::forget(self);
@@ -66,6 +69,7 @@ pub trait ShaderType {
     /// [WGSL structs containing runtime-sized arrays](https://gpuweb.github.io/gpuweb/wgsl/#struct-types)
     /// (non fixed-footprint types)
     /// this will be calculated by assuming the array has one element
+    #[inline]
     fn min_size() -> NonZeroU64 {
         Self::METADATA.min_size().0
     }
@@ -74,6 +78,7 @@ pub trait ShaderType {
     ///
     /// For [WGSL fixed-footprint types](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types)
     /// it's equivalent to [`Self::min_size`] and [`ShaderSize::SHADER_SIZE`]
+    #[inline]
     fn size(&self) -> NonZeroU64 {
         Self::METADATA.min_size().0
     }
@@ -178,6 +183,7 @@ pub trait ShaderType {
     /// }
     /// Valid::assert_uniform_compat();
     /// ```
+    #[inline]
     fn assert_uniform_compat() {
         Self::UNIFORM_COMPAT_ASSERT()
     }

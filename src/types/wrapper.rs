@@ -45,6 +45,7 @@ macro_rules! impl_wrapper_inner {
 
             const UNIFORM_COMPAT_ASSERT: fn() = T::UNIFORM_COMPAT_ASSERT;
 
+            #[inline]
             fn size(&self) -> ::core::num::NonZeroU64 {
                 <T as $crate::private::ShaderType>::size(&self$($get_ref)*)
             }
@@ -60,6 +61,7 @@ macro_rules! impl_wrapper_inner {
         where
             T: $crate::private::RuntimeSizedArray
         {
+            #[inline]
             fn len(&self) -> usize {
                 <T as $crate::private::RuntimeSizedArray>::len(&self$($get_ref)*)
             }
@@ -69,6 +71,7 @@ macro_rules! impl_wrapper_inner {
         where
             T: $crate::private::CalculateSizeFor
         {
+            #[inline]
             fn calculate_size_for(nr_of_el: u64) -> ::core::num::NonZeroU64 {
                 <T as $crate::private::CalculateSizeFor>::calculate_size_for(nr_of_el)
             }
@@ -78,6 +81,7 @@ macro_rules! impl_wrapper_inner {
         where
             T: $crate::private::WriteInto
         {
+            #[inline]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 <T as $crate::private::WriteInto>::write_into(&self$($get_ref)*, writer)
             }
@@ -88,6 +92,7 @@ macro_rules! impl_wrapper_inner {
         where
             T: $crate::private::ReadFrom
         {
+            #[inline]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 <T as $crate::private::ReadFrom>::read_from(self$($get_mut)*, reader)
             }
@@ -98,6 +103,7 @@ macro_rules! impl_wrapper_inner {
         where
             T: $crate::private::CreateFrom
         {
+            #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
                 <$type>::$($from)*(<T as $crate::private::CreateFrom>::create_from(reader))
             }
