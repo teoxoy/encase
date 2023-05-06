@@ -658,7 +658,7 @@ fn generate_field_trait_constraints<'a>(
 
         quote_spanned! {ty.span()=>
             const _: fn() = || {
-                #[allow(clippy::extra_unused_lifetimes, clippy::missing_const_for_fn)]
+                #[allow(clippy::extra_unused_lifetimes, clippy::missing_const_for_fn, clippy::extra_unused_type_parameters)]
                 fn check #impl_generics () #where_clause {
                     fn assert_impl<T: ?::core::marker::Sized + #t>() {}
                     assert_impl::<#ty>();
