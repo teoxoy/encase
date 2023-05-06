@@ -5,6 +5,7 @@ use core::num::NonZeroU64;
 pub struct SizeValue(pub NonZeroU64);
 
 impl SizeValue {
+    #[inline]
     pub const fn new(val: u64) -> Self {
         match val {
             0 => panic!("Size can't be 0!"),
@@ -15,14 +16,17 @@ impl SizeValue {
         }
     }
 
+    #[inline]
     pub const fn from(val: NonZeroU64) -> Self {
         Self(val)
     }
 
+    #[inline]
     pub const fn get(&self) -> u64 {
         self.0.get()
     }
 
+    #[inline]
     pub const fn mul(self, rhs: u64) -> Self {
         match self.get().checked_mul(rhs) {
             None => panic!("Overflow occured while multiplying size values!"),

@@ -22,6 +22,7 @@ pub struct Writer<B: BufferMut> {
 }
 
 impl<B: BufferMut> Writer<B> {
+    #[inline]
     pub fn new<T: ShaderType>(data: &T, buffer: B, offset: usize) -> Result<Self> {
         let mut cursor = Cursor::new(buffer, offset);
         let size = data.size().get();
@@ -40,10 +41,12 @@ impl<B: BufferMut> Writer<B> {
         }
     }
 
+    #[inline]
     pub fn advance(&mut self, amount: usize) {
         self.cursor.advance(amount)
     }
 
+    #[inline]
     pub fn write<const N: usize>(&mut self, val: &[u8; N]) {
         self.cursor.write(val)
     }
@@ -62,6 +65,7 @@ pub struct Reader<B: BufferRef> {
 }
 
 impl<B: BufferRef> Reader<B> {
+    #[inline]
     pub fn new<T: ShaderType + ?Sized>(buffer: B, offset: usize) -> Result<Self> {
         let cursor = Cursor::new(buffer, offset);
         if cursor.remaining() < T::min_size().get() as usize {
@@ -79,14 +83,17 @@ impl<B: BufferRef> Reader<B> {
         }
     }
 
+    #[inline]
     pub fn advance(&mut self, amount: usize) {
         self.cursor.advance(amount)
     }
 
+    #[inline]
     pub fn read<const N: usize>(&mut self) -> &[u8; N] {
         self.cursor.read()
     }
 
+    #[inline]
     pub fn remaining(&self) -> usize {
         self.cursor.remaining()
     }
@@ -98,22 +105,26 @@ struct Cursor<B> {
 }
 
 impl<B> Cursor<B> {
+    #[inline]
     fn new(buffer: B, offset: usize) -> Self {
         Self {
             buffer,
             pos: offset,
         }
     }
+    #[inline]
     fn advance(&mut self, amount: usize) {
         self.pos += amount;
     }
 }
 
 impl<B: BufferRef> Cursor<B> {
+    #[inline]
     fn remaining(&self) -> usize {
         self.buffer.len().saturating_sub(self.pos)
     }
 
+    #[inline]
     fn read<const N: usize>(&mut self) -> &[u8; N] {
         let res = self.buffer.read(self.pos);
         self.pos += N;
@@ -122,15 +133,18 @@ impl<B: BufferRef> Cursor<B> {
 }
 
 impl<B: BufferMut> Cursor<B> {
+    #[inline]
     fn capacity(&self) -> usize {
         self.buffer.capacity().saturating_sub(self.pos)
     }
 
+    #[inline]
     fn write<const N: usize>(&mut self, val: &[u8; N]) {
         self.buffer.write(self.pos, val);
         self.pos += N;
     }
 
+    #[inline]
     fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
         self.buffer.try_enlarge(wanted)
     }
@@ -158,6 +172,7 @@ pub trait BufferMut {
 
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]);
 
+    #[inline]
     fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
         if wanted > self.capacity() {
             Err(EnlargeError)
@@ -172,6 +187,7 @@ impl BufferRef for [u8] {
         self.len()
     }
 
+    #[inline]
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
         use crate::utils::SliceExt;
         self.array(offset)
@@ -179,30 +195,36 @@ impl BufferRef for [u8] {
 }
 
 impl<const LEN: usize> BufferRef for [u8; LEN] {
+    #[inline]
     fn len(&self) -> usize {
         <[u8] as BufferRef>::len(self)
     }
 
+    #[inline]
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
         <[u8] as BufferRef>::read(self, offset)
     }
 }
 
 impl BufferRef for Vec<u8> {
+    #[inline]
     fn len(&self) -> usize {
         <[u8] as BufferRef>::len(self)
     }
 
+    #[inline]
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
         <[u8] as BufferRef>::read(self, offset)
     }
 }
 
 impl BufferMut for [u8] {
+    #[inline]
     fn capacity(&self) -> usize {
         self.len()
     }
 
+    #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
         use crate::utils::SliceExt;
         *self.array_mut(offset) = *val;
@@ -210,24 +232,29 @@ impl BufferMut for [u8] {
 }
 
 impl<const LEN: usize> BufferMut for [u8; LEN] {
+    #[inline]
     fn capacity(&self) -> usize {
         <[u8] as BufferMut>::capacity(self)
     }
 
+    #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
         <[u8] as BufferMut>::write(self, offset, val)
     }
 }
 
 impl BufferMut for Vec<u8> {
+    #[inline]
     fn capacity(&self) -> usize {
         self.capacity()
     }
 
+    #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
         <[u8] as BufferMut>::write(self, offset, val)
     }
 
+    #[inline]
     fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
         use crate::utils::ByteVecExt;
         self.try_extend_zeroed(wanted).map_err(EnlargeError::from)
@@ -237,10 +264,12 @@ impl BufferMut for Vec<u8> {
 macro_rules! impl_buffer_ref_for_wrappers {
     ($($type:ty),*) => {$(
         impl<T: ?Sized + BufferRef> BufferRef for $type {
+            #[inline]
             fn len(&self) -> usize {
                 T::len(self)
             }
 
+            #[inline]
             fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
                 T::read(self, offset)
             }
@@ -253,14 +282,17 @@ impl_buffer_ref_for_wrappers!(&T, &mut T, Box<T>, std::rc::Rc<T>, std::sync::Arc
 macro_rules! impl_buffer_mut_for_wrappers {
     ($($type:ty),*) => {$(
         impl<T: ?Sized + BufferMut> BufferMut for $type {
+            #[inline]
             fn capacity(&self) -> usize {
                 T::capacity(self)
             }
 
+            #[inline]
             fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
                 T::write(self, offset, val)
             }
 
+            #[inline]
             fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
                 T::try_enlarge(self, wanted)
             }

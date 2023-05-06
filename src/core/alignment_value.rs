@@ -15,6 +15,7 @@ impl AlignmentValue {
     }
 
     /// Returns an alignment that is the smallest power of two greater than the passed in `size`
+    #[inline]
     pub const fn from_next_power_of_two_size(size: SizeValue) -> Self {
         match size.get().checked_next_power_of_two() {
             None => panic!("Overflow occured while getting the next power of 2!"),
@@ -25,6 +26,7 @@ impl AlignmentValue {
         }
     }
 
+    #[inline]
     pub const fn get(&self) -> u64 {
         self.0.get()
     }
@@ -46,11 +48,13 @@ impl AlignmentValue {
     }
 
     /// Returns true if `n` is a multiple of this alignment
+    #[inline]
     pub const fn is_aligned(&self, n: u64) -> bool {
         n % self.get() == 0
     }
 
     /// Returns the amount of padding needed so that `n + padding` will be a multiple of this alignment
+    #[inline]
     pub const fn padding_needed_for(&self, n: u64) -> u64 {
         let r = n % self.get();
         if r > 0 {
@@ -61,11 +65,13 @@ impl AlignmentValue {
     }
 
     /// Will round up the given `n` so that the returned value will be a multiple of this alignment
+    #[inline]
     pub const fn round_up(&self, n: u64) -> u64 {
         n + self.padding_needed_for(n)
     }
 
     /// Will round up the given `n` so that the returned value will be a multiple of this alignment
+    #[inline]
     pub const fn round_up_size(&self, n: SizeValue) -> SizeValue {
         SizeValue::new(self.round_up(n.get()))
     }

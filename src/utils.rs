@@ -112,6 +112,7 @@ impl<T> SliceExt<T> for [T] {
     // from rust core lib https://github.com/rust-lang/rust/blob/11d96b59307b1702fffe871bfc2d0145d070881e/library/core/src/slice/mod.rs#L1794
     // track #![feature(split_array)] (https://github.com/rust-lang/rust/issues/90091)
 
+    #[inline]
     fn array<const N: usize>(&self, offset: usize) -> &[T; N] {
         let src = &self[offset..offset + N];
 
@@ -123,6 +124,7 @@ impl<T> SliceExt<T> for [T] {
     // from rust core lib https://github.com/rust-lang/rust/blob/11d96b59307b1702fffe871bfc2d0145d070881e/library/core/src/slice/mod.rs#L1827
     // track #![feature(split_array)] (https://github.com/rust-lang/rust/issues/90091)
 
+    #[inline]
     fn array_mut<const N: usize>(&mut self, offset: usize) -> &mut [T; N] {
         let src = &mut self[offset..offset + N];
 
