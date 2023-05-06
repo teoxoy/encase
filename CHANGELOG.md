@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.6.0 (2023-05-06)
+
+- Inline potentially hot functions more aggressively
+- Fix `clippy::extra_unused_type_parameters` warning
+- Updated `syn` to v2
+- Updated `glam` to v0.24
+- Updated `rpds` to v0.13
+- Updated `archery` to v0.5
+
 ## v0.5.0 (2023-03-04)
 
 - Check dynamic buffer alignment is not less than 32
