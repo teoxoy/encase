@@ -44,8 +44,8 @@ smallvec = { version = "1.8.0", features = ["const_generics"], default-features 
 arrayvec = { version = "0.7", default-features = false, optional = true }
 tinyvec = { version = "1.4", features = ["rustc_1_55", "alloc"], default-features = false, optional = true }
 ndarray = { version = "0.15", default-features = false, optional = true }
-rpds = { version = "0.12", default-features = false, optional = true }
-archery = { version = "0.4", default-features = false, optional = true }
+rpds = { version = "0.13", default-features = false, optional = true }
+archery = { version = "0.5", default-features = false, optional = true }
 im = { version = "15", default-features = false, optional = true }
 im-rc = { version = "15", default-features = false, optional = true }
 imbl = { version = "2", default-features = false, optional = true }
