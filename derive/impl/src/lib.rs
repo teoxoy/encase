@@ -199,34 +199,29 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
             for attr in &field.attrs {
                 match attr.meta.require_list() {
                     Ok(meta_list) => {
-                        let path = &meta_list.path;
                         let span = meta_list.tokens.span();
-                        if path.is_ident("align") {
-                            if path.is_ident("align") {
-                                let res = attr.parse_args::<AlignmentAttr>();
-                                let res = res.map_err(|err| syn::Error::new(span, err));
-                                match res {
-                                    Ok(val) => data.align = Some((val.0, span)),
-                                    Err(err) => errors.append(err),
-                                }
-                            } else if path.is_ident("size") {
-                                let res = if i == last_field_index {
-                                    attr.parse_args::<SizeAttr>().map(|val| match val {
-                                        SizeAttr::Runtime => {
-                                            is_runtime_sized = true;
-                                            None
-                                        }
-                                        SizeAttr::Static(size) => Some((size.0, span)),
-                                    })
-                                } else {
-                                    attr.parse_args::<StaticSizeAttr>()
-                                        .map(|val| Some((val.0, span)))
-                                };
-                                let res = res.map_err(|err| syn::Error::new(span, err));
-                                match res {
-                                    Ok(val) => data.size = val,
-                                    Err(err) => errors.append(err),
-                                }
+                        if meta_list.path.is_ident("align") {
+                            let res = attr.parse_args::<AlignmentAttr>();
+                            match res {
+                                Ok(val) => data.align = Some((val.0, span)),
+                                Err(err) => errors.append(err),
+                            }
+                        } else if meta_list.path.is_ident("size") {
+                            let res = if i == last_field_index {
+                                attr.parse_args::<SizeAttr>().map(|val| match val {
+                                    SizeAttr::Runtime => {
+                                        is_runtime_sized = true;
+                                        None
+                                    }
+                                    SizeAttr::Static(size) => Some((size.0, span)),
+                                })
+                            } else {
+                                attr.parse_args::<StaticSizeAttr>()
+                                    .map(|val| Some((val.0, span)))
+                            };
+                            match res {
+                                Ok(val) => data.size = val,
+                                Err(err) => errors.append(err),
                             }
                         }
                     }
