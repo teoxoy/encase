@@ -21,6 +21,6 @@ struct TestRtArray {
 
 #[derive(ShaderType)]
 struct TestDocComment {
-    /// This is an unisgned integer
+    /// This is an unsigned integer
     a: u32,
 }
