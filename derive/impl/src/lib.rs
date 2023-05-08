@@ -197,6 +197,9 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 align: None,
             };
             for attr in &field.attrs {
+                if !(attr.meta.path().is_ident("size") || attr.meta.path().is_ident("align")) {
+                    continue;
+                }
                 match attr.meta.require_list() {
                     Ok(meta_list) => {
                         let span = meta_list.tokens.span();

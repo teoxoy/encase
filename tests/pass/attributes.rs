@@ -18,3 +18,9 @@ struct TestRtArray {
     #[size(runtime)]
     b: Vec<u32>,
 }
+
+#[derive(ShaderType)]
+struct TestDocComment {
+    /// This is an unisgned integer
+    a: u32,
+}
