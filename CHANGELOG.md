@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.1 (2023-05-09)
+
+- Fix erroring on attributes not owned by this crate
+
 ## v0.6.0 (2023-05-06)
 
 - Inline potentially hot functions more aggressively
