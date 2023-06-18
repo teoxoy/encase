@@ -147,8 +147,9 @@ fn all_types() {
 #[test]
 fn wgsl_struct() {
     assert_eq!(A::wgsl_type(), "A");
-    assert_eq!(A::wgsl_struct(),
-"struct A {
+    assert_eq!(
+        A::wgsl_struct(),
+        "struct A {
     f: f32,
     u: u32,
     i: i32,
@@ -184,5 +185,6 @@ fn wgsl_struct() {
     rt_arr_len: u32,
     rt_arr: array<mat3x2<f32>>,
 }
-");
+"
+    );
 }

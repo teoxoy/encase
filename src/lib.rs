@@ -103,7 +103,7 @@ mod impls;
 
 pub use crate::core::{
     CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,
-    StorageBuffer, UniformBuffer, WgslStruct
+    StorageBuffer, UniformBuffer, WgslStruct,
 };
 pub use types::runtime_sized_array::ArrayLength;
 
@@ -147,12 +147,12 @@ pub mod private {
     pub use super::core::BufferMut;
     pub use super::core::BufferRef;
     pub use super::core::CreateFrom;
-    pub use super::core::WgslStruct;
     pub use super::core::Metadata;
     pub use super::core::ReadFrom;
     pub use super::core::Reader;
     pub use super::core::RuntimeSizedArray;
     pub use super::core::SizeValue;
+    pub use super::core::WgslStruct;
     pub use super::core::WriteInto;
     pub use super::core::Writer;
     pub use super::types::array::ArrayMetadata;

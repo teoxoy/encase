@@ -10,7 +10,9 @@ macro_rules! impl_basic_traits {
         impl ShaderType for $type {
             type ExtraMetadata = ();
             const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
-            fn wgsl_type() -> ::std::string::String { $wgsl.to_string() }
+            fn wgsl_type() -> ::std::string::String {
+                $wgsl.to_string()
+            }
         }
 
         impl ShaderSize for $type {}
@@ -19,7 +21,7 @@ macro_rules! impl_basic_traits {
 
 macro_rules! impl_traits {
     ($type:ty, $wgsl:literal) => {
-        impl_basic_traits!($type,$wgsl);
+        impl_basic_traits!($type, $wgsl);
 
         impl WriteInto for $type {
             #[inline]
@@ -50,7 +52,7 @@ impl_traits!(i32, "i32");
 
 macro_rules! impl_traits_for_non_zero_option {
     ($type:ty, $wgsl:literal) => {
-        impl_basic_traits!(Option<$type>,$wgsl);
+        impl_basic_traits!(Option<$type>, $wgsl);
 
         impl WriteInto for Option<$type> {
             #[inline]
@@ -81,7 +83,7 @@ impl_traits_for_non_zero_option!(NonZeroI32, "i32");
 
 macro_rules! impl_traits_for_wrapping {
     ($type:ty, $wgsl:literal) => {
-        impl_basic_traits!($type,$wgsl);
+        impl_basic_traits!($type, $wgsl);
 
         impl WriteInto for $type {
             #[inline]
@@ -111,7 +113,7 @@ impl_traits_for_wrapping!(Wrapping<i32>, "i32");
 
 macro_rules! impl_traits_for_atomic {
     ($type:ty, $wgsl:literal) => {
-        impl_basic_traits!($type,$wgsl);
+        impl_basic_traits!($type, $wgsl);
 
         impl WriteInto for $type {
             #[inline]

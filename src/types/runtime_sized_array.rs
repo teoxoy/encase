@@ -34,7 +34,9 @@ pub struct ArrayLength;
 impl ShaderType for ArrayLength {
     type ExtraMetadata = ();
     const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
-    fn wgsl_type() -> ::std::string::String { "u32".to_string() }
+    fn wgsl_type() -> ::std::string::String {
+        "u32".to_string()
+    }
 }
 
 impl ShaderSize for ArrayLength {}

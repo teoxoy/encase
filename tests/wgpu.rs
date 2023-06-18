@@ -1,7 +1,7 @@
 use encase::{ArrayLength, ShaderType, StorageBuffer, WgslStruct};
 use futures::executor::block_on;
 use mint::{Vector2, Vector3};
-use wgpu::{ShaderModuleDescriptor, ShaderSource, util::DeviceExt};
+use wgpu::{util::DeviceExt, ShaderModuleDescriptor, ShaderSource};
 
 #[derive(Debug, ShaderType, PartialEq)]
 struct A {
@@ -105,7 +105,10 @@ fn test_wgpu() {
     assert_eq!(in_byte_buffer.len(), b.size().get() as _);
 
     let shader_text = A::wgsl_struct() + &B::wgsl_struct() + include_str!("./shaders/general.wgsl");
-    let shader = ShaderModuleDescriptor { label: Some("./shaders/general.wgsl"), source: ShaderSource::Wgsl(shader_text.into()) };
+    let shader = ShaderModuleDescriptor {
+        label: Some("./shaders/general.wgsl"),
+        source: ShaderSource::Wgsl(shader_text.into()),
+    };
     let out_byte_buffer = in_out::<B, B>(shader, &in_byte_buffer, false);
 
     assert_eq!(in_byte_buffer, out_byte_buffer);
@@ -141,7 +144,10 @@ fn array_length() {
     assert_eq!(in_byte_buffer.len(), in_value.size().get() as _);
 
     let shader_text = A::wgsl_struct() + include_str!("./shaders/array_length.wgsl");
-    let shader = ShaderModuleDescriptor { label: Some("./shaders/array_length.wgsl"), source: ShaderSource::Wgsl(shader_text.into()) };
+    let shader = ShaderModuleDescriptor {
+        label: Some("./shaders/array_length.wgsl"),
+        source: ShaderSource::Wgsl(shader_text.into()),
+    };
     let out_byte_buffer = in_out::<A, A>(shader, &in_byte_buffer, false);
 
     assert_eq!(in_byte_buffer, out_byte_buffer);
