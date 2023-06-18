@@ -104,6 +104,22 @@ impl FieldData {
             <#ty as #root::ShaderType>::wgsl_type()
         }
     }
+
+    fn wgsl_layout_attributes(&self) -> String {
+        let mut attribs = Vec::new();
+        if let Some((size, _)) = self.size {
+            attribs.push(format!("@size({})", size));
+        }
+        if let Some((align, _)) = self.align {
+            attribs.push(format!("@align({})", align));
+        }
+
+        if attribs.is_empty() {
+            String::new()
+        } else {
+            format!("    {}\n", &attribs.join(" "))
+        }
+    }
 }
 
 struct AlignmentAttr(u32);
@@ -530,6 +546,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let field_strings = field_data.iter().map(|data| data.ident().to_string());
+    let field_layout_attributes = field_data.iter().map(|data| data.wgsl_layout_attributes());
     let field_wgsl_types = field_data.iter().map(|data| data.wgsl_type(root));
     let name_string = name.to_string();
 
@@ -659,7 +676,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         {
             fn wgsl_struct() -> ::std::string::String {
                 ::std::string::ToString::to_string("struct ") + #name_string + " {\n"
-                    #( + "    " + #field_strings + ": " + &#field_wgsl_types + ",\n")*
+                    #( + #field_layout_attributes + "    " + #field_strings + ": " + &#field_wgsl_types + ",\n")*
                 + "}\n"
             }
         }
