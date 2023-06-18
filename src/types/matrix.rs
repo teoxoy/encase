@@ -148,7 +148,9 @@ macro_rules! impl_matrix_inner {
                 }
             };
 
-            fn wgsl_type() -> ::std::string::String { ::std::string::ToString::to_string("mat") + &::std::string::ToString::to_string(&$c) + "x" + &::std::string::ToString::to_string(&$r) + "<" + &<$el_ty>::wgsl_type() + ">" }
+            fn wgsl_type() -> ::std::string::String {
+                ::std::format!("mat{}x{}<{}>", $c, $r, <$el_ty as $crate::private::ShaderType>::wgsl_type())
+            }
         }
 
         impl<$($generics)*> $crate::private::ShaderSize for $type

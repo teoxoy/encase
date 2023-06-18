@@ -636,7 +636,9 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 #root::SizeValue::new(Self::METADATA.alignment().round_up(offset)).0
             }
 
-            fn wgsl_type() -> ::std::string::String {::std::string::ToString::to_string(#name_string) }
+            fn wgsl_type() -> ::std::string::String {
+                ::std::string::ToString::to_string(#name_string)
+            }
         }
 
         impl #impl_generics #root::WriteInto for #name #ty_generics
@@ -675,8 +677,8 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         impl #impl_generics #root::WgslStruct for #name #ty_generics
         {
             fn wgsl_struct() -> ::std::string::String {
-                ::std::string::ToString::to_string("struct ") + #name_string + " {\n"
-                    #( + #field_layout_attributes + "    " + #field_strings + ": " + &#field_wgsl_types + ",\n")*
+                ::std::format!("struct {} {{\n", #name_string)
+                #( + &::std::format!("{}    {}: {},\n", #field_layout_attributes, #field_strings, #field_wgsl_types) )*
                 + "}\n"
             }
         }

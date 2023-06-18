@@ -127,7 +127,9 @@ macro_rules! impl_vector_inner {
                 }
             };
 
-            fn wgsl_type() -> ::std::string::String { ::std::string::ToString::to_string("vec") + &::std::string::ToString::to_string(&$n) + "<" + &<$el_ty>::wgsl_type()  + ">" }
+            fn wgsl_type() -> ::std::string::String {
+                ::std::format!("vec{}<{}>", $n, <$el_ty as $crate::private::ShaderType>::wgsl_type())
+            }
         }
 
         impl<$($generics)*> $crate::private::ShaderSize for $type

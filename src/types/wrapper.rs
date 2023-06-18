@@ -50,7 +50,9 @@ macro_rules! impl_wrapper_inner {
                 <T as $crate::private::ShaderType>::size(&self$($get_ref)*)
             }
 
-            fn wgsl_type() -> ::std::string::String { T::wgsl_type() }
+            fn wgsl_type() -> ::std::string::String {
+                <T as $crate::private::ShaderType>::wgsl_type()
+            }
         }
         impl<$($generics)*> $crate::private::ShaderSize for $type
         where
