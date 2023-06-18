@@ -86,6 +86,9 @@ pub trait ShaderType {
     #[doc(hidden)]
     const UNIFORM_COMPAT_ASSERT: fn() = || {};
 
+    /// Returns the [WGSL type name](https://www.w3.org/TR/WGSL/#types) for the implementing Rust type.
+    ///
+    /// Note that for structs, this is just the name of the struct. See also [`WgslStruct`].
     fn wgsl_type() -> String;
 
     /// Asserts that `Self` meets the requirements of the
@@ -248,5 +251,6 @@ pub trait CreateFrom: Sized {
 }
 
 pub trait WgslStruct {
+    /// Returns the [WGSL struct](https://www.w3.org/TR/WGSL/#struct-types) definition for the implementing Rust struct
     fn wgsl_struct() -> String;
 }
