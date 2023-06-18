@@ -6,10 +6,11 @@ use core::num::{NonZeroI32, NonZeroU32, Wrapping};
 use core::sync::atomic::{AtomicI32, AtomicU32};
 
 macro_rules! impl_basic_traits {
-    ($type:ty) => {
+    ($type:ty, $wgsl:literal) => {
         impl ShaderType for $type {
             type ExtraMetadata = ();
             const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
+            fn wgsl_type() -> ::std::string::String { $wgsl.to_string() }
         }
 
         impl ShaderSize for $type {}
@@ -17,8 +18,8 @@ macro_rules! impl_basic_traits {
 }
 
 macro_rules! impl_traits {
-    ($type:ty) => {
-        impl_basic_traits!($type);
+    ($type:ty, $wgsl:literal) => {
+        impl_basic_traits!($type,$wgsl);
 
         impl WriteInto for $type {
             #[inline]
@@ -43,13 +44,13 @@ macro_rules! impl_traits {
     };
 }
 
-impl_traits!(f32);
-impl_traits!(u32);
-impl_traits!(i32);
+impl_traits!(f32, "f32");
+impl_traits!(u32, "u32");
+impl_traits!(i32, "i32");
 
 macro_rules! impl_traits_for_non_zero_option {
-    ($type:ty) => {
-        impl_basic_traits!(Option<$type>);
+    ($type:ty, $wgsl:literal) => {
+        impl_basic_traits!(Option<$type>,$wgsl);
 
         impl WriteInto for Option<$type> {
             #[inline]
@@ -75,12 +76,12 @@ macro_rules! impl_traits_for_non_zero_option {
     };
 }
 
-impl_traits_for_non_zero_option!(NonZeroU32);
-impl_traits_for_non_zero_option!(NonZeroI32);
+impl_traits_for_non_zero_option!(NonZeroU32, "u32");
+impl_traits_for_non_zero_option!(NonZeroI32, "i32");
 
 macro_rules! impl_traits_for_wrapping {
-    ($type:ty) => {
-        impl_basic_traits!($type);
+    ($type:ty, $wgsl:literal) => {
+        impl_basic_traits!($type,$wgsl);
 
         impl WriteInto for $type {
             #[inline]
@@ -105,12 +106,12 @@ macro_rules! impl_traits_for_wrapping {
     };
 }
 
-impl_traits_for_wrapping!(Wrapping<u32>);
-impl_traits_for_wrapping!(Wrapping<i32>);
+impl_traits_for_wrapping!(Wrapping<u32>, "u32");
+impl_traits_for_wrapping!(Wrapping<i32>, "i32");
 
 macro_rules! impl_traits_for_atomic {
-    ($type:ty) => {
-        impl_basic_traits!($type);
+    ($type:ty, $wgsl:literal) => {
+        impl_basic_traits!($type,$wgsl);
 
         impl WriteInto for $type {
             #[inline]
@@ -136,8 +137,8 @@ macro_rules! impl_traits_for_atomic {
     };
 }
 
-impl_traits_for_atomic!(AtomicU32);
-impl_traits_for_atomic!(AtomicI32);
+impl_traits_for_atomic!(AtomicU32, "atomic<u32>");
+impl_traits_for_atomic!(AtomicI32, "atomic<i32>");
 
 macro_rules! impl_marker_trait_for_f32 {
     ($trait:path) => {

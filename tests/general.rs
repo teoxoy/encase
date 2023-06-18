@@ -1,4 +1,4 @@
-use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer};
+use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer, WgslStruct};
 
 macro_rules! gen {
     ($rng:ident, $ty:ty) => {{
@@ -142,4 +142,47 @@ fn all_types() {
     buffer_2.write(&a_clone).unwrap();
 
     assert_eq!(raw_buffer, raw_buffer_2);
+}
+
+#[test]
+fn wgsl_struct() {
+    assert_eq!(A::wgsl_type(), "A");
+    assert_eq!(A::wgsl_struct(),
+"struct A {
+    f: f32,
+    u: u32,
+    i: i32,
+    nu: u32,
+    ni: i32,
+    wu: u32,
+    wi: i32,
+    au: atomic<u32>,
+    ai: atomic<i32>,
+    v2: vec2<f32>,
+    v3: vec3<u32>,
+    v4: vec4<i32>,
+    p2: vec2<f32>,
+    p3: vec3<f32>,
+    mat2: mat2x2<f32>,
+    mat2x3: mat3x2<f32>,
+    mat2x4: mat4x2<f32>,
+    mat3x2: mat2x3<f32>,
+    mat3: mat3x3<f32>,
+    mat3x4: mat4x3<f32>,
+    mat4x2: mat2x4<f32>,
+    mat4x3: mat3x4<f32>,
+    mat4: mat4x4<f32>,
+    arrf: array<f32,32>,
+    arru: array<u32,32>,
+    arri: array<i32,32>,
+    arrvf: array<vec2<f32>,16>,
+    arrvu: array<vec3<u32>,16>,
+    arrvi: array<vec4<i32>,16>,
+    arrm2: array<mat2x2<f32>,8>,
+    arrm3: array<mat3x3<f32>,8>,
+    arrm4: array<mat4x4<f32>,8>,
+    rt_arr_len: u32,
+    rt_arr: array<mat3x2<f32>>,
+}
+");
 }

@@ -34,6 +34,7 @@ pub struct ArrayLength;
 impl ShaderType for ArrayLength {
     type ExtraMetadata = ();
     const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
+    fn wgsl_type() -> ::std::string::String { "u32".to_string() }
 }
 
 impl ShaderSize for ArrayLength {}
@@ -151,6 +152,8 @@ macro_rules! impl_rts_array_inner {
                     .mul($crate::private::Length::length(self).max(1) as ::core::primitive::u64)
                     .0
             }
+
+            fn wgsl_type() -> ::std::string::String { ::std::string::ToString::to_string("array<") + &T::wgsl_type() + ">" }
         }
 
         impl<$($generics)*> $crate::private::RuntimeSizedArray for $type

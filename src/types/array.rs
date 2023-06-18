@@ -55,6 +55,8 @@ impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
             },
         ])
     };
+
+    fn wgsl_type() -> ::std::string::String { ::std::string::ToString::to_string("array<") + &T::wgsl_type() + "," + &::std::string::ToString::to_string(&N) + ">"}
 }
 
 impl<T: ShaderSize, const N: usize> ShaderSize for [T; N] {}

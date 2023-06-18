@@ -97,6 +97,13 @@ impl FieldData {
     fn ident(&self) -> &Ident {
         self.field.ident.as_ref().unwrap()
     }
+
+    fn wgsl_type(&self, root: &Path) -> TokenStream {
+        let ty = &self.field.ty;
+        quote! {
+            <#ty as #root::ShaderType>::wgsl_type()
+        }
+    }
 }
 
 struct AlignmentAttr(u32);
@@ -522,6 +529,10 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
+    let field_strings = field_data.iter().map(|data| data.ident().to_string());
+    let field_wgsl_types = field_data.iter().map(|data| data.wgsl_type(root));
+    let name_string = name.to_string();
+
     let set_contained_rt_sized_array_length = if is_runtime_sized {
         quote! {
             writer.ctx.rts_array_length = ::core::option::Option::Some(
@@ -607,6 +618,8 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 offset += #root::ShaderType::size(&self.#last_field_ident).get();
                 #root::SizeValue::new(Self::METADATA.alignment().round_up(offset)).0
             }
+
+            fn wgsl_type() -> ::std::string::String {::std::string::ToString::to_string(#name_string) }
         }
 
         impl #impl_generics #root::WriteInto for #name #ty_generics
@@ -639,6 +652,15 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 #( #create_from_buffer_body )*
 
                 #root::build_struct!(Self, #( #field_idents ),*)
+            }
+        }
+
+        impl #impl_generics #root::WgslStruct for #name #ty_generics
+        {
+            fn wgsl_struct() -> ::std::string::String {
+                ::std::string::ToString::to_string("struct ") + #name_string + " {\n"
+                    #( + "    " + #field_strings + ": " + &#field_wgsl_types + ",\n")*
+                + "}\n"
             }
         }
 

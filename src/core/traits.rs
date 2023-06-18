@@ -86,6 +86,8 @@ pub trait ShaderType {
     #[doc(hidden)]
     const UNIFORM_COMPAT_ASSERT: fn() = || {};
 
+    fn wgsl_type() -> String;
+
     /// Asserts that `Self` meets the requirements of the
     /// [uniform address space restrictions on stored values](https://gpuweb.github.io/gpuweb/wgsl/#address-spaces-uniform) and the
     /// [uniform address space layout constraints](https://gpuweb.github.io/gpuweb/wgsl/#address-space-layout-constraints)
@@ -243,4 +245,8 @@ pub trait CreateFrom: Sized {
     fn create_from<B>(reader: &mut Reader<B>) -> Self
     where
         B: BufferRef;
+}
+
+pub trait WgslStruct {
+    fn wgsl_struct() -> String;
 }
