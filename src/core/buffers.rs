@@ -195,32 +195,117 @@ impl<B> AsMut<B> for DynamicStorageBuffer<B> {
 }
 
 impl<B: BufferMut> DynamicStorageBuffer<B> {
+    /// Layouts and writes an entire bound value into the buffer. The value is written at the
+    /// next available offset after the buffer's current offset, which is aligned to the required
+    /// dynamic binding alignment (defaults to 256).
+    ///
+    /// Use this to write the entire struct you will be binding as a dynamic-offset storage buffer.
+    ///
+    /// Returns the offset at which the value was written.
     pub fn write<T>(&mut self, value: &T) -> Result<u64>
     where
         T: ?Sized + ShaderType + WriteInto,
     {
+        self.write_dynamic_struct_break();
         let offset = self.offset;
 
         let mut writer = Writer::new(value, &mut self.inner, offset)?;
         value.write_into(&mut writer);
 
-        self.offset += self.alignment.round_up(value.size().get()) as usize;
+        self.offset += value.size().get() as usize;
 
         Ok(offset as u64)
+    }
+
+    /// Layouts and writes a single member into the buffer. The value is written at the
+    /// next available offset after the buffer's current offset, which is aligned the
+    /// alignment of `T`.
+    ///
+    /// The use case is constructing a struct member by member in case the layout isn't
+    /// known at compile time. Combine this with [`Self::write_dynamic_struct_break`] to "end"
+    /// the struct being written and start the next one.
+    ///
+    /// Returns the offset at which the value was written.
+    pub fn write_single_member<T>(&mut self, value: &T) -> Result<u64>
+    where
+        T: ShaderType + WriteInto,
+    {
+        self.offset = T::METADATA.alignment().round_up(self.offset as u64) as usize;
+        let offset = self.offset;
+
+        let mut writer = Writer::new(value, &mut self.inner, offset)?;
+        value.write_into(&mut writer);
+
+        self.offset += value.size().get() as usize;
+
+        Ok(offset as u64)
+    }
+
+    /// Writes a "struct break" into the buffer. This takes the buffer offset and aligns it
+    /// to the required dynamic binding alignment (defaults to 256).
+    ///
+    /// The use case is constructing a struct member by member in case the layout isn't
+    /// known at compile time. Combine this with [`Self::write_single_member`] to add
+    /// each individual member of the struct being written.
+    ///
+    /// Returns the offset which was rounded up to.
+    pub fn write_dynamic_struct_break(&mut self) -> u64 {
+        self.offset = self.alignment.round_up(self.offset as u64) as usize;
+        self.offset as u64
     }
 }
 
 impl<B: BufferRef> DynamicStorageBuffer<B> {
+    /// Reads and un-layouts an entire bound value from the buffer. The value is read from the
+    /// next available offset after the buffer's current offset, which is aligned to the required
+    /// dynamic binding alignment (defaults to 256).
+    ///
+    /// Use this to read the entire struct you bound as a dynamic-offset storage buffer.
     pub fn read<T>(&mut self, value: &mut T) -> Result<()>
     where
         T: ?Sized + ShaderType + ReadFrom,
     {
-        let mut writer = Reader::new::<T>(&self.inner, self.offset)?;
-        value.read_from(&mut writer);
+        self.read_dynamic_struct_break();
 
-        self.offset += self.alignment.round_up(value.size().get()) as usize;
+        let mut reader = Reader::new::<T>(&self.inner, self.offset)?;
+        value.read_from(&mut reader);
+
+        self.offset += value.size().get() as usize;
 
         Ok(())
+    }
+
+    /// Reads a single member from the buffer. The value is read at the
+    /// next available offset after the buffer's current offset, which is aligned the
+    /// alignment of `T`.
+    ///
+    /// The use case is deconstructing a struct member by member in case the layout isn't
+    /// known at compile time. Combine this with [`Self::read_dynamic_struct_break`] to "end"
+    /// the struct being read and start the next one.
+    ///
+    /// Returns the offset at which the value was written.
+    pub fn read_single_member<T>(&mut self, value: &mut T) -> Result<()>
+    where
+        T: ShaderType + ReadFrom,
+    {
+        self.offset = T::METADATA.alignment().round_up(self.offset as u64) as usize;
+
+        let mut reader = Reader::new::<T>(&self.inner, self.offset)?;
+        value.read_from(&mut reader);
+
+        self.offset += value.size().get() as usize;
+
+        Ok(())
+    }
+
+    /// Reads a "struct break" from the buffer. This takes the buffer offset and aligns it
+    /// to the required dynamic binding alignment (defaults to 256).
+    ///
+    /// The use case is constructing a struct member by member in case the layout isn't
+    /// known at compile time. Combine this with [`Self::read_single_member`] to add
+    /// each individual member of the struct being written.
+    pub fn read_dynamic_struct_break(&mut self) {
+        self.offset = self.alignment.round_up(self.offset as u64) as usize;
     }
 
     pub fn create<T>(&mut self) -> Result<T>
@@ -289,6 +374,13 @@ impl<B> AsMut<B> for DynamicUniformBuffer<B> {
 }
 
 impl<B: BufferMut> DynamicUniformBuffer<B> {
+    /// Layouts and writes an entire bound value into the buffer. The value is written at the
+    /// next available offset after the buffer's current offset, which is aligned to the required
+    /// dynamic binding alignment (defaults to 256).
+    ///
+    /// Use this to write the entire struct you will be binding as a dynamic-offset storage buffer.
+    ///
+    /// Returns the offset at which the value was written.
     pub fn write<T>(&mut self, value: &T) -> Result<u64>
     where
         T: ?Sized + ShaderType + WriteInto,
@@ -296,15 +388,76 @@ impl<B: BufferMut> DynamicUniformBuffer<B> {
         T::assert_uniform_compat();
         self.inner.write(value)
     }
+
+    /// Layouts and writes a single member into the buffer. The value is written at the
+    /// next available offset after the buffer's current offset, which is aligned the
+    /// alignment of `T`.
+    ///
+    /// The use case is constructing a struct member by member in case the layout isn't
+    /// known at compile time. Combine this with [`Self::write_dynamic_struct_break`] to "end"
+    /// the struct being written and start the next one.
+    ///
+    /// Returns the offset at which the value was written.
+    pub fn write_single_member<T>(&mut self, value: &T) -> Result<u64>
+    where
+        T: ShaderType + WriteInto,
+    {
+        T::assert_uniform_compat();
+        self.inner.write_single_member(value)
+    }
+
+    /// Writes a "struct break" into the buffer. This takes the buffer offset and aligns it
+    /// to the required dynamic binding alignment (defaults to 256).
+    ///
+    /// The use case is constructing a struct member by member in case the layout isn't
+    /// known at compile time. Combine this with [`Self::write_single_member`] to add
+    /// each individual member of the struct being written.
+    ///
+    /// Returns the offset which was rounded up to.
+    pub fn write_dynamic_struct_break(&mut self) -> u64 {
+        self.inner.write_dynamic_struct_break()
+    }
 }
 
 impl<B: BufferRef> DynamicUniformBuffer<B> {
+    /// Reads and un-layouts an entire bound value from the buffer. The value is read from the
+    /// next available offset after the buffer's current offset, which is aligned to the required
+    /// dynamic binding alignment (defaults to 256).
+    ///
+    /// Use this to read the entire struct you bound as a dynamic-offset storage buffer.
     pub fn read<T>(&mut self, value: &mut T) -> Result<()>
     where
         T: ?Sized + ShaderType + ReadFrom,
     {
         T::assert_uniform_compat();
         self.inner.read(value)
+    }
+    
+    /// Reads a single member from the buffer. The value is read at the
+    /// next available offset after the buffer's current offset, which is aligned the
+    /// alignment of `T`.
+    ///
+    /// The use case is deconstructing a struct member by member in case the layout isn't
+    /// known at compile time. Combine this with [`Self::read_dynamic_struct_break`] to "end"
+    /// the struct being read and start the next one.
+    ///
+    /// Returns the offset at which the value was written.
+    pub fn read_single_member<T>(&mut self, value: &mut T) -> Result<()>
+    where
+        T: ShaderType + ReadFrom,
+    {
+        T::assert_uniform_compat();
+        self.inner.read_single_member(value)
+    }
+    
+    /// Reads a "struct break" from the buffer. This takes the buffer offset and aligns it
+    /// to the required dynamic binding alignment (defaults to 256).
+    ///
+    /// The use case is constructing a struct member by member in case the layout isn't
+    /// known at compile time. Combine this with [`Self::read_single_member`] to add
+    /// each individual member of the struct being written.
+    pub fn read_dynamic_struct_break(&mut self) {
+        self.inner.read_dynamic_struct_break()
     }
 
     pub fn create<T>(&mut self) -> Result<T>
