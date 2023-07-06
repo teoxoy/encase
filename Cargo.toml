@@ -24,6 +24,22 @@ codegen-units = 1
 [[bench]]
 name = "troughput"
 harness = false
+required-features = ["mint"]
+
+[[test]]
+name = "general"
+path = "tests/general.rs"
+required-features = ["mint"]
+
+[[test]]
+name = "hygiene"
+path = "tests/hygiene.rs"
+required-features = ["mint"]
+
+[[test]]
+name = "wgpu"
+path = "tests/wgpu.rs"
+required-features = ["mint"]
 
 [workspace]
 members = ["derive", "derive/impl"]

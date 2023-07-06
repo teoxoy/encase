@@ -91,4 +91,4 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 
-      - run: cargo llvm-cov nextest --workspace --features mint,glam --fail-under-lines 80
+      - run: cargo llvm-cov nextest --workspace --features mint --fail-under-lines 80
