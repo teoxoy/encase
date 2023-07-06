@@ -432,7 +432,7 @@ impl<B: BufferRef> DynamicUniformBuffer<B> {
         T::assert_uniform_compat();
         self.inner.read(value)
     }
-    
+
     /// Reads a single member from the buffer. The value is read at the
     /// next available offset after the buffer's current offset, which is aligned the
     /// alignment of `T`.
@@ -449,7 +449,7 @@ impl<B: BufferRef> DynamicUniformBuffer<B> {
         T::assert_uniform_compat();
         self.inner.read_single_member(value)
     }
-    
+
     /// Reads a "struct break" from the buffer. This takes the buffer offset and aligns it
     /// to the required dynamic binding alignment (defaults to 256).
     ///
