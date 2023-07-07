@@ -11,6 +11,6 @@ keywords = ["wgsl", "wgpu"]
 categories = ["rendering"]
 
 [dependencies]
-syn = "2"
+syn = "2.0.1"
 quote = "1"
 proc-macro2 = "1"
