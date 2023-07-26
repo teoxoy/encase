@@ -137,8 +137,8 @@ macro_rules! impl_traits_for_atomic {
     };
 }
 
-impl_traits_for_atomic!(AtomicU32, "atomic<u32>");
-impl_traits_for_atomic!(AtomicI32, "atomic<i32>");
+impl_traits_for_atomic!(AtomicU32, "u32");
+impl_traits_for_atomic!(AtomicI32, "i32");
 
 macro_rules! impl_marker_trait_for_f32 {
     ($trait:path) => {

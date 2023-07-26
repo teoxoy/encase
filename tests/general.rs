@@ -38,6 +38,10 @@ struct A {
     wi: core::num::Wrapping<i32>,
     au: core::sync::atomic::AtomicU32,
     ai: core::sync::atomic::AtomicI32,
+    #[shader_atomic]
+    aau: u32,
+    #[shader_atomic]
+    aai: i32,
     v2: mint::Vector2<f32>,
     v3: mint::Vector3<u32>,
     v4: mint::Vector4<i32>,
@@ -77,6 +81,8 @@ fn gen_a(rng: &mut rand::rngs::StdRng) -> A {
         wi: core::num::Wrapping(gen!(rng, i32)),
         au: core::sync::atomic::AtomicU32::new(gen!(rng, u32)),
         ai: core::sync::atomic::AtomicI32::new(gen!(rng, i32)),
+        aau: gen!(rng, u32),
+        aai: gen!(rng, i32),
         v2: mint::Vector2::from(gen_arr!(rng, f32, 2)),
         v3: mint::Vector3::from(gen_arr!(rng, u32, 3)),
         v4: mint::Vector4::from(gen_arr!(rng, i32, 4)),
@@ -111,12 +117,12 @@ fn size() {
     let mut rng = rand::rngs::StdRng::seed_from_u64(1234);
     let a = gen_a(&mut rng);
 
-    assert_eq!(a.size().get(), 4080);
+    assert_eq!(a.size().get(), 4096);
 }
 
 #[test]
 fn calculate_size_for() {
-    assert_eq!(<&A>::calculate_size_for(12).get(), 2832);
+    assert_eq!(<&A>::calculate_size_for(12).get(), 2848);
 }
 
 #[test]
@@ -157,8 +163,10 @@ fn wgsl_struct() {
     ni: i32,
     wu: u32,
     wi: i32,
-    au: atomic<u32>,
-    ai: atomic<i32>,
+    au: u32,
+    ai: i32,
+    aau: atomic<u32>,
+    aai: atomic<i32>,
     v2: vec2<f32>,
     v3: vec3<u32>,
     v4: vec4<i32>,
