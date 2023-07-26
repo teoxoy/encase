@@ -674,11 +674,11 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
 
         impl #impl_generics #root::WgslStruct for #name #ty_generics
         {
-            fn wgsl_struct() -> ::std::string::String {
-                ::std::format!("struct {} {{\n", #name_string)
-                #( + &::std::format!("{}    {}: {},\n", #field_layout_attributes, #field_strings, #field_wgsl_types) )*
-                + "}\n"
-            }
+            const WGSL_STRUCT: &'static ::core::primitive::str =
+                #root::ConstStr::new()
+                .str("struct ").str(#name_string).str(" {\n")
+                #( .str(#field_layout_attributes).str("    ").str(#field_strings).str(": ").str(#field_wgsl_types).str(",\n") )*
+                .str("}\n").as_str();
         }
 
         #extra

@@ -148,7 +148,7 @@ fn all_types() {
 fn wgsl_struct() {
     assert_eq!(A::WGSL_TYPE, "A");
     assert_eq!(
-        A::wgsl_struct(),
+        A::WGSL_STRUCT,
         "struct A {
     f: f32,
     u: u32,

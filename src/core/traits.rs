@@ -251,6 +251,6 @@ pub trait CreateFrom: Sized {
 }
 
 pub trait WgslStruct {
-    /// Returns the [WGSL struct](https://www.w3.org/TR/WGSL/#struct-types) definition for the implementing Rust struct
-    fn wgsl_struct() -> String;
+    /// The [WGSL struct](https://www.w3.org/TR/WGSL/#struct-types) definition for the implementing Rust struct
+    const WGSL_STRUCT: &'static str;
 }
