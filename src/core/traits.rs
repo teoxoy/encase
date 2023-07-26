@@ -58,6 +58,11 @@ pub trait ShaderType {
     #[doc(hidden)]
     const METADATA: Metadata<Self::ExtraMetadata>;
 
+    /// The [WGSL type name](https://www.w3.org/TR/WGSL/#types) for the implementing Rust type.
+    ///
+    /// Note that for structs, this is just the name of the struct. See also [`WgslStruct`].
+    const WGSL_TYPE: &'static str;
+
     /// Represents the minimum size of `Self` (equivalent to [GPUBufferBindingLayout.minBindingSize](https://gpuweb.github.io/gpuweb/#dom-gpubufferbindinglayout-minbindingsize))
     ///
     /// For [WGSL fixed-footprint types](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types)
@@ -85,11 +90,6 @@ pub trait ShaderType {
 
     #[doc(hidden)]
     const UNIFORM_COMPAT_ASSERT: fn() = || {};
-
-    /// Returns the [WGSL type name](https://www.w3.org/TR/WGSL/#types) for the implementing Rust type.
-    ///
-    /// Note that for structs, this is just the name of the struct. See also [`WgslStruct`].
-    fn wgsl_type() -> String;
 
     /// Asserts that `Self` meets the requirements of the
     /// [uniform address space restrictions on stored values](https://gpuweb.github.io/gpuweb/wgsl/#address-spaces-uniform) and the

@@ -101,7 +101,7 @@ impl FieldData {
     fn wgsl_type(&self, root: &Path) -> TokenStream {
         let ty = &self.field.ty;
         quote! {
-            <#ty as #root::ShaderType>::wgsl_type()
+            <#ty as #root::ShaderType>::WGSL_TYPE
         }
     }
 
@@ -636,9 +636,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 #root::SizeValue::new(Self::METADATA.alignment().round_up(offset)).0
             }
 
-            fn wgsl_type() -> ::std::string::String {
-                ::std::string::ToString::to_string(#name_string)
-            }
+            const WGSL_TYPE: &'static ::core::primitive::str = #name_string;
         }
 
         impl #impl_generics #root::WriteInto for #name #ty_generics

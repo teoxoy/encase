@@ -148,9 +148,7 @@ macro_rules! impl_matrix_inner {
                 }
             };
 
-            fn wgsl_type() -> ::std::string::String {
-                ::std::format!("mat{}x{}<{}>", $c, $r, <$el_ty as $crate::private::ShaderType>::wgsl_type())
-            }
+            const WGSL_TYPE: &'static ::core::primitive::str = $crate::private::ConstStr::new().str("mat").u64($c).str("x").u64($r).str("<").str(<$el_ty as $crate::private::ShaderType>::WGSL_TYPE).str(">").as_str();
         }
 
         impl<$($generics)*> $crate::private::ShaderSize for $type

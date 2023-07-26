@@ -1,3 +1,4 @@
+use crate::const_str::ConstStr;
 use crate::core::{
     BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderSize, ShaderType,
     SizeValue, WriteInto, Writer,
@@ -56,9 +57,13 @@ impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
         ])
     };
 
-    fn wgsl_type() -> String {
-        format!("array<{},{}>", T::wgsl_type(), N)
-    }
+    const WGSL_TYPE: &'static ::core::primitive::str = ConstStr::new()
+        .str("array<")
+        .str(T::WGSL_TYPE)
+        .str(",")
+        .u64(N as u64)
+        .str(">")
+        .as_str();
 }
 
 impl<T: ShaderSize, const N: usize> ShaderSize for [T; N] {}

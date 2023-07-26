@@ -146,7 +146,7 @@ fn all_types() {
 
 #[test]
 fn wgsl_struct() {
-    assert_eq!(A::wgsl_type(), "A");
+    assert_eq!(A::WGSL_TYPE, "A");
     assert_eq!(
         A::wgsl_struct(),
         "struct A {

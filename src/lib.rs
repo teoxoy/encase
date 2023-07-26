@@ -96,6 +96,7 @@ pub use encase_derive::ShaderType;
 
 #[macro_use]
 mod utils;
+mod const_str;
 mod core;
 mod types;
 
@@ -143,6 +144,7 @@ pub mod matrix {
 #[doc(hidden)]
 pub mod private {
     pub use super::build_struct;
+    pub use super::const_str::ConstStr;
     pub use super::core::AlignmentValue;
     pub use super::core::BufferMut;
     pub use super::core::BufferRef;
