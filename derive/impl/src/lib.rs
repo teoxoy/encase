@@ -551,6 +551,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
     let field_types_2 = field_types.clone();
     let field_types_3 = field_types.clone();
     let field_types_4 = field_types.clone();
+    let field_types_5 = field_types.clone();
     let all_other = field_types.clone().take(last_field_index);
     let last_field_type = &last_field.field.ty;
 
@@ -699,6 +700,8 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         }
 
         impl #impl_generics #root::ShaderStructDeclaration for #name #ty_generics
+        where
+            #( #field_types_5: #root::ShaderType, )*
         {
             const SHADER_STRUCT_DECLARATION: &'static ::core::primitive::str =
                 #root::ConstStr::new()
