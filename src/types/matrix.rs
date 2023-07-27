@@ -148,7 +148,8 @@ macro_rules! impl_matrix_inner {
                 }
             };
 
-            const WGSL_TYPE: &'static ::core::primitive::str = $crate::private::ConstStr::new().str("mat").u64($c).str("x").u64($r).str("<").str(<$el_ty as $crate::private::ShaderType>::WGSL_TYPE).str(">").as_str();
+            const SHADER_TYPE: &'static ::core::primitive::str = $crate::private::ConstStr::new()
+                .str("mat").u64($c).str("x").u64($r).str("<").str(<$el_ty as $crate::private::ShaderType>::SHADER_TYPE).str(">").as_str();
         }
 
         impl<$($generics)*> $crate::private::ShaderSize for $type

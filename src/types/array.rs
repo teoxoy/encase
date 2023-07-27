@@ -57,9 +57,9 @@ impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
         ])
     };
 
-    const WGSL_TYPE: &'static ::core::primitive::str = ConstStr::new()
+    const SHADER_TYPE: &'static ::core::primitive::str = ConstStr::new()
         .str("array<")
-        .str(T::WGSL_TYPE)
+        .str(T::SHADER_TYPE)
         .str(",")
         .u64(N as u64)
         .str(">")

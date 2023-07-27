@@ -1,4 +1,4 @@
-use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer, WgslStruct};
+use encase::{ArrayLength, CalculateSizeFor, ShaderStructDeclaration, ShaderType, StorageBuffer};
 
 macro_rules! gen {
     ($rng:ident, $ty:ty) => {{
@@ -152,9 +152,9 @@ fn all_types() {
 
 #[test]
 fn wgsl_struct() {
-    assert_eq!(A::WGSL_TYPE, "A");
+    assert_eq!(A::SHADER_TYPE, "A");
     assert_eq!(
-        A::WGSL_STRUCT,
+        A::SHADER_STRUCT_DECLARATION,
         "struct A {
     f: f32,
     u: u32,

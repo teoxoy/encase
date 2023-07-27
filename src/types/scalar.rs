@@ -10,7 +10,7 @@ macro_rules! impl_basic_traits {
         impl ShaderType for $type {
             type ExtraMetadata = ();
             const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
-            const WGSL_TYPE: &'static str = $wgsl;
+            const SHADER_TYPE: &'static str = $wgsl;
         }
 
         impl ShaderSize for $type {}

@@ -1,4 +1,4 @@
-// Const string implementation for WGSL_TYPE and WGSL_STRUCT
+// Const string implementation for SHADER_TYPE and SHADER_STRUCT_DECLARATION
 // Used instead of crates like const_str because of E0401 when trying to use them in traits
 // See also https://old.reddit.com/r/rust/comments/sv119a/concat_static_str_at_compile_time/
 

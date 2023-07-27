@@ -18,7 +18,7 @@ Having to manually lay out data into GPU buffers can become very tedious and err
 
 The core trait is [`ShaderType`] which mainly contains metadata about the given type.
 
-The [`WriteInto`], [`ReadFrom`] and [`CreateFrom`] traits represent the ability of a type to be written into the buffer, read from the buffer and created from the buffer respectively. The [`WgslStruct`] trait allows to generate the WGSL struct definition.
+The [`WriteInto`], [`ReadFrom`] and [`CreateFrom`] traits represent the ability of a type to be written into the buffer, read from the buffer and created from the buffer respectively. The [`ShaderStructDeclaration`] trait allows to generate the WGSL struct definition.
 
 Most data types can implement the above traits via their respective macros:
 
