@@ -195,6 +195,17 @@ impl<B> AsMut<B> for DynamicStorageBuffer<B> {
 }
 
 impl<B: BufferMut> DynamicStorageBuffer<B> {
+    fn set_and_alloc_offset(&mut self, offset: usize) -> Result<()> {
+        self.offset = offset;
+
+        self.inner
+            .try_enlarge(self.offset)
+            .map_err(|_e| super::rw::Error::BufferTooSmall {
+                expected: self.offset as u64,
+                found: self.inner.capacity() as u64,
+            })
+    }
+
     /// Layouts and writes an entire bound value into the buffer. The value is written at the
     /// next available offset after the buffer's current offset, which is aligned to the required
     /// dynamic binding alignment (defaults to 256).
@@ -206,13 +217,13 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
     where
         T: ?Sized + ShaderType + WriteInto,
     {
-        self.write_dynamic_struct_break();
+        self.write_struct_end()?;
         let offset = self.offset;
 
         let mut writer = Writer::new(value, &mut self.inner, offset)?;
         value.write_into(&mut writer);
 
-        self.offset += value.size().get() as usize;
+        self.set_and_alloc_offset(self.offset + value.size().get() as usize)?;
 
         Ok(offset as u64)
     }
@@ -222,11 +233,11 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
     /// alignment of `T`.
     ///
     /// The use case is constructing a struct member by member in case the layout isn't
-    /// known at compile time. Combine this with [`Self::write_dynamic_struct_break`] to "end"
+    /// known at compile time. Combine this with [`Self::write_struct_end`] to "end"
     /// the struct being written and start the next one.
     ///
     /// Returns the offset at which the value was written.
-    pub fn write_single_member<T>(&mut self, value: &T) -> Result<u64>
+    pub fn write_struct_member<T>(&mut self, value: &T) -> Result<u64>
     where
         T: ShaderType + WriteInto,
     {
@@ -236,7 +247,7 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
         let mut writer = Writer::new(value, &mut self.inner, offset)?;
         value.write_into(&mut writer);
 
-        self.offset += value.size().get() as usize;
+        self.set_and_alloc_offset(self.offset + value.size().get() as usize)?;
 
         Ok(offset as u64)
     }
@@ -245,13 +256,14 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
     /// to the required dynamic binding alignment (defaults to 256).
     ///
     /// The use case is constructing a struct member by member in case the layout isn't
-    /// known at compile time. Combine this with [`Self::write_single_member`] to add
+    /// known at compile time. Combine this with [`Self::write_struct_member`] to add
     /// each individual member of the struct being written.
     ///
     /// Returns the offset which was rounded up to.
-    pub fn write_dynamic_struct_break(&mut self) -> u64 {
-        self.offset = self.alignment.round_up(self.offset as u64) as usize;
-        self.offset as u64
+    pub fn write_struct_end(&mut self) -> Result<u64> {
+        self.set_and_alloc_offset(self.alignment.round_up(self.offset as u64) as usize)?;
+
+        Ok(self.offset as u64)
     }
 }
 
@@ -394,28 +406,28 @@ impl<B: BufferMut> DynamicUniformBuffer<B> {
     /// alignment of `T`.
     ///
     /// The use case is constructing a struct member by member in case the layout isn't
-    /// known at compile time. Combine this with [`Self::write_dynamic_struct_break`] to "end"
+    /// known at compile time. Combine this with [`Self::write_struct_end`] to "end"
     /// the struct being written and start the next one.
     ///
     /// Returns the offset at which the value was written.
-    pub fn write_single_member<T>(&mut self, value: &T) -> Result<u64>
+    pub fn write_struct_member<T>(&mut self, value: &T) -> Result<u64>
     where
         T: ShaderType + WriteInto,
     {
         T::assert_uniform_compat();
-        self.inner.write_single_member(value)
+        self.inner.write_struct_member(value)
     }
 
     /// Writes a "struct break" into the buffer. This takes the buffer offset and aligns it
     /// to the required dynamic binding alignment (defaults to 256).
     ///
     /// The use case is constructing a struct member by member in case the layout isn't
-    /// known at compile time. Combine this with [`Self::write_single_member`] to add
+    /// known at compile time. Combine this with [`Self::write_struct_member`] to add
     /// each individual member of the struct being written.
     ///
     /// Returns the offset which was rounded up to.
-    pub fn write_dynamic_struct_break(&mut self) -> u64 {
-        self.inner.write_dynamic_struct_break()
+    pub fn write_struct_end(&mut self) -> Result<u64> {
+        self.inner.write_struct_end()
     }
 }
 
