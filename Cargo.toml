@@ -39,7 +39,7 @@ cgmath = { version = "0.18", default-features = false, optional = true }
 glam = { version = "0.24", features = ["std"], default-features = false, optional = true }
 nalgebra = { version = "0.32", default-features = false, optional = true }
 ultraviolet = { version = "0.9", features = ["int"], default-features = false, optional = true }
-vek = { version = "0.15", default-features = false, optional = true }
+vek = { version = "0.16", default-features = false, optional = true }
 smallvec = { version = "1.8.0", features = ["const_generics"], default-features = false, optional = true }
 arrayvec = { version = "0.7", default-features = false, optional = true }
 tinyvec = { version = "1.4", features = ["rustc_1_55", "alloc"], default-features = false, optional = true }
