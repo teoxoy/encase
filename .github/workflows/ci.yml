@@ -35,7 +35,7 @@ jobs:
         run: rustup toolchain install $NIGHTLY --no-self-update --profile=minimal
 
       # -Z avoid-dev-deps doesn't work
-      - run: cargo +$NIGHTLY hack generate-lockfile --remove-dev-deps -Z minimal-versions --offline
+      - run: cargo +$NIGHTLY hack generate-lockfile --remove-dev-deps -Z minimal-versions
 
       - run: cargo +$MSRV check --workspace --all-features
 
