@@ -1,8 +1,11 @@
 use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer};
 
 macro_rules! gen {
-    ($rng:ident, $ty:ty) => {{
-        let mut buf = [0; 4];
+    ($rng:ident, $ty:ty) => {
+        gen!($rng, $ty, size = 4)
+    };
+    ($rng:ident, $ty:ty, size = $size:literal) => {{
+        let mut buf = [0; $size];
         use rand::RngCore;
         $rng.fill_bytes(&mut buf);
         <$ty>::from_ne_bytes(buf)
@@ -10,8 +13,11 @@ macro_rules! gen {
 }
 
 macro_rules! gen_arr {
-    ($rng:ident, $ty:ty, $n:literal) => {{
-        [(); $n].map(|_| gen!($rng, $ty))
+    ($rng:ident, $ty:ty, $n:literal) => {
+        gen_arr!($rng, $ty, $n, size = 4)
+    };
+    ($rng:ident, $ty:ty, $n:literal, size = $size:literal) => {{
+        [(); $n].map(|_| gen!($rng, $ty, size = $size))
     }};
 }
 
@@ -31,6 +37,7 @@ macro_rules! gen_inner {
 struct A {
     f: f32,
     u: u32,
+    uu: u64,
     i: i32,
     nu: Option<core::num::NonZeroU32>,
     ni: Option<core::num::NonZeroI32>,
@@ -54,6 +61,7 @@ struct A {
     mat4: mint::ColumnMatrix4<f32>,
     arrf: [f32; 32],
     arru: [u32; 32],
+    arruu: [u64; 32],
     arri: [i32; 32],
     arrvf: [mint::Vector2<f32>; 16],
     arrvu: [mint::Vector3<u32>; 16],
@@ -70,6 +78,7 @@ fn gen_a(rng: &mut rand::rngs::StdRng) -> A {
     A {
         f: gen!(rng, f32),
         u: gen!(rng, u32),
+        uu: gen!(rng, u64, size = 8),
         i: gen!(rng, i32),
         nu: core::num::NonZeroU32::new(gen!(rng, u32)),
         ni: core::num::NonZeroI32::new(gen!(rng, i32)),
@@ -93,6 +102,7 @@ fn gen_a(rng: &mut rand::rngs::StdRng) -> A {
         mat4: mint::ColumnMatrix4::from(gen_2d_arr!(rng, f32, 4, 4)),
         arrf: gen_arr!(rng, f32, 32),
         arru: gen_arr!(rng, u32, 32),
+        arruu: gen_arr!(rng, u64, 32, size = 8),
         arri: gen_arr!(rng, i32, 32),
         arrvf: gen_inner!(16, mint::Vector2::from(gen_arr!(rng, f32, 2))),
         arrvu: gen_inner!(16, mint::Vector3::from(gen_arr!(rng, u32, 3))),

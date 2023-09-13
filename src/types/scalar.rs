@@ -7,9 +7,12 @@ use core::sync::atomic::{AtomicI32, AtomicU32};
 
 macro_rules! impl_basic_traits {
     ($type:ty) => {
+        impl_basic_traits!($type, size = 4, alignment = 4);
+    };
+    ($type:ty, size = $size:literal, alignment = $alignment:literal) => {
         impl ShaderType for $type {
             type ExtraMetadata = ();
-            const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
+            const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size($alignment, $size);
         }
 
         impl ShaderSize for $type {}
@@ -18,7 +21,10 @@ macro_rules! impl_basic_traits {
 
 macro_rules! impl_traits {
     ($type:ty) => {
-        impl_basic_traits!($type);
+        impl_traits!($type, size = 4, alignment = 4);
+    };
+    ($type:ty, size = $size:literal, alignment = $alignment:literal) => {
+        impl_basic_traits!($type, size = $size, alignment = $alignment);
 
         impl WriteInto for $type {
             #[inline]
@@ -45,6 +51,7 @@ macro_rules! impl_traits {
 
 impl_traits!(f32);
 impl_traits!(u32);
+impl_traits!(u64, size = 8, alignment = 8);
 impl_traits!(i32);
 
 macro_rules! impl_traits_for_non_zero_option {
@@ -152,6 +159,13 @@ macro_rules! impl_marker_trait_for_u32 {
         impl $trait for ::core::option::Option<::core::num::NonZeroU32> {}
         impl $trait for ::core::num::Wrapping<::core::primitive::u32> {}
         impl $trait for ::core::sync::atomic::AtomicU32 {}
+    };
+}
+
+macro_rules! impl_marker_trait_for_u64 {
+    ($trait:path) => {
+        impl $trait for ::core::primitive::u64 {}
+        impl $trait for ::core::num::Wrapping<::core::primitive::u64> {}
     };
 }
 

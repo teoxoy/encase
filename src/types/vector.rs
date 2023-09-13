@@ -1,6 +1,7 @@
 pub trait VectorScalar {}
 impl_marker_trait_for_f32!(VectorScalar);
 impl_marker_trait_for_u32!(VectorScalar);
+impl_marker_trait_for_u64!(VectorScalar);
 impl_marker_trait_for_i32!(VectorScalar);
 
 /// Enables reading from the vector (via `&[T; N]`)
