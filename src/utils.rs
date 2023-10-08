@@ -161,7 +161,7 @@ mod byte_vec_ext {
     fn try_extend_zeroed_err() {
         let mut vec = vec![0; 12];
 
-        assert!(matches!(vec.try_extend_zeroed(usize::MAX), Err(_)));
+        assert!(vec.try_extend_zeroed(usize::MAX).is_err());
     }
 }
 
