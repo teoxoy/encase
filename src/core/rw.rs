@@ -374,7 +374,7 @@ mod error {
 
         {
             use std::error::Error;
-            assert!(matches!(err.source(), None));
+            assert!(err.source().is_none());
         }
 
         assert_eq!(
@@ -403,7 +403,7 @@ mod enlarge_error {
         let err = EnlargeError::from(try_reserve_error);
 
         use std::error::Error;
-        assert!(matches!(err.source(), None));
+        assert!(err.source().is_none());
 
         assert_eq!(format!("{}", err.clone()), "could not enlarge buffer");
 
