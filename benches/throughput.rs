@@ -108,7 +108,7 @@ const _: () = const_panic::concat_assert!(
 );
 
 fn bench(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Troughput");
+    let mut group = c.benchmark_group("Throughput");
 
     use rand::SeedableRng;
     let mut rng = rand::rngs::StdRng::seed_from_u64(1234);

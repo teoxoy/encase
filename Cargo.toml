@@ -22,7 +22,7 @@ codegen-units = 1
 # debug = true # for profiling
 
 [[bench]]
-name = "troughput"
+name = "throughput"
 harness = false
 
 [workspace]
