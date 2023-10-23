@@ -39,7 +39,7 @@ impl<B> AsMut<B> for StorageBuffer<B> {
 impl<B: BufferMut> StorageBuffer<B> {
     pub fn write<T>(&mut self, value: &T) -> Result<()>
     where
-        T: ShaderType + WriteInto,
+        T: ?Sized + ShaderType + WriteInto,
     {
         let mut writer = Writer::new(value, &mut self.inner, 0)?;
         value.write_into(&mut writer);
@@ -50,7 +50,7 @@ impl<B: BufferMut> StorageBuffer<B> {
 impl<B: BufferRef> StorageBuffer<B> {
     pub fn read<T>(&self, value: &mut T) -> Result<()>
     where
-        T: ShaderType + ReadFrom,
+        T: ?Sized + ShaderType + ReadFrom,
     {
         let mut writer = Reader::new::<T>(&self.inner, 0)?;
         value.read_from(&mut writer);
@@ -104,7 +104,7 @@ impl<B> AsMut<B> for UniformBuffer<B> {
 impl<B: BufferMut> UniformBuffer<B> {
     pub fn write<T>(&mut self, value: &T) -> Result<()>
     where
-        T: ShaderType + WriteInto,
+        T: ?Sized + ShaderType + WriteInto,
     {
         T::assert_uniform_compat();
         self.inner.write(value)
@@ -114,7 +114,7 @@ impl<B: BufferMut> UniformBuffer<B> {
 impl<B: BufferRef> UniformBuffer<B> {
     pub fn read<T>(&self, value: &mut T) -> Result<()>
     where
-        T: ShaderType + ReadFrom,
+        T: ?Sized + ShaderType + ReadFrom,
     {
         T::assert_uniform_compat();
         self.inner.read(value)
@@ -197,7 +197,7 @@ impl<B> AsMut<B> for DynamicStorageBuffer<B> {
 impl<B: BufferMut> DynamicStorageBuffer<B> {
     pub fn write<T>(&mut self, value: &T) -> Result<u64>
     where
-        T: ShaderType + WriteInto,
+        T: ?Sized + ShaderType + WriteInto,
     {
         let offset = self.offset;
 
@@ -213,7 +213,7 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
 impl<B: BufferRef> DynamicStorageBuffer<B> {
     pub fn read<T>(&mut self, value: &mut T) -> Result<()>
     where
-        T: ShaderType + ReadFrom,
+        T: ?Sized + ShaderType + ReadFrom,
     {
         let mut writer = Reader::new::<T>(&self.inner, self.offset)?;
         value.read_from(&mut writer);
@@ -291,7 +291,7 @@ impl<B> AsMut<B> for DynamicUniformBuffer<B> {
 impl<B: BufferMut> DynamicUniformBuffer<B> {
     pub fn write<T>(&mut self, value: &T) -> Result<u64>
     where
-        T: ShaderType + WriteInto,
+        T: ?Sized + ShaderType + WriteInto,
     {
         T::assert_uniform_compat();
         self.inner.write(value)
@@ -301,7 +301,7 @@ impl<B: BufferMut> DynamicUniformBuffer<B> {
 impl<B: BufferRef> DynamicUniformBuffer<B> {
     pub fn read<T>(&mut self, value: &mut T) -> Result<()>
     where
-        T: ShaderType + ReadFrom,
+        T: ?Sized + ShaderType + ReadFrom,
     {
         T::assert_uniform_compat();
         self.inner.read(value)
