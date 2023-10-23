@@ -23,7 +23,7 @@ pub struct Writer<B: BufferMut> {
 
 impl<B: BufferMut> Writer<B> {
     #[inline]
-    pub fn new<T: ShaderType>(data: &T, buffer: B, offset: usize) -> Result<Self> {
+    pub fn new<T: ?Sized + ShaderType>(data: &T, buffer: B, offset: usize) -> Result<Self> {
         let mut cursor = Cursor::new(buffer, offset);
         let size = data.size().get();
         if cursor.try_enlarge(offset + size as usize).is_err() {
@@ -66,7 +66,7 @@ pub struct Reader<B: BufferRef> {
 
 impl<B: BufferRef> Reader<B> {
     #[inline]
-    pub fn new<T: ShaderType + ?Sized>(buffer: B, offset: usize) -> Result<Self> {
+    pub fn new<T: ?Sized + ShaderType>(buffer: B, offset: usize) -> Result<Self> {
         let cursor = Cursor::new(buffer, offset);
         if cursor.remaining() < T::min_size().get() as usize {
             Err(Error::BufferTooSmall {
