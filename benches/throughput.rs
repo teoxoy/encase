@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion, Throughput};
-use encase::{Buffer, ShaderType, StorageBuffer, WritableBuffer};
+use encase::{Buffer, ReadableBuffer, ShaderType, StorageBuffer, WritableBuffer};
 use pprof::criterion::{Output, PProfProfiler};
 
 #[global_allocator]
