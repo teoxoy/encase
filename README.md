@@ -35,7 +35,7 @@ The [`UniformBuffer`], [`StorageBuffer`], [`DynamicUniformBuffer`] and [`Dynamic
 Write affine transform to uniform buffer
 
 ```rust
-use encase::{Buffer, ShaderType, UniformBuffer, WritebleBuffer};
+use encase::{Buffer, ShaderType, UniformBuffer, WritableBuffer};
 
 #[derive(ShaderType)]
 struct AffineTransform2D {
