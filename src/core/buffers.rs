@@ -359,14 +359,17 @@ impl<B: BufferRef> MutReadableBuffer for DynamicUniformBuffer<B> {
     }
 }
 
-pub trait BufferContent {
+trait BufferContent {
     fn buffer_content<BufferType: Buffer<B = Vec<u8>> + WritableBuffer>(&self) -> Vec<u8>;
 }
 
-impl<T> BufferContent for T where T: ShaderType + WriteInto {
+impl<T> BufferContent for T
+where
+    T: ShaderType + WriteInto,
+{
     fn buffer_content<BufferType: Buffer<B = Vec<u8>> + WritableBuffer>(&self) -> Vec<u8> {
         let mut buffer = BufferType::new(Vec::new());
         buffer.write(self).unwrap();
-        return buffer.into_inner();
+        buffer.into_inner()
     }
 }
