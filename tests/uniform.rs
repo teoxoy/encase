@@ -1,4 +1,4 @@
-use encase::{ShaderType, UniformBuffer, Buffer};
+use encase::{ShaderType, UniformBuffer, Buffer, WritableBuffer, ReadableBuffer};
 
 #[derive(Debug, ShaderType, PartialEq, Eq)]
 struct TestUniform {

@@ -1,4 +1,4 @@
-use encase::{internal::Error, ShaderType, StorageBuffer, Buffer};
+use encase::{internal::Error, ShaderType, StorageBuffer, Buffer, WritableBuffer, ReadableBuffer};
 
 #[test]
 fn buffer_too_small() {
