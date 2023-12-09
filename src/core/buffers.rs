@@ -174,6 +174,7 @@ pub struct DynamicStorageBuffer<B> {
 
 impl<B> Buffer for DynamicStorageBuffer<B> {
     type B = B;
+
     /// Creates a new dynamic storage buffer wrapper with an alignment of 256
     /// (default alignment in the WebGPU spec).
     fn new(buffer: B) -> Self {
@@ -282,6 +283,7 @@ pub struct DynamicUniformBuffer<B> {
 
 impl<B> Buffer for DynamicUniformBuffer<B> {
     type B = B;
+
     /// Creates a new dynamic uniform buffer wrapper with an alignment of 256
     /// (default alignment in the WebGPU spec).
     fn new(buffer: B) -> Self {
