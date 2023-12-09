@@ -317,14 +317,14 @@ impl<B: BufferRef> DynamicUniformBuffer<B> {
 }
 
 pub trait StorageBufferContent {
-    fn buffer_content(&self) -> Vec<u8>;
+    fn storage_buffer_content(&self) -> Vec<u8>;
 }
 
 impl<T> StorageBufferContent for T
 where
     T: ShaderType + WriteInto,
 {
-    fn buffer_content(&self) -> Vec<u8> {
+    fn storage_buffer_content(&self) -> Vec<u8> {
         let mut buffer = StorageBuffer::new(Vec::new());
         buffer.write(self).unwrap();
         buffer.into_inner()
@@ -332,14 +332,14 @@ where
 }
 
 pub trait UniformBufferContent {
-    fn buffer_content(&self) -> Vec<u8>;
+    fn uniform_buffer_content(&self) -> Vec<u8>;
 }
 
 impl<T> UniformBufferContent for T
 where
     T: ShaderType + WriteInto,
 {
-    fn buffer_content(&self) -> Vec<u8> {
+    fn uniform_buffer_content(&self) -> Vec<u8> {
         let mut buffer = UniformBuffer::new(Vec::new());
         buffer.write(self).unwrap();
         buffer.into_inner()
