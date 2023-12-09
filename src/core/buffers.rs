@@ -3,17 +3,50 @@ use super::{
     WriteInto, Writer,
 };
 
+pub trait Buffer {
+    type B;
+    fn new(buffer: Self::B) -> Self;
+    fn into_inner(self) -> Self::B;
+}
+
+pub trait WritableBuffer {
+    // would do type WriteResultType = (); if associated type defaults were stable
+    type WriteResultType;
+    fn write<T>(&mut self, value: &T) -> Result<Self::WriteResultType>
+    where
+        T: ?Sized + ShaderType + WriteInto;
+}
+
+pub trait ReadableBuffer {
+    fn read<T>(&self, value: &mut T) -> Result<()>
+    where
+        T: ?Sized + ShaderType + ReadFrom;
+    fn create<T>(&self) -> Result<T>
+    where
+        T: ShaderType + CreateFrom;
+}
+
+pub trait MutReadableBuffer {
+    fn read<T>(&mut self, value: &mut T) -> Result<()>
+    where
+        T: ?Sized + ShaderType + ReadFrom;
+    fn create<T>(&mut self) -> Result<T>
+    where
+        T: ShaderType + CreateFrom;
+}
+
 /// Storage buffer wrapper facilitating RW operations
 pub struct StorageBuffer<B> {
     inner: B,
 }
 
-impl<B> StorageBuffer<B> {
-    pub const fn new(buffer: B) -> Self {
+impl<B> Buffer for StorageBuffer<B> {
+    type B = B;
+    fn new(buffer: B) -> Self {
         Self { inner: buffer }
     }
 
-    pub fn into_inner(self) -> B {
+    fn into_inner(self) -> B {
         self.inner
     }
 }
@@ -36,8 +69,9 @@ impl<B> AsMut<B> for StorageBuffer<B> {
     }
 }
 
-impl<B: BufferMut> StorageBuffer<B> {
-    pub fn write<T>(&mut self, value: &T) -> Result<()>
+impl<B: BufferMut> WritableBuffer for StorageBuffer<B> {
+    type WriteResultType = ();
+    fn write<T>(&mut self, value: &T) -> Result<()>
     where
         T: ?Sized + ShaderType + WriteInto,
     {
@@ -47,8 +81,8 @@ impl<B: BufferMut> StorageBuffer<B> {
     }
 }
 
-impl<B: BufferRef> StorageBuffer<B> {
-    pub fn read<T>(&self, value: &mut T) -> Result<()>
+impl<B: BufferRef> ReadableBuffer for StorageBuffer<B> {
+    fn read<T>(&self, value: &mut T) -> Result<()>
     where
         T: ?Sized + ShaderType + ReadFrom,
     {
@@ -57,7 +91,7 @@ impl<B: BufferRef> StorageBuffer<B> {
         Ok(())
     }
 
-    pub fn create<T>(&self) -> Result<T>
+    fn create<T>(&self) -> Result<T>
     where
         T: ShaderType + CreateFrom,
     {
@@ -71,14 +105,15 @@ pub struct UniformBuffer<B> {
     inner: StorageBuffer<B>,
 }
 
-impl<B> UniformBuffer<B> {
-    pub const fn new(buffer: B) -> Self {
+impl<B> Buffer for UniformBuffer<B> {
+    type B = B;
+    fn new(buffer: B) -> Self {
         Self {
             inner: StorageBuffer::new(buffer),
         }
     }
 
-    pub fn into_inner(self) -> B {
+    fn into_inner(self) -> B {
         self.inner.inner
     }
 }
@@ -101,8 +136,9 @@ impl<B> AsMut<B> for UniformBuffer<B> {
     }
 }
 
-impl<B: BufferMut> UniformBuffer<B> {
-    pub fn write<T>(&mut self, value: &T) -> Result<()>
+impl<B: BufferMut> WritableBuffer for UniformBuffer<B> {
+    type WriteResultType = ();
+    fn write<T>(&mut self, value: &T) -> Result<()>
     where
         T: ?Sized + ShaderType + WriteInto,
     {
@@ -111,8 +147,8 @@ impl<B: BufferMut> UniformBuffer<B> {
     }
 }
 
-impl<B: BufferRef> UniformBuffer<B> {
-    pub fn read<T>(&self, value: &mut T) -> Result<()>
+impl<B: BufferRef> ReadableBuffer for UniformBuffer<B> {
+    fn read<T>(&self, value: &mut T) -> Result<()>
     where
         T: ?Sized + ShaderType + ReadFrom,
     {
@@ -120,7 +156,7 @@ impl<B: BufferRef> UniformBuffer<B> {
         self.inner.read(value)
     }
 
-    pub fn create<T>(&self) -> Result<T>
+    fn create<T>(&self) -> Result<T>
     where
         T: ShaderType + CreateFrom,
     {
@@ -136,13 +172,19 @@ pub struct DynamicStorageBuffer<B> {
     offset: usize,
 }
 
-impl<B> DynamicStorageBuffer<B> {
+impl<B> Buffer for DynamicStorageBuffer<B> {
+    type B = B;
     /// Creates a new dynamic storage buffer wrapper with an alignment of 256
     /// (default alignment in the WebGPU spec).
-    pub const fn new(buffer: B) -> Self {
+    fn new(buffer: B) -> Self {
         Self::new_with_alignment(buffer, 256)
     }
+    fn into_inner(self) -> B {
+        self.inner
+    }
+}
 
+impl<B> DynamicStorageBuffer<B> {
     /// Creates a new dynamic storage buffer wrapper with a given alignment.
     /// # Panics
     ///
@@ -170,10 +212,6 @@ impl<B> DynamicStorageBuffer<B> {
 
         self.offset = offset as usize;
     }
-
-    pub fn into_inner(self) -> B {
-        self.inner
-    }
 }
 
 impl<B> From<B> for DynamicStorageBuffer<B> {
@@ -194,8 +232,9 @@ impl<B> AsMut<B> for DynamicStorageBuffer<B> {
     }
 }
 
-impl<B: BufferMut> DynamicStorageBuffer<B> {
-    pub fn write<T>(&mut self, value: &T) -> Result<u64>
+impl<B: BufferMut> WritableBuffer for DynamicStorageBuffer<B> {
+    type WriteResultType = u64;
+    fn write<T>(&mut self, value: &T) -> Result<u64>
     where
         T: ?Sized + ShaderType + WriteInto,
     {
@@ -210,8 +249,8 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
     }
 }
 
-impl<B: BufferRef> DynamicStorageBuffer<B> {
-    pub fn read<T>(&mut self, value: &mut T) -> Result<()>
+impl<B: BufferRef> MutReadableBuffer for DynamicStorageBuffer<B> {
+    fn read<T>(&mut self, value: &mut T) -> Result<()>
     where
         T: ?Sized + ShaderType + ReadFrom,
     {
@@ -223,7 +262,7 @@ impl<B: BufferRef> DynamicStorageBuffer<B> {
         Ok(())
     }
 
-    pub fn create<T>(&mut self) -> Result<T>
+    fn create<T>(&mut self) -> Result<T>
     where
         T: ShaderType + CreateFrom,
     {
@@ -241,15 +280,22 @@ pub struct DynamicUniformBuffer<B> {
     inner: DynamicStorageBuffer<B>,
 }
 
-impl<B> DynamicUniformBuffer<B> {
+impl<B> Buffer for DynamicUniformBuffer<B> {
+    type B = B;
     /// Creates a new dynamic uniform buffer wrapper with an alignment of 256
     /// (default alignment in the WebGPU spec).
-    pub const fn new(buffer: B) -> Self {
+    fn new(buffer: B) -> Self {
         Self {
             inner: DynamicStorageBuffer::new(buffer),
         }
     }
 
+    fn into_inner(self) -> B {
+        self.inner.inner
+    }
+}
+
+impl<B> DynamicUniformBuffer<B> {
     /// Creates a new dynamic uniform buffer wrapper with a given alignment.
     /// # Panics
     ///
@@ -263,10 +309,6 @@ impl<B> DynamicUniformBuffer<B> {
 
     pub fn set_offset(&mut self, offset: u64) {
         self.inner.set_offset(offset);
-    }
-
-    pub fn into_inner(self) -> B {
-        self.inner.inner
     }
 }
 
@@ -288,8 +330,9 @@ impl<B> AsMut<B> for DynamicUniformBuffer<B> {
     }
 }
 
-impl<B: BufferMut> DynamicUniformBuffer<B> {
-    pub fn write<T>(&mut self, value: &T) -> Result<u64>
+impl<B: BufferMut> WritableBuffer for DynamicUniformBuffer<B> {
+    type WriteResultType = u64;
+    fn write<T>(&mut self, value: &T) -> Result<u64>
     where
         T: ?Sized + ShaderType + WriteInto,
     {
@@ -298,8 +341,8 @@ impl<B: BufferMut> DynamicUniformBuffer<B> {
     }
 }
 
-impl<B: BufferRef> DynamicUniformBuffer<B> {
-    pub fn read<T>(&mut self, value: &mut T) -> Result<()>
+impl<B: BufferRef> MutReadableBuffer for DynamicUniformBuffer<B> {
+    fn read<T>(&mut self, value: &mut T) -> Result<()>
     where
         T: ?Sized + ShaderType + ReadFrom,
     {
@@ -307,11 +350,23 @@ impl<B: BufferRef> DynamicUniformBuffer<B> {
         self.inner.read(value)
     }
 
-    pub fn create<T>(&mut self) -> Result<T>
+    fn create<T>(&mut self) -> Result<T>
     where
         T: ShaderType + CreateFrom,
     {
         T::assert_uniform_compat();
         self.inner.create()
+    }
+}
+
+pub trait BufferContent {
+    fn buffer_content<BufferType: Buffer<B = Vec<u8>> + WritableBuffer>(&self) -> Vec<u8>;
+}
+
+impl<T> BufferContent for T where T: ShaderType + WriteInto {
+    fn buffer_content<BufferType: Buffer<B = Vec<u8>> + WritableBuffer>(&self) -> Vec<u8> {
+        let mut buffer = BufferType::new(Vec::new());
+        buffer.write(self).unwrap();
+        return buffer.into_inner();
     }
 }
