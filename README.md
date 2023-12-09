@@ -35,7 +35,7 @@ The [`UniformBuffer`], [`StorageBuffer`], [`DynamicUniformBuffer`] and [`Dynamic
 Write affine transform to uniform buffer
 
 ```rust
-use encase::{ShaderType, UniformBuffer};
+use encase::{Buffer, ShaderType, UniformBuffer, WritebleBuffer};
 
 #[derive(ShaderType)]
 struct AffineTransform2D {
@@ -61,7 +61,7 @@ assert_eq!(&byte_buffer, &[0, 0, 128, 63, 0, 0, 0, 0,
 Create vector instance by reading from dynamic uniform buffer at specific offset
 
 ```rust
-use encase::DynamicUniformBuffer;
+use encase::{Buffer, DynamicUniformBuffer, MutReadableBuffer};
 
 // read byte_buffer from GPU
 let byte_buffer = [1u8; 256 + 8];
@@ -76,7 +76,7 @@ assert_eq!(vector, mint::Vector2 { x: 16843009, y: 16843009 });
 Write and read back data from storage buffer
 
 ```rust
-use encase::{ShaderType, ArrayLength, StorageBuffer};
+use encase::{Buffer, ReadableBuffer, ShaderType, ArrayLength, StorageBuffer, WritableBuffer};
 
 #[derive(ShaderType)]
 struct Positions {
@@ -116,7 +116,7 @@ assert_eq!(positions.positions.len(), 2);
 Write different data types to dynamic storage buffer
 
 ```rust
-use encase::{ShaderType, DynamicStorageBuffer};
+use encase::{ShaderType, DynamicStorageBuffer, WritableBuffer};
 
 let mut byte_buffer = Vec::new();
 
