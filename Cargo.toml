@@ -36,7 +36,7 @@ const_panic = { version = "0.2", default-features = false }
 
 mint = { version = "0.5.9", default-features = false, optional = true }
 cgmath = { version = "0.18", default-features = false, optional = true }
-glam = { version = "0.24", features = ["std"], default-features = false, optional = true }
+glam = { version = "0.25", features = ["std"], default-features = false, optional = true }
 nalgebra = { version = "0.32", default-features = false, optional = true }
 ultraviolet = { version = "0.9", features = ["int"], default-features = false, optional = true }
 vek = { version = "0.16", default-features = false, optional = true }
