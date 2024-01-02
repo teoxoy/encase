@@ -1,4 +1,7 @@
-use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer};
+use encase::{
+    ArrayLength, Buffer, CalculateSizeFor, ReadableBuffer, ShaderType, StorageBuffer,
+    WritableBuffer,
+};
 
 macro_rules! gen {
     ($rng:ident, $ty:ty) => {{
