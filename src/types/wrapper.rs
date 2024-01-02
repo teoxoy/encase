@@ -49,6 +49,8 @@ macro_rules! impl_wrapper_inner {
             fn size(&self) -> ::core::num::NonZeroU64 {
                 <T as $crate::private::ShaderType>::size(&self$($get_ref)*)
             }
+
+            const SHADER_TYPE: &'static ::core::primitive::str = <T as $crate::private::ShaderType>::SHADER_TYPE;
         }
         impl<$($generics)*> $crate::private::ShaderSize for $type
         where

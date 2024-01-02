@@ -34,6 +34,7 @@ pub struct ArrayLength;
 impl ShaderType for ArrayLength {
     type ExtraMetadata = ();
     const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
+    const SHADER_TYPE: &'static str = "u32";
 }
 
 impl ShaderSize for ArrayLength {}
@@ -151,6 +152,9 @@ macro_rules! impl_rts_array_inner {
                     .mul($crate::private::Length::length(self).max(1) as ::core::primitive::u64)
                     .0
             }
+
+            const SHADER_TYPE: &'static ::core::primitive::str = $crate::private::ConstStr::new().
+                str("array<").str(<T as $crate::private::ShaderType>::SHADER_TYPE).str(">").as_str();
         }
 
         impl<$($generics)*> $crate::private::RuntimeSizedArray for $type

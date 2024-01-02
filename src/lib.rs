@@ -96,14 +96,15 @@ pub use encase_derive::ShaderType;
 
 #[macro_use]
 mod utils;
+mod const_str;
 mod core;
 mod types;
 
 mod impls;
 
 pub use crate::core::{
-    CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,
-    StorageBuffer, UniformBuffer,
+    CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize,
+    ShaderStructDeclaration, ShaderType, StorageBuffer, UniformBuffer,
 };
 pub use types::runtime_sized_array::ArrayLength;
 
@@ -143,6 +144,7 @@ pub mod matrix {
 #[doc(hidden)]
 pub mod private {
     pub use super::build_struct;
+    pub use super::const_str::ConstStr;
     pub use super::core::AlignmentValue;
     pub use super::core::BufferMut;
     pub use super::core::BufferRef;
@@ -151,6 +153,7 @@ pub mod private {
     pub use super::core::ReadFrom;
     pub use super::core::Reader;
     pub use super::core::RuntimeSizedArray;
+    pub use super::core::ShaderStructDeclaration;
     pub use super::core::SizeValue;
     pub use super::core::WriteInto;
     pub use super::core::Writer;

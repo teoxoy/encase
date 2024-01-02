@@ -58,6 +58,11 @@ pub trait ShaderType {
     #[doc(hidden)]
     const METADATA: Metadata<Self::ExtraMetadata>;
 
+    /// The [WGSL type name](https://www.w3.org/TR/WGSL/#types) for the implementing Rust type.
+    ///
+    /// Note that for structs, this is just the name of the struct. See also [`ShaderStructDeclaration`].
+    const SHADER_TYPE: &'static str;
+
     /// Represents the minimum size of `Self` (equivalent to [GPUBufferBindingLayout.minBindingSize](https://gpuweb.github.io/gpuweb/#dom-gpubufferbindinglayout-minbindingsize))
     ///
     /// For [WGSL fixed-footprint types](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types)
@@ -243,4 +248,9 @@ pub trait CreateFrom: Sized {
     fn create_from<B>(reader: &mut Reader<B>) -> Self
     where
         B: BufferRef;
+}
+
+pub trait ShaderStructDeclaration {
+    /// The [WGSL struct](https://www.w3.org/TR/WGSL/#struct-types) definition for the implementing Rust struct
+    const SHADER_STRUCT_DECLARATION: &'static str;
 }

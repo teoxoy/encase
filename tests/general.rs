@@ -1,4 +1,4 @@
-use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer};
+use encase::{ArrayLength, CalculateSizeFor, ShaderStructDeclaration, ShaderType, StorageBuffer};
 
 macro_rules! gen {
     ($rng:ident, $ty:ty) => {{
@@ -38,6 +38,10 @@ struct A {
     wi: core::num::Wrapping<i32>,
     au: core::sync::atomic::AtomicU32,
     ai: core::sync::atomic::AtomicI32,
+    #[shader_atomic]
+    aau: u32,
+    #[shader_atomic]
+    aai: i32,
     v2: mint::Vector2<f32>,
     v3: mint::Vector3<u32>,
     v4: mint::Vector4<i32>,
@@ -77,6 +81,8 @@ fn gen_a(rng: &mut rand::rngs::StdRng) -> A {
         wi: core::num::Wrapping(gen!(rng, i32)),
         au: core::sync::atomic::AtomicU32::new(gen!(rng, u32)),
         ai: core::sync::atomic::AtomicI32::new(gen!(rng, i32)),
+        aau: gen!(rng, u32),
+        aai: gen!(rng, i32),
         v2: mint::Vector2::from(gen_arr!(rng, f32, 2)),
         v3: mint::Vector3::from(gen_arr!(rng, u32, 3)),
         v4: mint::Vector4::from(gen_arr!(rng, i32, 4)),
@@ -111,12 +117,12 @@ fn size() {
     let mut rng = rand::rngs::StdRng::seed_from_u64(1234);
     let a = gen_a(&mut rng);
 
-    assert_eq!(a.size().get(), 4080);
+    assert_eq!(a.size().get(), 4096);
 }
 
 #[test]
 fn calculate_size_for() {
-    assert_eq!(<&A>::calculate_size_for(12).get(), 2832);
+    assert_eq!(<&A>::calculate_size_for(12).get(), 2848);
 }
 
 #[test]
@@ -142,4 +148,51 @@ fn all_types() {
     buffer_2.write(&a_clone).unwrap();
 
     assert_eq!(raw_buffer, raw_buffer_2);
+}
+
+#[test]
+fn wgsl_struct() {
+    assert_eq!(A::SHADER_TYPE, "A");
+    assert_eq!(
+        A::SHADER_STRUCT_DECLARATION,
+        "struct A {
+    f: f32,
+    u: u32,
+    i: i32,
+    nu: u32,
+    ni: i32,
+    wu: u32,
+    wi: i32,
+    au: u32,
+    ai: i32,
+    aau: atomic<u32>,
+    aai: atomic<i32>,
+    v2: vec2<f32>,
+    v3: vec3<u32>,
+    v4: vec4<i32>,
+    p2: vec2<f32>,
+    p3: vec3<f32>,
+    mat2: mat2x2<f32>,
+    mat2x3: mat3x2<f32>,
+    mat2x4: mat4x2<f32>,
+    mat3x2: mat2x3<f32>,
+    mat3: mat3x3<f32>,
+    mat3x4: mat4x3<f32>,
+    mat4x2: mat2x4<f32>,
+    mat4x3: mat3x4<f32>,
+    mat4: mat4x4<f32>,
+    arrf: array<f32, 32>,
+    arru: array<u32, 32>,
+    arri: array<i32, 32>,
+    arrvf: array<vec2<f32>, 16>,
+    arrvu: array<vec3<u32>, 16>,
+    arrvi: array<vec4<i32>, 16>,
+    arrm2: array<mat2x2<f32>, 8>,
+    arrm3: array<mat3x3<f32>, 8>,
+    arrm4: array<mat4x4<f32>, 8>,
+    rt_arr_len: u32,
+    rt_arr: array<mat3x2<f32>>,
+}
+"
+    );
 }

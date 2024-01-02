@@ -1,11 +1,3 @@
-struct A {
-    array_length: u32,
-    array_length_call_ret_val: u32,
-    a: vec3<u32>,
-    @align(16)
-    arr: array<u32>,
-}
-
 @group(0) @binding(0)
 var<storage> in: A;
 

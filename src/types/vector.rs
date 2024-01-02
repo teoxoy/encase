@@ -126,6 +126,9 @@ macro_rules! impl_vector_inner {
                     extra: ()
                 }
             };
+
+            const SHADER_TYPE: &'static ::core::primitive::str = $crate::private::ConstStr::new()
+                .str("vec").u64($n).str("<").str(<$el_ty as $crate::private::ShaderType>::SHADER_TYPE).str(">").as_str();
         }
 
         impl<$($generics)*> $crate::private::ShaderSize for $type

@@ -14,7 +14,7 @@ pub use syn;
 #[macro_export]
 macro_rules! implement {
     ($path:expr) => {
-        #[proc_macro_derive(ShaderType, attributes(align, size))]
+        #[proc_macro_derive(ShaderType, attributes(align, size, shader_atomic))]
         pub fn derive_shader_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             let input = $crate::syn::parse_macro_input!(input as $crate::syn::DeriveInput);
             let expanded = encase_derive_impl::derive_shader_type(input, &$path);
@@ -40,6 +40,7 @@ struct FieldData {
     pub field: syn::Field,
     pub size: Option<(u32, Span)>,
     pub align: Option<(u32, Span)>,
+    pub shader_atomic: bool,
 }
 
 impl FieldData {
@@ -96,6 +97,29 @@ impl FieldData {
 
     fn ident(&self) -> &Ident {
         self.field.ident.as_ref().unwrap()
+    }
+
+    fn wgsl_type(&self, root: &Path) -> TokenStream {
+        let ty = &self.field.ty;
+        quote! {
+            <#ty as #root::ShaderType>::SHADER_TYPE
+        }
+    }
+
+    fn wgsl_layout_attributes(&self) -> String {
+        let mut attribs = Vec::new();
+        if let Some((size, _)) = self.size {
+            attribs.push(format!("@size({})", size));
+        }
+        if let Some((align, _)) = self.align {
+            attribs.push(format!("@align({})", align));
+        }
+
+        if attribs.is_empty() {
+            String::new()
+        } else {
+            format!("    {}\n", &attribs.join(" "))
+        }
     }
 }
 
@@ -195,21 +219,25 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 field: field.clone(),
                 size: None,
                 align: None,
+                shader_atomic: false,
             };
             for attr in &field.attrs {
-                if !(attr.meta.path().is_ident("size") || attr.meta.path().is_ident("align")) {
-                    continue;
-                }
-                match attr.meta.require_list() {
-                    Ok(meta_list) => {
-                        let span = meta_list.tokens.span();
-                        if meta_list.path.is_ident("align") {
+                if attr.meta.path().is_ident("align") {
+                    match attr.meta.require_list() {
+                        Ok(meta_list) => {
+                            let span = meta_list.tokens.span();
                             let res = attr.parse_args::<AlignmentAttr>();
                             match res {
                                 Ok(val) => data.align = Some((val.0, span)),
                                 Err(err) => errors.append(err),
                             }
-                        } else if meta_list.path.is_ident("size") {
+                        }
+                        Err(err) => errors.append(err),
+                    }
+                } else if attr.meta.path().is_ident("size") {
+                    match attr.meta.require_list() {
+                        Ok(meta_list) => {
+                            let span = meta_list.tokens.span();
                             let res = if i == last_field_index {
                                 attr.parse_args::<SizeAttr>().map(|val| match val {
                                     SizeAttr::Runtime => {
@@ -227,9 +255,16 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                                 Err(err) => errors.append(err),
                             }
                         }
+                        Err(err) => errors.append(err),
                     }
-                    Err(err) => errors.append(err),
-                };
+                } else if attr.meta.path().is_ident("shader_atomic") {
+                    match attr.meta.require_path_only() {
+                        Ok(_) => {
+                            data.shader_atomic = true;
+                        }
+                        Err(err) => errors.append(err),
+                    }
+                }
             }
             data
         })
@@ -516,11 +551,31 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
     let field_types_2 = field_types.clone();
     let field_types_3 = field_types.clone();
     let field_types_4 = field_types.clone();
+    let field_types_5 = field_types.clone();
     let all_other = field_types.clone().take(last_field_index);
     let last_field_type = &last_field.field.ty;
 
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let field_strings = field_data.iter().map(|data| data.ident().to_string());
+    let field_layout_attributes = field_data.iter().map(|data| data.wgsl_layout_attributes());
+    let field_wgsl_types = field_data.iter().map(|data| data.wgsl_type(root));
+    let field_atomics_pre = field_data.iter().map(|data| {
+        if data.shader_atomic {
+            Literal::string("atomic<")
+        } else {
+            Literal::string("")
+        }
+    });
+    let field_atomics_post = field_data.iter().map(|data| {
+        if data.shader_atomic {
+            Literal::string(">")
+        } else {
+            Literal::string("")
+        }
+    });
+    let name_string = name.to_string();
 
     let set_contained_rt_sized_array_length = if is_runtime_sized {
         quote! {
@@ -607,6 +662,8 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 offset += #root::ShaderType::size(&self.#last_field_ident).get();
                 #root::SizeValue::new(Self::METADATA.alignment().round_up(offset)).0
             }
+
+            const SHADER_TYPE: &'static ::core::primitive::str = #name_string;
         }
 
         impl #impl_generics #root::WriteInto for #name #ty_generics
@@ -640,6 +697,20 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
 
                 #root::build_struct!(Self, #( #field_idents ),*)
             }
+        }
+
+        impl #impl_generics #root::ShaderStructDeclaration for #name #ty_generics
+        where
+            #( #field_types_5: #root::ShaderType, )*
+        {
+            const SHADER_STRUCT_DECLARATION: &'static ::core::primitive::str =
+                #root::ConstStr::new()
+                .str("struct ").str(#name_string).str(" {\n")
+                #(
+                    .str(#field_layout_attributes).str("    ").str(#field_strings).str(": ")
+                    .str(#field_atomics_pre).str(#field_wgsl_types).str(#field_atomics_post).str(",\n")
+                )*
+                .str("}\n").as_str();
         }
 
         #extra

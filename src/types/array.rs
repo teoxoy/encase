@@ -1,3 +1,4 @@
+use crate::const_str::ConstStr;
 use crate::core::{
     BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderSize, ShaderType,
     SizeValue, WriteInto, Writer,
@@ -55,6 +56,14 @@ impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
             },
         ])
     };
+
+    const SHADER_TYPE: &'static ::core::primitive::str = ConstStr::new()
+        .str("array<")
+        .str(T::SHADER_TYPE)
+        .str(", ")
+        .u64(N as u64)
+        .str(">")
+        .as_str();
 }
 
 impl<T: ShaderSize, const N: usize> ShaderSize for [T; N] {}
