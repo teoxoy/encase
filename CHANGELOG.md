@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.7.0 (2024-01-02)
+
+- Allow buffer types to accept `?Sized` types
+- Fix min `syn` version (v2.0.1)
+- Updated `glam` to v0.25
+- Updated `vek` to v0.16
+- Updated `rpds` to v1
+- Updated `archery` to v1
+
 ## v0.6.1 (2023-05-09)
 
 - Fix erroring on attributes not owned by this crate
