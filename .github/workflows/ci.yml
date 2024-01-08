@@ -90,3 +90,16 @@ jobs:
           sudo apt install -y mesa-vulkan-drivers vulkan-validationlayers
 
       - run: cargo llvm-cov nextest --workspace --features mint,glam --fail-under-lines 80
+
+  docs:
+    name: Run MIRI tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install nightly toolchain
+        run: |
+          rustup toolchain install $NIGHTLY --no-self-update --profile=minimal
+          rustup +$NIGHTLY component add miri
+
+      - run: cargo +$NIGHTLY miri test --workspace --features mint,glam
