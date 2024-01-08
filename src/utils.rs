@@ -78,7 +78,7 @@ impl ByteVecExt for Vec<u8> {
         if additional > 0 {
             self.try_reserve(additional)?;
 
-            let end = self.as_mut_ptr_range().end;
+            let end = unsafe { self.as_mut_ptr().add(self.len()) };
             // SAFETY
             // 1. dst ptr is valid for writes of count * size_of::<T>() bytes since the call to Vec::reserve() succeeded
             // 2. dst ptr is properly aligned since we got it via Vec::as_mut_ptr_range()
