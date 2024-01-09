@@ -91,7 +91,7 @@ jobs:
 
       - run: cargo llvm-cov nextest --workspace --features mint,glam --fail-under-lines 80
 
-  docs:
+  tests_miri:
     name: Run MIRI tests
     runs-on: ubuntu-latest
     steps:
