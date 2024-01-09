@@ -85,7 +85,7 @@ impl ByteVecExt for Vec<u8> {
             unsafe { end.write_bytes(u8::MIN, additional) }
             // SAFETY
             // 1. new_len is less than or equal to Vec::capacity() since we reserved at least `additional` elements
-            // 2. The elements at old_len..new_len are initialized since we wrote `additional` bytes
+            // 2. The elements at old_len..new_len are initialized since we wrote `additional` bytes.
             unsafe { self.set_len(new_len) }
         }
         Ok(())
