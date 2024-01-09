@@ -1,3 +1,5 @@
+#![cfg(not(miri))] // Can't run (and no point running) trybuild through miri
+
 #[test]
 fn trybuild() {
     let t = trybuild::TestCases::new();
