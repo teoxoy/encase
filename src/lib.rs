@@ -101,6 +101,42 @@ mod types;
 
 mod impls;
 
+#[cfg(feature = "archery")]
+pub use archery;
+#[cfg(feature = "static-rc")]
+pub use static_rc;
+
+#[cfg(feature = "cgmath")]
+pub use cgmath;
+#[cfg(feature = "glam")]
+pub use glam;
+#[cfg(feature = "mint")]
+pub use mint;
+#[cfg(feature = "nalgebra")]
+pub use nalgebra;
+#[cfg(feature = "ultraviolet")]
+pub use ultraviolet;
+#[cfg(feature = "vek")]
+pub use vek;
+
+#[cfg(feature = "arrayvec")]
+pub use arrayvec;
+#[cfg(feature = "ndarray")]
+pub use ndarray;
+#[cfg(feature = "smallvec")]
+pub use smallvec;
+#[cfg(feature = "tinyvec")]
+pub use tinyvec;
+
+#[cfg(feature = "im")]
+pub use im;
+#[cfg(feature = "im-rc")]
+pub use im_rc;
+#[cfg(feature = "imbl")]
+pub use imbl;
+#[cfg(all(feature = "rpds", feature = "archery"))]
+pub use rpds;
+
 pub use crate::core::{
     CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,
     StorageBuffer, UniformBuffer,
