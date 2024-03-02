@@ -161,13 +161,33 @@ macro_rules! impl_matrix_inner {
             $el_ty: $crate::private::MatrixScalar + $crate::private::WriteInto,
         {
             #[inline]
+            #[allow(trivial_casts)]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let columns = $crate::private::AsRefMatrixParts::<$el_ty, $c, $r>::as_ref_parts(self);
-                for col in columns {
-                    for el in col {
-                        $crate::private::WriteInto::write_into(el, writer);
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                        for col in columns {
+                            for el in col {
+                                $crate::private::WriteInto::write_into(el, writer);
+                            }
+                            writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                        }
+                    } else {
+                        let size = ::core::mem::size_of::<Self>();
+                        let ptr = (self as *const Self) as *const u8;
+                        let byte_slice: &[u8] =
+                            unsafe { ::core::slice::from_raw_parts(ptr, size) };
+                        writer.write_slice(byte_slice);
                     }
-                    writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    for item in self {
+                        WriteInto::write_into(item, writer);
+                        writer.advance(Self::METADATA.el_padding() as usize);
+                    }
                 }
             }
         }
