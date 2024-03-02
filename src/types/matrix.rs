@@ -142,6 +142,7 @@ macro_rules! impl_matrix_inner {
                     alignment,
                     has_uniform_min_alignment: false,
                     min_size: size,
+                    has_internal_padding: <$el_ty as $crate::private::ShaderType>::METADATA.has_internal_padding() || col_padding != 0,
                     extra: $crate::private::MatrixMetadata {
                         col_padding,
                     },

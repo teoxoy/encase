@@ -8,15 +8,21 @@ pub struct Metadata<E> {
     pub alignment: AlignmentValue,
     pub has_uniform_min_alignment: bool,
     pub min_size: SizeValue,
+    pub has_internal_padding: bool,
     pub extra: E,
 }
 
 impl Metadata<()> {
-    pub const fn from_alignment_and_size(alignment: u64, size: u64) -> Self {
+    pub const fn from_alignment_and_size(
+        alignment: u64,
+        size: u64,
+        has_internal_padding: bool,
+    ) -> Self {
         Self {
             alignment: AlignmentValue::new(alignment),
             has_uniform_min_alignment: false,
             min_size: SizeValue::new(size),
+            has_internal_padding,
             extra: (),
         }
     }
@@ -41,6 +47,13 @@ impl<E> Metadata<E> {
             true => Some(UNIFORM_MIN_ALIGNMENT),
             false => None,
         }
+    }
+
+    #[inline]
+    pub const fn has_internal_padding(self) -> bool {
+        let value = self.has_internal_padding;
+        core::mem::forget(self);
+        value
     }
 
     #[inline]

@@ -36,6 +36,7 @@ impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
             alignment,
             has_uniform_min_alignment: true,
             min_size: size,
+            has_internal_padding: T::METADATA.has_internal_padding() || el_padding != 0,
             extra: ArrayMetadata { stride, el_padding },
         }
     };
@@ -65,9 +66,27 @@ where
 {
     #[inline]
     fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
-        for item in self {
-            WriteInto::write_into(item, writer);
-            writer.advance(Self::METADATA.el_padding() as usize);
+        #[cfg(target_endian = "little")]
+        {
+            // Const branch, should be eliminated at compile time.
+            if Self::METADATA.has_internal_padding() {
+                for item in self {
+                    WriteInto::write_into(item, writer);
+                    writer.advance(Self::METADATA.el_padding() as usize);
+                }
+            } else {
+                let size = ::core::mem::size_of::<Self>();
+                let byte_slice: &[u8] =
+                    unsafe { ::core::slice::from_raw_parts(self.as_ptr() as *const u8, size) };
+                writer.write_slice(byte_slice);
+            }
+        }
+        #[cfg(not(target_endian = "little"))]
+        {
+            for item in self {
+                WriteInto::write_into(item, writer);
+                writer.advance(Self::METADATA.el_padding() as usize);
+            }
         }
     }
 }

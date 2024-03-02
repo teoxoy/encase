@@ -123,6 +123,7 @@ macro_rules! impl_vector_inner {
                     alignment,
                     has_uniform_min_alignment: false,
                     min_size: size,
+                    has_internal_padding: <[$el_ty; $n] as $crate::private::ShaderType>::METADATA.has_internal_padding(),
                     extra: ()
                 }
             };

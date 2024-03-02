@@ -50,6 +50,11 @@ impl<B: BufferMut> Writer<B> {
     pub fn write<const N: usize>(&mut self, val: &[u8; N]) {
         self.cursor.write(val)
     }
+
+    #[inline]
+    pub fn write_slice(&mut self, val: &[u8]) {
+        self.cursor.write_slice(val)
+    }
 }
 
 pub struct ReadContext {
@@ -145,6 +150,12 @@ impl<B: BufferMut> Cursor<B> {
     }
 
     #[inline]
+    fn write_slice(&mut self, val: &[u8]) {
+        self.buffer.write_slice(self.pos, val);
+        self.pos += val.len();
+    }
+
+    #[inline]
     fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
         self.buffer.try_enlarge(wanted)
     }
@@ -171,6 +182,8 @@ pub trait BufferMut {
     fn capacity(&self) -> usize;
 
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]);
+
+    fn write_slice(&mut self, offset: usize, val: &[u8]);
 
     #[inline]
     fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
@@ -229,6 +242,11 @@ impl BufferMut for [u8] {
         use crate::utils::SliceExt;
         *self.array_mut(offset) = *val;
     }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        self[offset..offset + val.len()].copy_from_slice(val);
+    }
 }
 
 impl<const LEN: usize> BufferMut for [u8; LEN] {
@@ -241,6 +259,11 @@ impl<const LEN: usize> BufferMut for [u8; LEN] {
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
         <[u8] as BufferMut>::write(self, offset, val)
     }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        <[u8] as BufferMut>::write_slice(self, offset, val)
+    }
 }
 
 impl BufferMut for Vec<u8> {
@@ -252,6 +275,11 @@ impl BufferMut for Vec<u8> {
     #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
         <[u8] as BufferMut>::write(self, offset, val)
+    }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        <[u8] as BufferMut>::write_slice(self, offset, val)
     }
 
     #[inline]
@@ -290,6 +318,11 @@ macro_rules! impl_buffer_mut_for_wrappers {
             #[inline]
             fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
                 T::write(self, offset, val)
+            }
+
+            #[inline]
+            fn write_slice(&mut self, offset: usize, val: &[u8]) {
+                T::write_slice(self, offset, val)
             }
 
             #[inline]
