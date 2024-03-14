@@ -13,7 +13,7 @@ pub trait AsMutVectorParts<T: VectorScalar, const N: usize> {
     fn as_mut_parts(&mut self) -> &mut [T; N];
 }
 
-/// Enables the cration of a vector (via `[T; N]`)
+/// Enables the creation of a vector (via `[T; N]`)
 pub trait FromVectorParts<T: VectorScalar, const N: usize> {
     fn from_parts(parts: [T; N]) -> Self;
 }
@@ -28,7 +28,7 @@ pub trait FromVectorParts<T: VectorScalar, const N: usize> {
 ///
 /// - `$n` nr of elements the given vector contains
 ///
-/// - `$type` the type (representing a vector) for which `ShaderType` will be imeplemented for
+/// - `$type` the type (representing a vector) for which `ShaderType` will be implemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///

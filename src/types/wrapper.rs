@@ -2,7 +2,7 @@
 ///
 /// # Args
 ///
-/// - `$type` the type (representing a wrapper) for which `ShaderType` will be imeplemented for
+/// - `$type` the type (representing a wrapper) for which `ShaderType` will be implemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
