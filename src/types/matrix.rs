@@ -24,7 +24,7 @@ pub trait AsMutMatrixParts<T: MatrixScalar, const C: usize, const R: usize> {
     fn as_mut_parts(&mut self) -> &mut [[T; R]; C];
 }
 
-/// Enables the cration of a matrix (via `[[T; R]; C]`)
+/// Enables the creation of a matrix (via `[[T; R]; C]`)
 pub trait FromMatrixParts<T: MatrixScalar, const C: usize, const R: usize> {
     fn from_parts(parts: [[T; R]; C]) -> Self;
 }
@@ -41,7 +41,7 @@ pub trait FromMatrixParts<T: MatrixScalar, const C: usize, const R: usize> {
 ///
 /// - `$r` nr of rows the given matrix contains
 ///
-/// - `$type` the type (representing a matrix) for which `ShaderType` will be imeplemented for
+/// - `$type` the type (representing a matrix) for which `ShaderType` will be implemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///

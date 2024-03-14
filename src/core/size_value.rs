@@ -29,7 +29,7 @@ impl SizeValue {
     #[inline]
     pub const fn mul(self, rhs: u64) -> Self {
         match self.get().checked_mul(rhs) {
-            None => panic!("Overflow occured while multiplying size values!"),
+            None => panic!("Overflow occurred while multiplying size values!"),
             Some(val) => {
                 // SAFETY: This is safe since we checked for overflow
                 Self(unsafe { NonZeroU64::new_unchecked(val) })

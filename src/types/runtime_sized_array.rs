@@ -19,7 +19,7 @@ use crate::ShaderType;
 ///
 /// - possibly being higher than expected due to padding at the end of a struct or buffer being interpreted as array elements
 ///
-/// - representing the capacity of the array for usecaseses that require oversized buffers
+/// - representing the capacity of the array for use cases that require oversized buffers
 ///
 /// # Solution
 ///
@@ -75,7 +75,7 @@ pub trait Truncate {
 ///
 /// # Args
 ///
-/// - `$type` the type (representing a runtime-sized array) for which `ShaderType` will be imeplemented for
+/// - `$type` the type (representing a runtime-sized array) for which `ShaderType` will be implemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
