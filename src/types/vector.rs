@@ -137,12 +137,33 @@ macro_rules! impl_vector_inner {
         impl<$($generics)*> $crate::private::WriteInto for $type
         where
             Self: $crate::private::AsRefVectorParts<$el_ty, $n>,
-            $el_ty: $crate::private::VectorScalar + $crate::private::WriteInto,
+            $el_ty: $crate::private::ShaderSize + $crate::private::VectorScalar + $crate::private::WriteInto,
         {
             #[inline]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
-                let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
-                $crate::private::WriteInto::write_into(elements, writer);
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                        let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
+                        for el in elements {
+                            $crate::private::WriteInto::write_into(el, writer);
+                        }
+                    } else {
+                        let size = ::core::mem::size_of::<Self>();
+                        let ptr: *const Self = self;
+                        let byte_slice: &[u8] =
+                            unsafe { ::core::slice::from_raw_parts(ptr.cast::<u8>(), size) };
+                        writer.write_slice(byte_slice);
+                    }
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
+                    for el in elements {
+                        $crate::private::WriteInto::write_into(el, writer);
+                    }
+                }
             }
         }
 
