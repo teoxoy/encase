@@ -151,8 +151,9 @@ macro_rules! impl_vector_inner {
                         }
                     } else {
                         let ptr: *const Self = self;
+                        let ptr = ptr.cast::<::core::primitive::u8>();
                         let byte_slice: &[::core::primitive::u8] = unsafe {
-                            ::core::slice::from_raw_parts(ptr.cast::<u8>(), ::core::mem::size_of::<Self>())
+                            ::core::slice::from_raw_parts(ptr, ::core::mem::size_of::<Self>())
                         };
                         writer.write_slice(byte_slice);
                     }

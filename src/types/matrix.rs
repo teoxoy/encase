@@ -175,7 +175,7 @@ macro_rules! impl_matrix_inner {
                             writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                         }
                     } else {
-                        let ptr = (self as *const Self) as *const u8;
+                        let ptr = (self as *const Self) as *const ::core::primitive::u8;
                         let byte_slice: &[::core::primitive::u8] = unsafe {
                             ::core::slice::from_raw_parts(ptr, ::core::mem::size_of::<Self>())
                         };
