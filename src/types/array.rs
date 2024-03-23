@@ -75,9 +75,9 @@ where
                     writer.advance(Self::METADATA.el_padding() as usize);
                 }
             } else {
-                let size = ::core::mem::size_of::<Self>();
-                let byte_slice: &[u8] =
-                    unsafe { ::core::slice::from_raw_parts(self.as_ptr() as *const u8, size) };
+                let ptr = self.as_ptr() as *const u8;
+                let byte_slice: &[::core::primitive::u8] =
+                    unsafe { ::core::slice::from_raw_parts(ptr, ::core::mem::size_of::<Self>()) };
                 writer.write_slice(byte_slice);
             }
         }

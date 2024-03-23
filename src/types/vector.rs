@@ -150,10 +150,10 @@ macro_rules! impl_vector_inner {
                             $crate::private::WriteInto::write_into(el, writer);
                         }
                     } else {
-                        let size = ::core::mem::size_of::<Self>();
                         let ptr: *const Self = self;
-                        let byte_slice: &[u8] =
-                            unsafe { ::core::slice::from_raw_parts(ptr.cast::<u8>(), size) };
+                        let byte_slice: &[::core::primitive::u8] = unsafe {
+                            ::core::slice::from_raw_parts(ptr.cast::<u8>(), ::core::mem::size_of::<Self>())
+                        };
                         writer.write_slice(byte_slice);
                     }
                 }
