@@ -133,6 +133,30 @@ assert_eq!(offsets, [0, 64, 192]);
 
 ```
 
+Supports writing to uninitialized memory as well.
+
+```rust
+use std::mem::MaybeUninit;
+use encase::{ShaderType, DynamicStorageBuffer};
+
+let mut byte_buffer: Vec<MaybeUninit<u8>> = Vec::new();
+
+let mut buffer = DynamicStorageBuffer::new_with_alignment(&mut byte_buffer, 64);
+let offsets = [
+    buffer.write(&[5.; 10]).unwrap(),
+    buffer.write(&vec![3u32; 20]).unwrap(),
+    buffer.write(&glam::Vec3::ONE).unwrap(),
+];
+
+// SAFETY: Vec<u8> and Vec<MaybeUninit<u8>> share the same layout.
+let byte_buffer: Vec<u8> = unsafe { std::mem::transmute(byte_buffer) };
+
+// write byte_buffer to GPU
+
+assert_eq!(offsets, [0, 64, 192]);
+
+```
+
 [host-shareable types]: https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types
 [features]: https://docs.rs/crate/encase/latest/features
 [`ShaderType`]: https://docs.rs/encase/latest/encase/trait.ShaderType.html
