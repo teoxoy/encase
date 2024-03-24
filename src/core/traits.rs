@@ -185,7 +185,7 @@ pub trait ShaderType {
     /// ```
     #[inline]
     fn assert_uniform_compat() {
-        Self::UNIFORM_COMPAT_ASSERT()
+        Self::UNIFORM_COMPAT_ASSERT();
     }
 
     // fn assert_can_write_into()

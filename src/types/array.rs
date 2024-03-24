@@ -51,9 +51,9 @@ impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
                     " (current stride: ",
                     Self::METADATA.stride().get(),
                     ")"
-                )
+                );
             },
-        ])
+        ]);
     };
 }
 
