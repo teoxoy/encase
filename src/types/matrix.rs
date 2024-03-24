@@ -237,15 +237,43 @@ macro_rules! impl_matrix_inner {
         {
             #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                let columns = ::core::array::from_fn(|_| {
-                    let col = ::core::array::from_fn(|_| {
-                        $crate::private::CreateFrom::create_from(reader)
-                    });
-                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                    col
-                });
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                        let columns = ::core::array::from_fn(|_| {
+                            let col = ::core::array::from_fn(|_| {
+                                $crate::private::CreateFrom::create_from(reader)
+                            });
+                            reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                            col
+                        });
 
-                $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
+                        $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
+                    } else {
+                        let mut me = ::core::mem::MaybeUninit::zeroed();
+                        let ptr: *mut ::core::mem::MaybeUninit<Self> = &mut me;
+                        let ptr = ptr.cast::<::core::primitive::u8>();
+                        let byte_slice: &mut [::core::primitive::u8] = unsafe {
+                            ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>())
+                        };
+                        reader.read_slice(byte_slice);
+                        // SAFETY: All values were properly initialized by reading the bytes.
+                        unsafe { me.assume_init() }
+                    }
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    let columns = ::core::array::from_fn(|_| {
+                        let col = ::core::array::from_fn(|_| {
+                            $crate::private::CreateFrom::create_from(reader)
+                        });
+                        reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                        col
+                    });
+
+                    $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
+                }
             }
         }
     };

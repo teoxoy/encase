@@ -205,15 +205,39 @@ macro_rules! impl_vector_inner {
         impl<$($generics)*> $crate::private::CreateFrom for $type
         where
             Self: $crate::private::FromVectorParts<$el_ty, $n>,
-            $el_ty: $crate::private::VectorScalar + $crate::private::CreateFrom,
+            $el_ty: $crate::private::ShaderSize + $crate::private::VectorScalar + $crate::private::CreateFrom,
         {
             #[inline]
+            #[allow(trivial_casts)]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                let elements = ::core::array::from_fn(|_| {
-                    $crate::private::CreateFrom::create_from(reader)
-                });
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                        let elements = ::core::array::from_fn(|_| {
+                            $crate::private::CreateFrom::create_from(reader)
+                        });
 
-                $crate::private::FromVectorParts::<$el_ty, $n>::from_parts(elements)
+                        $crate::private::FromVectorParts::<$el_ty, $n>::from_parts(elements)
+                    } else {
+                        let mut me = ::core::mem::MaybeUninit::zeroed();
+                        let ptr = (&mut me as *mut ::core::mem::MaybeUninit<Self>).cast::<::core::primitive::u8>();
+                        let byte_slice: &mut [::core::primitive::u8] = unsafe {
+                            ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>())
+                        };
+                        reader.read_slice(byte_slice);
+                        // SAFETY: All values were properly initialized by reading the bytes.
+                        unsafe { me.assume_init() }
+                    }
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    let elements = ::core::array::from_fn(|_| {
+                        $crate::private::CreateFrom::create_from(reader)
+                    });
+
+                    $crate::private::FromVectorParts::<$el_ty, $n>::from_parts(elements)
+                }
             }
         }
     };

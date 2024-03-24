@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use crate::core::{
     BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderSize, ShaderType,
     SizeValue, WriteInto, Writer,
@@ -129,10 +131,34 @@ where
 {
     #[inline]
     fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
-        core::array::from_fn(|_| {
-            let res = CreateFrom::create_from(reader);
-            reader.advance(Self::METADATA.el_padding() as usize);
-            res
-        })
+        #[cfg(target_endian = "little")]
+        {
+            // Const branch, should be eliminated at compile time.
+            if Self::METADATA.has_internal_padding() {
+                core::array::from_fn(|_| {
+                    let res = CreateFrom::create_from(reader);
+                    reader.advance(Self::METADATA.el_padding() as usize);
+                    res
+                })
+            } else {
+                let mut me = ::core::mem::MaybeUninit::zeroed();
+                let ptr: *mut MaybeUninit<Self> = &mut me;
+                let ptr = ptr.cast::<::core::primitive::u8>();
+                let byte_slice: &mut [::core::primitive::u8] = unsafe {
+                    ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>())
+                };
+                reader.read_slice(byte_slice);
+                // SAFETY: All values were properly initialized by reading the bytes.
+                unsafe { me.assume_init() }
+            }
+        }
+        #[cfg(not(target_endian = "little"))]
+        {
+            core::array::from_fn(|_| {
+                let res = CreateFrom::create_from(reader);
+                reader.advance(Self::METADATA.el_padding() as usize);
+                res
+            })
+        }
     }
 }
