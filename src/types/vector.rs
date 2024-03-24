@@ -171,13 +171,33 @@ macro_rules! impl_vector_inner {
         impl<$($generics)*> $crate::private::ReadFrom for $type
         where
             Self: $crate::private::AsMutVectorParts<$el_ty, $n>,
-            $el_ty: $crate::private::VectorScalar + $crate::private::ReadFrom,
+            $el_ty: $crate::private::ShaderSize + $crate::private::VectorScalar + $crate::private::ReadFrom,
         {
             #[inline]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
-                let elements = $crate::private::AsMutVectorParts::<$el_ty, $n>::as_mut_parts(self);
-                for el in elements {
-                    $crate::private::ReadFrom::read_from(el, reader);
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                        let elements = $crate::private::AsMutVectorParts::<$el_ty, $n>::as_mut_parts(self);
+                        for el in elements {
+                            $crate::private::ReadFrom::read_from(el, reader);
+                        }
+                    } else {
+                        let ptr: *mut Self = self;
+                        let ptr = ptr.cast::<::core::primitive::u8>();
+                        let byte_slice: &mut [::core::primitive::u8] = unsafe {
+                            ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>())
+                        };
+                        reader.read_slice(byte_slice);
+                    }
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
+                    for el in elements {
+                        $crate::private::ReadFrom::read_from(el, reader);
+                    }
                 }
             }
         }

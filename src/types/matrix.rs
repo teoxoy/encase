@@ -184,8 +184,8 @@ macro_rules! impl_matrix_inner {
                 }
                 #[cfg(not(target_endian = "little"))]
                 {
-                    for item in self {
-                        WriteInto::write_into(item, writer);
+                    for col in columns {
+                        WriteInto::write_into(col, writer);
                         writer.advance(Self::METADATA.el_padding() as usize);
                     }
                 }
@@ -198,13 +198,34 @@ macro_rules! impl_matrix_inner {
             $el_ty: $crate::private::MatrixScalar + $crate::private::ReadFrom,
         {
             #[inline]
+            #[allow(trivial_casts)]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let columns = $crate::private::AsMutMatrixParts::<$el_ty, $c, $r>::as_mut_parts(self);
-                for col in columns {
-                    for el in col {
-                        $crate::private::ReadFrom::read_from(el, reader);
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                        for col in columns {
+                            for el in col {
+                                $crate::private::ReadFrom::read_from(el, reader);
+                            }
+                            reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                        }
+                    } else {
+                        let ptr = (self as *mut Self) as *mut ::core::primitive::u8;
+                        let byte_slice: &mut [::core::primitive::u8] =
+                            unsafe { ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>()) };
+                        reader.read_slice(byte_slice);
                     }
-                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    for col in columns {
+                        for el in col {
+                            $crate::private::ReadFrom::read_from(el, reader);
+                        }
+                        reader.advance(Self::METADATA.el_padding() as usize);
+                    }
                 }
             }
         }

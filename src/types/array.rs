@@ -97,9 +97,28 @@ where
 {
     #[inline]
     fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
-        for elem in self {
-            ReadFrom::read_from(elem, reader);
-            reader.advance(Self::METADATA.el_padding() as usize);
+        #[cfg(target_endian = "little")]
+        {
+            // Const branch, should be eliminated at compile time.
+            if Self::METADATA.has_internal_padding() {
+                for item in self {
+                    ReadFrom::read_from(item, reader);
+                    reader.advance(Self::METADATA.el_padding() as usize);
+                }
+            } else {
+                let ptr = self.as_mut_ptr() as *mut ::core::primitive::u8;
+                let byte_slice: &mut [::core::primitive::u8] = unsafe {
+                    ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>())
+                };
+                reader.read_slice(byte_slice);
+            }
+        }
+        #[cfg(not(target_endian = "little"))]
+        {
+            for elem in self {
+                ReadFrom::read_from(elem, reader);
+                reader.advance(Self::METADATA.el_padding() as usize);
+            }
         }
     }
 }

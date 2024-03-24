@@ -99,6 +99,11 @@ impl<B: BufferRef> Reader<B> {
     }
 
     #[inline]
+    pub fn read_slice(&mut self, val: &mut [u8]) {
+        self.cursor.read_slice(val)
+    }
+
+    #[inline]
     pub fn remaining(&self) -> usize {
         self.cursor.remaining()
     }
@@ -134,6 +139,12 @@ impl<B: BufferRef> Cursor<B> {
         let res = self.buffer.read(self.pos);
         self.pos += N;
         res
+    }
+
+    #[inline]
+    fn read_slice(&mut self, val: &mut [u8]) {
+        self.buffer.read_slice(self.pos, val);
+        self.pos += val.len();
     }
 }
 
@@ -176,6 +187,8 @@ pub trait BufferRef {
     fn len(&self) -> usize;
 
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N];
+
+    fn read_slice(&self, offset: usize, val: &mut [u8]);
 }
 
 pub trait BufferMut {
@@ -205,6 +218,11 @@ impl BufferRef for [u8] {
         use crate::utils::SliceExt;
         self.array(offset)
     }
+
+    #[inline]
+    fn read_slice(&self, offset: usize, val: &mut [u8]) {
+        val.copy_from_slice(&self[offset..offset + val.len()])
+    }
 }
 
 impl<const LEN: usize> BufferRef for [u8; LEN] {
@@ -217,6 +235,11 @@ impl<const LEN: usize> BufferRef for [u8; LEN] {
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
         <[u8] as BufferRef>::read(self, offset)
     }
+
+    #[inline]
+    fn read_slice(&self, offset: usize, val: &mut [u8]) {
+        <[u8] as BufferRef>::read_slice(self, offset, val)
+    }
 }
 
 impl BufferRef for Vec<u8> {
@@ -228,6 +251,11 @@ impl BufferRef for Vec<u8> {
     #[inline]
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
         <[u8] as BufferRef>::read(self, offset)
+    }
+
+    #[inline]
+    fn read_slice(&self, offset: usize, val: &mut [u8]) {
+        <[u8] as BufferRef>::read_slice(self, offset, val)
     }
 }
 
@@ -300,6 +328,11 @@ macro_rules! impl_buffer_ref_for_wrappers {
             #[inline]
             fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
                 T::read(self, offset)
+            }
+
+            #[inline]
+            fn read_slice(&self, offset: usize, val: &mut [u8]) {
+                T::read_slice(self, offset, val)
             }
         }
     )*};
