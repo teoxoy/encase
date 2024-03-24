@@ -158,7 +158,7 @@ macro_rules! impl_matrix_inner {
         impl<$($generics)*> $crate::private::WriteInto for $type
         where
             Self: $crate::private::AsRefMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
-            $el_ty: $crate::private::MatrixScalar + $crate::private::WriteInto,
+            $el_ty: $crate::private::MatrixScalar + $crate::private::WriteInto + $crate::private::ShaderSize,
         {
             #[inline]
             #[allow(trivial_casts)]
@@ -169,9 +169,7 @@ macro_rules! impl_matrix_inner {
                     // Const branch, should be eliminated at compile time.
                     if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
                         for col in columns {
-                            for el in col {
-                                $crate::private::WriteInto::write_into(el, writer);
-                            }
+                            $crate::private::WriteInto::write_into(col, writer);
                             writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                         }
                     } else {
@@ -185,7 +183,7 @@ macro_rules! impl_matrix_inner {
                 #[cfg(not(target_endian = "little"))]
                 {
                     for col in columns {
-                        WriteInto::write_into(col, writer);
+                        $crate::private::WriteInto::write_into(col, writer);
                         writer.advance(Self::METADATA.el_padding() as usize);
                     }
                 }
@@ -195,7 +193,7 @@ macro_rules! impl_matrix_inner {
         impl<$($generics)*> $crate::private::ReadFrom for $type
         where
             Self: $crate::private::AsMutMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
-            $el_ty: $crate::private::MatrixScalar + $crate::private::ReadFrom,
+            $el_ty: $crate::private::MatrixScalar + $crate::private::ReadFrom + $crate::private::ShaderSize,
         {
             #[inline]
             #[allow(trivial_casts)]
@@ -206,9 +204,7 @@ macro_rules! impl_matrix_inner {
                     // Const branch, should be eliminated at compile time.
                     if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
                         for col in columns {
-                            for el in col {
-                                $crate::private::ReadFrom::read_from(el, reader);
-                            }
+                            $crate::private::ReadFrom::read_from(col, reader);
                             reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                         }
                     } else {
@@ -221,9 +217,7 @@ macro_rules! impl_matrix_inner {
                 #[cfg(not(target_endian = "little"))]
                 {
                     for col in columns {
-                        for el in col {
-                            $crate::private::ReadFrom::read_from(el, reader);
-                        }
+                        $crate::private::ReadFrom::read_from(col, reader);
                         reader.advance(Self::METADATA.el_padding() as usize);
                     }
                 }
@@ -233,7 +227,7 @@ macro_rules! impl_matrix_inner {
         impl<$($generics)*> $crate::private::CreateFrom for $type
         where
             Self: $crate::private::FromMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
-            $el_ty: $crate::private::MatrixScalar + $crate::private::CreateFrom,
+            $el_ty: $crate::private::MatrixScalar + $crate::private::CreateFrom + $crate::private::ShaderSize,
         {
             #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
@@ -242,9 +236,7 @@ macro_rules! impl_matrix_inner {
                     // Const branch, should be eliminated at compile time.
                     if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
                         let columns = ::core::array::from_fn(|_| {
-                            let col = ::core::array::from_fn(|_| {
-                                $crate::private::CreateFrom::create_from(reader)
-                            });
+                            let col = $crate::private::CreateFrom::create_from(reader);
                             reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                             col
                         });
@@ -265,9 +257,7 @@ macro_rules! impl_matrix_inner {
                 #[cfg(not(target_endian = "little"))]
                 {
                     let columns = ::core::array::from_fn(|_| {
-                        let col = ::core::array::from_fn(|_| {
-                            $crate::private::CreateFrom::create_from(reader)
-                        });
+                        let col = $crate::private::CreateFrom::create_from(reader);
                         reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                         col
                     });
