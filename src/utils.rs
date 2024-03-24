@@ -155,7 +155,7 @@ mod byte_vec_ext {
 
     #[test]
     fn try_extend() {
-        let mut vec = Vec::new();
+        let mut vec: Vec<u8> = Vec::new();
 
         vec.try_extend(10).unwrap();
 

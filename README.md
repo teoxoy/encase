@@ -48,7 +48,7 @@ let transform = AffineTransform2D {
     translate: glam::Vec2::ZERO,
 };
 
-let mut buffer = UniformBuffer::new(Vec::new());
+let mut buffer = UniformBuffer::new(Vec::<u8>::new());
 buffer.write(&transform).unwrap();
 let byte_buffer = buffer.into_inner();
 
@@ -94,7 +94,7 @@ let mut positions = Positions {
     ])
 };
 
-let mut byte_buffer = Vec::new();
+let mut byte_buffer: Vec<u8> = Vec::new();
 
 let mut buffer = StorageBuffer::new(&mut byte_buffer);
 buffer.write(&positions).unwrap();
@@ -118,7 +118,7 @@ Write different data types to dynamic storage buffer
 ```rust
 use encase::{ShaderType, DynamicStorageBuffer};
 
-let mut byte_buffer = Vec::new();
+let mut byte_buffer: Vec<u8> = Vec::new();
 
 let mut buffer = DynamicStorageBuffer::new_with_alignment(&mut byte_buffer, 64);
 let offsets = [
