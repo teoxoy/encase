@@ -70,6 +70,7 @@ pub(crate) trait ByteVecExt {
 }
 
 impl ByteVecExt for Vec<u8> {
+    #[inline]
     fn try_extend_zeroed(
         &mut self,
         new_len: usize,
