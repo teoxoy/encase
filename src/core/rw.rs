@@ -43,12 +43,12 @@ impl<B: BufferMut> Writer<B> {
 
     #[inline]
     pub fn advance(&mut self, amount: usize) {
-        self.cursor.advance(amount)
+        self.cursor.advance(amount);
     }
 
     #[inline]
     pub fn write<const N: usize>(&mut self, val: &[u8; N]) {
-        self.cursor.write(val)
+        self.cursor.write(val);
     }
 }
 
@@ -85,7 +85,7 @@ impl<B: BufferRef> Reader<B> {
 
     #[inline]
     pub fn advance(&mut self, amount: usize) {
-        self.cursor.advance(amount)
+        self.cursor.advance(amount);
     }
 
     #[inline]
@@ -239,7 +239,7 @@ impl<const LEN: usize> BufferMut for [u8; LEN] {
 
     #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
-        <[u8] as BufferMut>::write(self, offset, val)
+        <[u8] as BufferMut>::write(self, offset, val);
     }
 }
 
@@ -251,7 +251,7 @@ impl BufferMut for Vec<u8> {
 
     #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
-        <[u8] as BufferMut>::write(self, offset, val)
+        <[u8] as BufferMut>::write(self, offset, val);
     }
 
     #[inline]
