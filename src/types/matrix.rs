@@ -204,10 +204,7 @@ macro_rules! impl_matrix_inner {
                             reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                         }
                     } else {
-                        let ptr = (self as *mut Self) as *mut ::core::primitive::u8;
-                        let byte_slice: &mut [::core::primitive::u8] =
-                            unsafe { ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>()) };
-                        reader.read_slice(byte_slice);
+                        $crate::private::ReadFrom::read_from(columns, reader);
                     }
                 }
                 #[cfg(not(target_endian = "little"))]
@@ -239,25 +236,13 @@ macro_rules! impl_matrix_inner {
 
                         $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
                     } else {
-                        let mut me = ::core::mem::MaybeUninit::zeroed();
-                        let ptr: *mut ::core::mem::MaybeUninit<Self> = &mut me;
-                        let ptr = ptr.cast::<::core::primitive::u8>();
-                        let byte_slice: &mut [::core::primitive::u8] = unsafe {
-                            ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>())
-                        };
-                        reader.read_slice(byte_slice);
-                        // SAFETY: All values were properly initialized by reading the bytes.
-                        unsafe { me.assume_init() }
+                        let columns = $crate::private::CreateFrom::create_from(reader);
+                        $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
                     }
                 }
                 #[cfg(not(target_endian = "little"))]
                 {
-                    let columns = ::core::array::from_fn(|_| {
-                        let col = $crate::private::CreateFrom::create_from(reader);
-                        reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                        col
-                    });
-
+                    let columns = $crate::private::CreateFrom::create_from(reader);
                     $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
                 }
             }
