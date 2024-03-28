@@ -141,30 +141,8 @@ macro_rules! impl_vector_inner {
         {
             #[inline]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
-                #[cfg(target_endian = "little")]
-                {
-                    // Const branch, should be eliminated at compile time.
-                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
-                        let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
-                        for el in elements {
-                            $crate::private::WriteInto::write_into(el, writer);
-                        }
-                    } else {
-                        let ptr: *const Self = self;
-                        let ptr = ptr.cast::<::core::primitive::u8>();
-                        let byte_slice: &[::core::primitive::u8] = unsafe {
-                            ::core::slice::from_raw_parts(ptr, ::core::mem::size_of::<Self>())
-                        };
-                        writer.write_slice(byte_slice);
-                    }
-                }
-                #[cfg(not(target_endian = "little"))]
-                {
-                    let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
-                    for el in elements {
-                        $crate::private::WriteInto::write_into(el, writer);
-                    }
-                }
+                let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
+                $crate::private::WriteInto::write_into(elements, writer);
             }
         }
 
@@ -175,30 +153,8 @@ macro_rules! impl_vector_inner {
         {
             #[inline]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
-                #[cfg(target_endian = "little")]
-                {
-                    // Const branch, should be eliminated at compile time.
-                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
-                        let elements = $crate::private::AsMutVectorParts::<$el_ty, $n>::as_mut_parts(self);
-                        for el in elements {
-                            $crate::private::ReadFrom::read_from(el, reader);
-                        }
-                    } else {
-                        let ptr: *mut Self = self;
-                        let ptr = ptr.cast::<::core::primitive::u8>();
-                        let byte_slice: &mut [::core::primitive::u8] = unsafe {
-                            ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>())
-                        };
-                        reader.read_slice(byte_slice);
-                    }
-                }
-                #[cfg(not(target_endian = "little"))]
-                {
-                    let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
-                    for el in elements {
-                        $crate::private::ReadFrom::read_from(el, reader);
-                    }
-                }
+                let elements = $crate::private::AsMutVectorParts::<$el_ty, $n>::as_mut_parts(self);
+                $crate::private::ReadFrom::read_from(elements, reader);
             }
         }
 
@@ -210,34 +166,8 @@ macro_rules! impl_vector_inner {
             #[inline]
             #[allow(trivial_casts)]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                #[cfg(target_endian = "little")]
-                {
-                    // Const branch, should be eliminated at compile time.
-                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
-                        let elements = ::core::array::from_fn(|_| {
-                            $crate::private::CreateFrom::create_from(reader)
-                        });
-
-                        $crate::private::FromVectorParts::<$el_ty, $n>::from_parts(elements)
-                    } else {
-                        let mut me = ::core::mem::MaybeUninit::zeroed();
-                        let ptr = (&mut me as *mut ::core::mem::MaybeUninit<Self>).cast::<::core::primitive::u8>();
-                        let byte_slice: &mut [::core::primitive::u8] = unsafe {
-                            ::core::slice::from_raw_parts_mut(ptr, ::core::mem::size_of::<Self>())
-                        };
-                        reader.read_slice(byte_slice);
-                        // SAFETY: All values were properly initialized by reading the bytes.
-                        unsafe { me.assume_init() }
-                    }
-                }
-                #[cfg(not(target_endian = "little"))]
-                {
-                    let elements = ::core::array::from_fn(|_| {
-                        $crate::private::CreateFrom::create_from(reader)
-                    });
-
-                    $crate::private::FromVectorParts::<$el_ty, $n>::from_parts(elements)
-                }
+                let elements = $crate::private::CreateFrom::create_from(reader);
+                $crate::private::FromVectorParts::<$el_ty, $n>::from_parts(elements)
             }
         }
     };

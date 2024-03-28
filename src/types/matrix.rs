@@ -167,17 +167,13 @@ macro_rules! impl_matrix_inner {
                 #[cfg(target_endian = "little")]
                 {
                     // Const branch, should be eliminated at compile time.
-                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                    if <Self as $crate::private::ShaderType>::METADATA.col_padding() != 0 {
                         for col in columns {
                             $crate::private::WriteInto::write_into(col, writer);
                             writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                         }
                     } else {
-                        let ptr = (self as *const Self) as *const ::core::primitive::u8;
-                        let byte_slice: &[::core::primitive::u8] = unsafe {
-                            ::core::slice::from_raw_parts(ptr, ::core::mem::size_of::<Self>())
-                        };
-                        writer.write_slice(byte_slice);
+                        $crate::private::WriteInto::write_into(columns, writer);
                     }
                 }
                 #[cfg(not(target_endian = "little"))]
