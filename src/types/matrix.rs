@@ -142,6 +142,7 @@ macro_rules! impl_matrix_inner {
                     alignment,
                     has_uniform_min_alignment: false,
                     min_size: size,
+                    has_internal_padding: <$el_ty as $crate::private::ShaderType>::METADATA.has_internal_padding() || col_padding != 0,
                     extra: $crate::private::MatrixMetadata {
                         col_padding,
                     },
@@ -157,16 +158,30 @@ macro_rules! impl_matrix_inner {
         impl<$($generics)*> $crate::private::WriteInto for $type
         where
             Self: $crate::private::AsRefMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
-            $el_ty: $crate::private::MatrixScalar + $crate::private::WriteInto,
+            $el_ty: $crate::private::MatrixScalar + $crate::private::WriteInto + $crate::private::ShaderSize,
         {
             #[inline]
+            #[allow(trivial_casts)]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let columns = $crate::private::AsRefMatrixParts::<$el_ty, $c, $r>::as_ref_parts(self);
-                for col in columns {
-                    for el in col {
-                        $crate::private::WriteInto::write_into(el, writer);
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.col_padding() != 0 {
+                        for col in columns {
+                            $crate::private::WriteInto::write_into(col, writer);
+                            writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                        }
+                    } else {
+                        $crate::private::WriteInto::write_into(columns, writer);
                     }
-                    writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    for col in columns {
+                        $crate::private::WriteInto::write_into(col, writer);
+                        writer.advance(Self::METADATA.el_padding() as usize);
+                    }
                 }
             }
         }
@@ -174,16 +189,30 @@ macro_rules! impl_matrix_inner {
         impl<$($generics)*> $crate::private::ReadFrom for $type
         where
             Self: $crate::private::AsMutMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
-            $el_ty: $crate::private::MatrixScalar + $crate::private::ReadFrom,
+            $el_ty: $crate::private::MatrixScalar + $crate::private::ReadFrom + $crate::private::ShaderSize,
         {
             #[inline]
+            #[allow(trivial_casts)]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let columns = $crate::private::AsMutMatrixParts::<$el_ty, $c, $r>::as_mut_parts(self);
-                for col in columns {
-                    for el in col {
-                        $crate::private::ReadFrom::read_from(el, reader);
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                        for col in columns {
+                            $crate::private::ReadFrom::read_from(col, reader);
+                            reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                        }
+                    } else {
+                        $crate::private::ReadFrom::read_from(columns, reader);
                     }
-                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    for col in columns {
+                        $crate::private::ReadFrom::read_from(col, reader);
+                        reader.advance(Self::METADATA.el_padding() as usize);
+                    }
                 }
             }
         }
@@ -191,19 +220,31 @@ macro_rules! impl_matrix_inner {
         impl<$($generics)*> $crate::private::CreateFrom for $type
         where
             Self: $crate::private::FromMatrixParts<$el_ty, $c, $r> + $crate::private::ShaderType<ExtraMetadata = $crate::private::MatrixMetadata>,
-            $el_ty: $crate::private::MatrixScalar + $crate::private::CreateFrom,
+            $el_ty: $crate::private::MatrixScalar + $crate::private::CreateFrom + $crate::private::ShaderSize,
         {
             #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                let columns = ::core::array::from_fn(|_| {
-                    let col = ::core::array::from_fn(|_| {
-                        $crate::private::CreateFrom::create_from(reader)
-                    });
-                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                    col
-                });
+                #[cfg(target_endian = "little")]
+                {
+                    // Const branch, should be eliminated at compile time.
+                    if <Self as $crate::private::ShaderType>::METADATA.has_internal_padding() {
+                        let columns = ::core::array::from_fn(|_| {
+                            let col = $crate::private::CreateFrom::create_from(reader);
+                            reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                            col
+                        });
 
-                $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
+                        $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
+                    } else {
+                        let columns = $crate::private::CreateFrom::create_from(reader);
+                        $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
+                    }
+                }
+                #[cfg(not(target_endian = "little"))]
+                {
+                    let columns = $crate::private::CreateFrom::create_from(reader);
+                    $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
+                }
             }
         }
     };

@@ -9,7 +9,8 @@ macro_rules! impl_basic_traits {
     ($type:ty) => {
         impl ShaderType for $type {
             type ExtraMetadata = ();
-            const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
+            const METADATA: Metadata<Self::ExtraMetadata> =
+                Metadata::from_alignment_and_size(4, 4, false);
         }
 
         impl ShaderSize for $type {}

@@ -123,6 +123,7 @@ macro_rules! impl_vector_inner {
                     alignment,
                     has_uniform_min_alignment: false,
                     min_size: size,
+                    has_internal_padding: <[$el_ty; $n] as $crate::private::ShaderType>::METADATA.has_internal_padding(),
                     extra: ()
                 }
             };
@@ -136,42 +137,36 @@ macro_rules! impl_vector_inner {
         impl<$($generics)*> $crate::private::WriteInto for $type
         where
             Self: $crate::private::AsRefVectorParts<$el_ty, $n>,
-            $el_ty: $crate::private::VectorScalar + $crate::private::WriteInto,
+            $el_ty: $crate::private::ShaderSize + $crate::private::VectorScalar + $crate::private::WriteInto,
         {
             #[inline]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
-                for el in elements {
-                    $crate::private::WriteInto::write_into(el, writer);
-                }
+                $crate::private::WriteInto::write_into(elements, writer);
             }
         }
 
         impl<$($generics)*> $crate::private::ReadFrom for $type
         where
             Self: $crate::private::AsMutVectorParts<$el_ty, $n>,
-            $el_ty: $crate::private::VectorScalar + $crate::private::ReadFrom,
+            $el_ty: $crate::private::ShaderSize + $crate::private::VectorScalar + $crate::private::ReadFrom,
         {
             #[inline]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let elements = $crate::private::AsMutVectorParts::<$el_ty, $n>::as_mut_parts(self);
-                for el in elements {
-                    $crate::private::ReadFrom::read_from(el, reader);
-                }
+                $crate::private::ReadFrom::read_from(elements, reader);
             }
         }
 
         impl<$($generics)*> $crate::private::CreateFrom for $type
         where
             Self: $crate::private::FromVectorParts<$el_ty, $n>,
-            $el_ty: $crate::private::VectorScalar + $crate::private::CreateFrom,
+            $el_ty: $crate::private::ShaderSize + $crate::private::VectorScalar + $crate::private::CreateFrom,
         {
             #[inline]
+            #[allow(trivial_casts)]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                let elements = ::core::array::from_fn(|_| {
-                    $crate::private::CreateFrom::create_from(reader)
-                });
-
+                let elements = $crate::private::CreateFrom::create_from(reader);
                 $crate::private::FromVectorParts::<$el_ty, $n>::from_parts(elements)
             }
         }
