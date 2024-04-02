@@ -594,7 +594,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                     alignment: struct_alignment,
                     has_uniform_min_alignment: true,
                     min_size,
-                    has_internal_padding: true,
+                    is_pod: false,
                     extra,
                 }
             };

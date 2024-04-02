@@ -8,21 +8,17 @@ pub struct Metadata<E> {
     pub alignment: AlignmentValue,
     pub has_uniform_min_alignment: bool,
     pub min_size: SizeValue,
-    pub has_internal_padding: bool,
+    pub is_pod: bool,
     pub extra: E,
 }
 
 impl Metadata<()> {
-    pub const fn from_alignment_and_size(
-        alignment: u64,
-        size: u64,
-        has_internal_padding: bool,
-    ) -> Self {
+    pub const fn from_alignment_and_size(alignment: u64, size: u64) -> Self {
         Self {
             alignment: AlignmentValue::new(alignment),
             has_uniform_min_alignment: false,
             min_size: SizeValue::new(size),
-            has_internal_padding,
+            is_pod: false,
             extra: (),
         }
     }
@@ -50,17 +46,29 @@ impl<E> Metadata<E> {
     }
 
     #[inline]
-    pub const fn has_internal_padding(self) -> bool {
-        let value = self.has_internal_padding;
+    pub const fn min_size(self) -> SizeValue {
+        let value = self.min_size;
         core::mem::forget(self);
         value
     }
 
     #[inline]
-    pub const fn min_size(self) -> SizeValue {
-        let value = self.min_size;
+    pub const fn is_pod(self) -> bool {
+        let value = self.is_pod;
         core::mem::forget(self);
         value
+    }
+
+    #[inline]
+    pub const fn pod(mut self) -> Self {
+        self.is_pod = true;
+        self
+    }
+
+    #[inline]
+    pub const fn no_pod(mut self) -> Self {
+        self.is_pod = false;
+        self
     }
 }
 

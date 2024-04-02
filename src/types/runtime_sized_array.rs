@@ -33,7 +33,7 @@ pub struct ArrayLength;
 
 impl ShaderType for ArrayLength {
     type ExtraMetadata = ();
-    const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4, false);
+    const METADATA: Metadata<Self::ExtraMetadata> = Metadata::from_alignment_and_size(4, 4);
 }
 
 impl ShaderSize for ArrayLength {}
@@ -137,7 +137,7 @@ macro_rules! impl_rts_array_inner {
                     alignment,
                     has_uniform_min_alignment: true,
                     min_size: el_size,
-                    has_internal_padding: T::METADATA.has_internal_padding() || el_padding != 0,
+                    is_pod: false,
                     extra: $crate::private::ArrayMetadata { stride, el_padding },
                 }
             };
