@@ -164,17 +164,14 @@ macro_rules! impl_matrix_inner {
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let columns = $crate::private::AsRefMatrixParts::<$el_ty, $c, $r>::as_ref_parts(self);
 
-                #[cfg(target_endian = "little")]
-                // Const branch, should be eliminated at compile time.
-                if <Self as $crate::private::ShaderType>::METADATA.is_pod() {
+                $crate::if_pod_and_little_endian!(if pod_and_little_endian {
                     $crate::private::WriteInto::write_into(columns, writer);
-                    return;
-                }
-
-                for col in columns {
-                    $crate::private::WriteInto::write_into(col, writer);
-                    writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                }
+                } else {
+                    for col in columns {
+                        $crate::private::WriteInto::write_into(col, writer);
+                        writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                    }
+                });
             }
         }
 
@@ -187,17 +184,14 @@ macro_rules! impl_matrix_inner {
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let columns = $crate::private::AsMutMatrixParts::<$el_ty, $c, $r>::as_mut_parts(self);
 
-                #[cfg(target_endian = "little")]
-                // Const branch, should be eliminated at compile time.
-                if <Self as $crate::private::ShaderType>::METADATA.is_pod() {
+                $crate::if_pod_and_little_endian!(if pod_and_little_endian {
                     $crate::private::ReadFrom::read_from(columns, reader);
-                    return;
-                }
-
-                for col in columns {
-                    $crate::private::ReadFrom::read_from(col, reader);
-                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                }
+                } else {
+                    for col in columns {
+                        $crate::private::ReadFrom::read_from(col, reader);
+                        reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                    }
+                });
             }
         }
 
@@ -208,19 +202,15 @@ macro_rules! impl_matrix_inner {
         {
             #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                #[cfg(target_endian = "little")]
-                // Const branch, should be eliminated at compile time.
-                if <Self as $crate::private::ShaderType>::METADATA.is_pod() {
-                    let columns = $crate::private::CreateFrom::create_from(reader);
-                    return $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns);
-                }
-
-                let columns = ::core::array::from_fn(|_| {
-                    let col = $crate::private::CreateFrom::create_from(reader);
-                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                    col
+                let columns = $crate::if_pod_and_little_endian!(if pod_and_little_endian {
+                    $crate::private::CreateFrom::create_from(reader)
+                } else {
+                    ::core::array::from_fn(|_| {
+                        let col = $crate::private::CreateFrom::create_from(reader);
+                        reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                        col
+                    })
                 });
-
                 $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
             }
         }

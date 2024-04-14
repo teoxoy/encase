@@ -66,20 +66,17 @@ where
 {
     #[inline]
     fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
-        #[cfg(target_endian = "little")]
-        // Const branch, should be eliminated at compile time.
-        if Self::METADATA.is_pod() {
+        if_pod_and_little_endian!(if pod_and_little_endian {
             let ptr = self.as_ptr() as *const u8;
             let byte_slice: &[u8] =
                 unsafe { core::slice::from_raw_parts(ptr, core::mem::size_of::<Self>()) };
             writer.write_slice(byte_slice);
-            return;
-        }
-
-        for elem in self {
-            WriteInto::write_into(elem, writer);
-            writer.advance(Self::METADATA.el_padding() as usize);
-        }
+        } else {
+            for elem in self {
+                WriteInto::write_into(elem, writer);
+                writer.advance(Self::METADATA.el_padding() as usize);
+            }
+        });
     }
 }
 
@@ -89,20 +86,17 @@ where
 {
     #[inline]
     fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
-        #[cfg(target_endian = "little")]
-        // Const branch, should be eliminated at compile time.
-        if Self::METADATA.is_pod() {
+        if_pod_and_little_endian!(if pod_and_little_endian {
             let ptr = self.as_mut_ptr() as *mut u8;
             let byte_slice: &mut [u8] =
                 unsafe { core::slice::from_raw_parts_mut(ptr, core::mem::size_of::<Self>()) };
             reader.read_slice(byte_slice);
-            return;
-        }
-
-        for elem in self {
-            ReadFrom::read_from(elem, reader);
-            reader.advance(Self::METADATA.el_padding() as usize);
-        }
+        } else {
+            for elem in self {
+                ReadFrom::read_from(elem, reader);
+                reader.advance(Self::METADATA.el_padding() as usize);
+            }
+        });
     }
 }
 
@@ -112,9 +106,7 @@ where
 {
     #[inline]
     fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
-        #[cfg(target_endian = "little")]
-        // Const branch, should be eliminated at compile time.
-        if Self::METADATA.is_pod() {
+        if_pod_and_little_endian!(if pod_and_little_endian {
             let mut me = core::mem::MaybeUninit::zeroed();
             let ptr: *mut core::mem::MaybeUninit<Self> = &mut me;
             let ptr = ptr.cast::<u8>();
@@ -122,13 +114,13 @@ where
                 unsafe { core::slice::from_raw_parts_mut(ptr, core::mem::size_of::<Self>()) };
             reader.read_slice(byte_slice);
             // SAFETY: All values were properly initialized by reading the bytes.
-            return unsafe { me.assume_init() };
-        }
-
-        core::array::from_fn(|_| {
-            let res = CreateFrom::create_from(reader);
-            reader.advance(Self::METADATA.el_padding() as usize);
-            res
+            unsafe { me.assume_init() }
+        } else {
+            core::array::from_fn(|_| {
+                let res = CreateFrom::create_from(reader);
+                reader.advance(Self::METADATA.el_padding() as usize);
+                res
+            })
         })
     }
 }
