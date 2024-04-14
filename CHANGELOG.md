@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Increased MSRV to 1.68.2
+- Updated `glam` to v0.27
+
 ## v0.7.0 (2024-01-02)
 
 - Allow buffer types to accept `?Sized` types
