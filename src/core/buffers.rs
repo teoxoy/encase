@@ -316,9 +316,9 @@ impl<B: BufferRef> DynamicUniformBuffer<B> {
     }
 }
 
-pub trait BufferContent {
-    fn storage_buffer_content(&self) -> Vec<u8>;
-    fn uniform_buffer_content(&self) -> Vec<u8>;
+pub trait ToBufferContent {
+    fn to_storage_buffer_content(&self) -> Vec<u8>;
+    fn to_uniform_buffer_content(&self) -> Vec<u8>;
 }
 
 impl<T> BufferContent for T
