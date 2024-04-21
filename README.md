@@ -139,9 +139,9 @@ Supports writing to uninitialized memory as well.
 use std::mem::MaybeUninit;
 use encase::{ShaderType, DynamicStorageBuffer};
 
-let mut byte_buffer: Vec<MaybeUninit<u8>> = Vec::new();
+let mut uninit_buffer: Vec<MaybeUninit<u8>> = Vec::new();
 
-let mut buffer = DynamicStorageBuffer::new_with_alignment(&mut byte_buffer, 64);
+let mut buffer = DynamicStorageBuffer::new_with_alignment(&mut uninit_buffer, 64);
 let offsets = [
     buffer.write(&[5.; 10]).unwrap(),
     buffer.write(&vec![3u32; 20]).unwrap(),
@@ -151,11 +151,13 @@ let offsets = [
 // SAFETY: Vec<u8> and Vec<MaybeUninit<u8>> share the same layout.
 let byte_buffer: Vec<u8> = unsafe { 
     Vec::from_raw_parts(
-        byte_buffer.as_mut_ptr().cast(), 
-        byte_buffer.len(), 
-        byte_buffer.capacity()
+        uninit_buffer.as_mut_ptr().cast(), 
+        uninit_buffer.len(), 
+        uninit_buffer.capacity()
     ) 
 };
+
+std::mem::forget(uninit_buffer);
 
 // write byte_buffer to GPU
 
