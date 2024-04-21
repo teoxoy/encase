@@ -150,8 +150,11 @@ let offsets = [
 
 // SAFETY: Vec<u8> and Vec<MaybeUninit<u8>> share the same layout.
 let byte_buffer: Vec<u8> = unsafe { 
-    Vec::from_raw_parts(byte_buffer.as_mut_ptr(), byte_buffer.len(), 
-        byte_buffer.capacity()) 
+    Vec::from_raw_parts(
+        byte_buffer.as_mut_ptr().cast(), 
+        byte_buffer.len(), 
+        byte_buffer.capacity()
+    ) 
 };
 
 // write byte_buffer to GPU
