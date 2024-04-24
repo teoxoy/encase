@@ -2,7 +2,7 @@
 ///
 /// # Args
 ///
-/// - `$type` the type (representing a wrapper) for which `ShaderType` will be imeplemented for
+/// - `$type` the type (representing a wrapper) for which `ShaderType` will be implemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
@@ -41,7 +41,7 @@ macro_rules! impl_wrapper_inner {
             T: $crate::private::ShaderType
         {
             type ExtraMetadata = T::ExtraMetadata;
-            const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = T::METADATA;
+            const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = T::METADATA.no_pod();
 
             const UNIFORM_COMPAT_ASSERT: fn() = T::UNIFORM_COMPAT_ASSERT;
 

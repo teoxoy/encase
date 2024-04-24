@@ -18,7 +18,7 @@ impl AlignmentValue {
     #[inline]
     pub const fn from_next_power_of_two_size(size: SizeValue) -> Self {
         match size.get().checked_next_power_of_two() {
-            None => panic!("Overflow occured while getting the next power of 2!"),
+            None => panic!("Overflow occurred while getting the next power of 2!"),
             Some(val) => {
                 // SAFETY: This is safe since we got the next_power_of_two
                 Self(unsafe { NonZeroU64::new_unchecked(val) })

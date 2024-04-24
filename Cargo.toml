@@ -2,7 +2,7 @@
 name = "encase"
 version = "0.7.0"
 edition = "2021"
-rust-version = "1.63"
+rust-version = "1.68.2"
 
 license = "MIT-0"
 readme = "./README.md"
@@ -36,7 +36,7 @@ const_panic = { version = "0.2", default-features = false }
 
 mint = { version = "0.5.9", default-features = false, optional = true }
 cgmath = { version = "0.18", default-features = false, optional = true }
-glam = { version = "0.25", features = ["std"], default-features = false, optional = true }
+glam = { version = "0.27", features = ["std"], default-features = false, optional = true }
 nalgebra = { version = "0.32", default-features = false, optional = true }
 ultraviolet = { version = "0.9", features = ["int"], default-features = false, optional = true }
 vek = { version = "0.16", default-features = false, optional = true }
@@ -55,7 +55,7 @@ static-rc = { version = "0.6", features = ["alloc"], default-features = false, o
 criterion = { version = "0.4", features = ["cargo_bench_support", "html_reports"], default-features = false }
 rand = { version = "0.8", features = ["std_rng"], default-features = false }
 mimalloc = { version = "0.1", default-features = false }
-wgpu = { version = "0.17", features = ["wgsl"], default-features = false }
+wgpu = { version = "0.19", features = ["wgsl"] }
 futures = { version = "0.3", features = ["executor"], default-features = false }
 pprof = { version = "0.11", features = ["criterion", "flamegraph"], default-features = false }
 trybuild = { version = "1", default-features = false }

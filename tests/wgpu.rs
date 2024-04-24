@@ -160,6 +160,7 @@ fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
     let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
         backends: wgpu::Backends::PRIMARY,
         dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
+        ..Default::default()
     });
     let adapter = block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
         power_preference: wgpu::PowerPreference::default(),

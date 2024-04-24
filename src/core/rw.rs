@@ -44,12 +44,17 @@ impl<B: BufferMut> Writer<B> {
 
     #[inline]
     pub fn advance(&mut self, amount: usize) {
-        self.cursor.advance(amount)
+        self.cursor.advance(amount);
     }
 
     #[inline]
     pub fn write<const N: usize>(&mut self, val: &[u8; N]) {
-        self.cursor.write(val)
+        self.cursor.write(val);
+    }
+
+    #[inline]
+    pub fn write_slice(&mut self, val: &[u8]) {
+        self.cursor.write_slice(val)
     }
 }
 
@@ -86,12 +91,17 @@ impl<B: BufferRef> Reader<B> {
 
     #[inline]
     pub fn advance(&mut self, amount: usize) {
-        self.cursor.advance(amount)
+        self.cursor.advance(amount);
     }
 
     #[inline]
     pub fn read<const N: usize>(&mut self) -> &[u8; N] {
         self.cursor.read()
+    }
+
+    #[inline]
+    pub fn read_slice(&mut self, val: &mut [u8]) {
+        self.cursor.read_slice(val)
     }
 
     #[inline]
@@ -131,6 +141,12 @@ impl<B: BufferRef> Cursor<B> {
         self.pos += N;
         res
     }
+
+    #[inline]
+    fn read_slice(&mut self, val: &mut [u8]) {
+        self.buffer.read_slice(self.pos, val);
+        self.pos += val.len();
+    }
 }
 
 impl<B: BufferMut> Cursor<B> {
@@ -143,6 +159,12 @@ impl<B: BufferMut> Cursor<B> {
     fn write<const N: usize>(&mut self, val: &[u8; N]) {
         self.buffer.write(self.pos, val);
         self.pos += N;
+    }
+
+    #[inline]
+    fn write_slice(&mut self, val: &[u8]) {
+        self.buffer.write_slice(self.pos, val);
+        self.pos += val.len();
     }
 
     #[inline]
@@ -166,12 +188,16 @@ pub trait BufferRef {
     fn len(&self) -> usize;
 
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N];
+
+    fn read_slice(&self, offset: usize, val: &mut [u8]);
 }
 
 pub trait BufferMut {
     fn capacity(&self) -> usize;
 
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]);
+
+    fn write_slice(&mut self, offset: usize, val: &[u8]);
 
     #[inline]
     fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
@@ -193,6 +219,11 @@ impl BufferRef for [u8] {
         use crate::utils::SliceExt;
         self.array(offset)
     }
+
+    #[inline]
+    fn read_slice(&self, offset: usize, val: &mut [u8]) {
+        val.copy_from_slice(&self[offset..offset + val.len()])
+    }
 }
 
 impl<const LEN: usize> BufferRef for [u8; LEN] {
@@ -204,6 +235,11 @@ impl<const LEN: usize> BufferRef for [u8; LEN] {
     #[inline]
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
         <[u8] as BufferRef>::read(self, offset)
+    }
+
+    #[inline]
+    fn read_slice(&self, offset: usize, val: &mut [u8]) {
+        <[u8] as BufferRef>::read_slice(self, offset, val)
     }
 }
 
@@ -217,6 +253,11 @@ impl BufferRef for Vec<u8> {
     fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
         <[u8] as BufferRef>::read(self, offset)
     }
+
+    #[inline]
+    fn read_slice(&self, offset: usize, val: &mut [u8]) {
+        <[u8] as BufferRef>::read_slice(self, offset, val)
+    }
 }
 
 impl BufferMut for [u8] {
@@ -229,6 +270,11 @@ impl BufferMut for [u8] {
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
         use crate::utils::SliceExt;
         *self.array_mut(offset) = *val;
+    }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        self[offset..offset + val.len()].copy_from_slice(val);
     }
 }
 
@@ -255,7 +301,12 @@ impl<const LEN: usize> BufferMut for [u8; LEN] {
 
     #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
-        <[u8] as BufferMut>::write(self, offset, val)
+        <[u8] as BufferMut>::write(self, offset, val);
+    }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        <[u8] as BufferMut>::write_slice(self, offset, val)
     }
 }
 
@@ -279,7 +330,12 @@ impl BufferMut for Vec<u8> {
 
     #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
-        <[u8] as BufferMut>::write(self, offset, val)
+        <[u8] as BufferMut>::write(self, offset, val);
+    }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        <[u8] as BufferMut>::write_slice(self, offset, val)
     }
 
     #[inline]
@@ -319,6 +375,11 @@ macro_rules! impl_buffer_ref_for_wrappers {
             fn read<const N: usize>(&self, offset: usize) -> &[u8; N] {
                 T::read(self, offset)
             }
+
+            #[inline]
+            fn read_slice(&self, offset: usize, val: &mut [u8]) {
+                T::read_slice(self, offset, val)
+            }
         }
     )*};
 }
@@ -336,6 +397,11 @@ macro_rules! impl_buffer_mut_for_wrappers {
             #[inline]
             fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
                 T::write(self, offset, val)
+            }
+
+            #[inline]
+            fn write_slice(&mut self, offset: usize, val: &[u8]) {
+                T::write_slice(self, offset, val)
             }
 
             #[inline]
