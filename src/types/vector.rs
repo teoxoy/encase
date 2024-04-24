@@ -1,4 +1,4 @@
-pub trait VectorScalar {}
+pub trait VectorScalar: crate::ShaderSize {}
 impl_marker_trait_for_f32!(VectorScalar);
 impl_marker_trait_for_u32!(VectorScalar);
 impl_marker_trait_for_i32!(VectorScalar);
@@ -123,6 +123,7 @@ macro_rules! impl_vector_inner {
                     alignment,
                     has_uniform_min_alignment: false,
                     min_size: size,
+                    is_pod: <[$el_ty; $n] as $crate::private::ShaderType>::METADATA.is_pod(),
                     extra: ()
                 }
             };
@@ -141,9 +142,7 @@ macro_rules! impl_vector_inner {
             #[inline]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let elements = $crate::private::AsRefVectorParts::<$el_ty, $n>::as_ref_parts(self);
-                for el in elements {
-                    $crate::private::WriteInto::write_into(el, writer);
-                }
+                $crate::private::WriteInto::write_into(elements, writer);
             }
         }
 
@@ -155,9 +154,7 @@ macro_rules! impl_vector_inner {
             #[inline]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let elements = $crate::private::AsMutVectorParts::<$el_ty, $n>::as_mut_parts(self);
-                for el in elements {
-                    $crate::private::ReadFrom::read_from(el, reader);
-                }
+                $crate::private::ReadFrom::read_from(elements, reader);
             }
         }
 
@@ -168,10 +165,7 @@ macro_rules! impl_vector_inner {
         {
             #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                let elements = ::core::array::from_fn(|_| {
-                    $crate::private::CreateFrom::create_from(reader)
-                });
-
+                let elements = $crate::private::CreateFrom::create_from(reader);
                 $crate::private::FromVectorParts::<$el_ty, $n>::from_parts(elements)
             }
         }

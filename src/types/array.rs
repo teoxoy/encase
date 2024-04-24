@@ -36,6 +36,7 @@ impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
             alignment,
             has_uniform_min_alignment: true,
             min_size: size,
+            is_pod: T::METADATA.is_pod() && el_padding == 0,
             extra: ArrayMetadata { stride, el_padding },
         }
     };
@@ -65,10 +66,17 @@ where
 {
     #[inline]
     fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
-        for item in self {
-            WriteInto::write_into(item, writer);
-            writer.advance(Self::METADATA.el_padding() as usize);
-        }
+        if_pod_and_little_endian!(if pod_and_little_endian {
+            let ptr = self.as_ptr() as *const u8;
+            let byte_slice: &[u8] =
+                unsafe { core::slice::from_raw_parts(ptr, core::mem::size_of::<Self>()) };
+            writer.write_slice(byte_slice);
+        } else {
+            for elem in self {
+                WriteInto::write_into(elem, writer);
+                writer.advance(Self::METADATA.el_padding() as usize);
+            }
+        });
     }
 }
 
@@ -78,10 +86,17 @@ where
 {
     #[inline]
     fn read_from<B: BufferRef>(&mut self, reader: &mut Reader<B>) {
-        for elem in self {
-            ReadFrom::read_from(elem, reader);
-            reader.advance(Self::METADATA.el_padding() as usize);
-        }
+        if_pod_and_little_endian!(if pod_and_little_endian {
+            let ptr = self.as_mut_ptr() as *mut u8;
+            let byte_slice: &mut [u8] =
+                unsafe { core::slice::from_raw_parts_mut(ptr, core::mem::size_of::<Self>()) };
+            reader.read_slice(byte_slice);
+        } else {
+            for elem in self {
+                ReadFrom::read_from(elem, reader);
+                reader.advance(Self::METADATA.el_padding() as usize);
+            }
+        });
     }
 }
 
@@ -91,10 +106,21 @@ where
 {
     #[inline]
     fn create_from<B: BufferRef>(reader: &mut Reader<B>) -> Self {
-        core::array::from_fn(|_| {
-            let res = CreateFrom::create_from(reader);
-            reader.advance(Self::METADATA.el_padding() as usize);
-            res
+        if_pod_and_little_endian!(if pod_and_little_endian {
+            let mut me = core::mem::MaybeUninit::zeroed();
+            let ptr: *mut core::mem::MaybeUninit<Self> = &mut me;
+            let ptr = ptr.cast::<u8>();
+            let byte_slice: &mut [u8] =
+                unsafe { core::slice::from_raw_parts_mut(ptr, core::mem::size_of::<Self>()) };
+            reader.read_slice(byte_slice);
+            // SAFETY: All values were properly initialized by reading the bytes.
+            unsafe { me.assume_init() }
+        } else {
+            core::array::from_fn(|_| {
+                let res = CreateFrom::create_from(reader);
+                reader.advance(Self::METADATA.el_padding() as usize);
+                res
+            })
         })
     }
 }

@@ -25,6 +25,24 @@ macro_rules! build_struct {
     };
 }
 
+#[doc(hidden)]
+#[macro_export]
+macro_rules! if_pod_and_little_endian {
+    (if pod_and_little_endian $true:block else $false:block) => {{
+        #[cfg(target_endian = "little")]
+        // Const branch, should be eliminated at compile time.
+        if <Self as $crate::private::ShaderType>::METADATA.is_pod() {
+            $true
+        } else {
+            $false
+        }
+        #[cfg(not(target_endian = "little"))]
+        {
+            $false
+        }
+    }};
+}
+
 #[cfg(any(feature = "glam", feature = "ultraviolet", feature = "vek"))]
 macro_rules! array_ref_to_2d_array_ref {
     ($array:expr, $ty:ty, $c:literal, $r:literal) => {
@@ -70,6 +88,7 @@ pub(crate) trait ByteVecExt {
 }
 
 impl ByteVecExt for Vec<u8> {
+    #[inline]
     fn try_extend_zeroed(
         &mut self,
         new_len: usize,
