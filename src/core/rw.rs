@@ -1,4 +1,5 @@
 use super::ShaderType;
+use core::mem::MaybeUninit;
 use thiserror::Error;
 
 #[derive(Clone, Copy, Debug, Error)]
@@ -277,6 +278,28 @@ impl BufferMut for [u8] {
     }
 }
 
+impl BufferMut for [MaybeUninit<u8>] {
+    #[inline]
+    fn capacity(&self) -> usize {
+        self.len()
+    }
+
+    #[inline]
+    fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
+        use crate::utils::SliceExt;
+        // SAFETY: &[u8; N] and &[MaybeUninit<u8>; N] have the same layout
+        let val: &[MaybeUninit<u8>; N] = unsafe { core::mem::transmute(val) };
+        *self.array_mut(offset) = *val;
+    }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        // SAFETY: &[u8] and &[MaybeUninit<u8>] have the same layout
+        let val: &[MaybeUninit<u8>] = unsafe { core::mem::transmute(val) };
+        self[offset..offset + val.len()].copy_from_slice(val);
+    }
+}
+
 impl<const LEN: usize> BufferMut for [u8; LEN] {
     #[inline]
     fn capacity(&self) -> usize {
@@ -291,6 +314,23 @@ impl<const LEN: usize> BufferMut for [u8; LEN] {
     #[inline]
     fn write_slice(&mut self, offset: usize, val: &[u8]) {
         <[u8] as BufferMut>::write_slice(self, offset, val)
+    }
+}
+
+impl<const LEN: usize> BufferMut for [MaybeUninit<u8>; LEN] {
+    #[inline]
+    fn capacity(&self) -> usize {
+        <[MaybeUninit<u8>] as BufferMut>::capacity(self)
+    }
+
+    #[inline]
+    fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
+        <[MaybeUninit<u8>] as BufferMut>::write(self, offset, val)
+    }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        <[MaybeUninit<u8>] as BufferMut>::write_slice(self, offset, val)
     }
 }
 
@@ -313,7 +353,30 @@ impl BufferMut for Vec<u8> {
     #[inline]
     fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
         use crate::utils::ByteVecExt;
-        self.try_extend_zeroed(wanted).map_err(EnlargeError::from)
+        self.try_extend(wanted).map_err(EnlargeError::from)
+    }
+}
+
+impl BufferMut for Vec<MaybeUninit<u8>> {
+    #[inline]
+    fn capacity(&self) -> usize {
+        self.capacity()
+    }
+
+    #[inline]
+    fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
+        <[MaybeUninit<u8>] as BufferMut>::write(self, offset, val)
+    }
+
+    #[inline]
+    fn write_slice(&mut self, offset: usize, val: &[u8]) {
+        <[MaybeUninit<u8>] as BufferMut>::write_slice(self, offset, val)
+    }
+
+    #[inline]
+    fn try_enlarge(&mut self, wanted: usize) -> core::result::Result<(), EnlargeError> {
+        use crate::utils::ByteVecExt;
+        self.try_extend(wanted).map_err(EnlargeError::from)
     }
 }
 

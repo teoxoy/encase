@@ -150,8 +150,8 @@ fn test_opt_writing() {
     let two = 2_u32;
     let data = [&one, &two];
     let data2 = [one, two];
-    let mut in_byte_buffer = Vec::new();
-    let mut in_byte_buffer2 = Vec::new();
+    let mut in_byte_buffer: Vec<u8> = Vec::new();
+    let mut in_byte_buffer2: Vec<u8> = Vec::new();
     let mut in_buffer = StorageBuffer::new(&mut in_byte_buffer);
     let mut in_buffer2 = StorageBuffer::new(&mut in_byte_buffer2);
     in_buffer.write(&data).unwrap();
