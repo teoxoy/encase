@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## v0.8.0 (2024-04-24)
 
+- Internal optimization: faster copying of POD types
+- Added support for writing to uninitialized memory
 - Increased MSRV to 1.68.2
 - Updated `glam` to v0.27
 
