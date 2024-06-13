@@ -7,7 +7,7 @@
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
 /// - `$using` \[optional\] can be any combination of `Ref{ X } Mut{ X } From{ X }`
-/// (where `X` denotes a possible function call)
+///   (where `X` denotes a possible function call)
 #[macro_export]
 macro_rules! impl_wrapper {
     ($type:ty; using $($using:tt)*) => {
