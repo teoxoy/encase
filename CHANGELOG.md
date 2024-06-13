@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated `glam` to v0.28
+
 ## v0.8.0 (2024-04-24)
 
 - Internal optimization: faster copying of POD types
