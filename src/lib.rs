@@ -42,7 +42,7 @@
 /// While structs using generic type parameters are supported by this derive macro
 ///
 /// - the `#[align(X)]` and `#[size(X)]` attributes will only work
-/// if they are attached to fields whose type contains no generic type parameters
+///   if they are attached to fields whose type contains no generic type parameters
 ///
 /// # Examples
 ///
