@@ -52,6 +52,8 @@ macro_rules! impl_traits_for_pod {
 impl_traits_for_pod!(f32);
 impl_traits_for_pod!(u32);
 impl_traits_for_pod!(i32);
+impl_traits_for_pod!(u64);
+impl_traits_for_pod!(i64);
 
 macro_rules! impl_traits_for_non_zero_option {
     ($type:ty) => {
