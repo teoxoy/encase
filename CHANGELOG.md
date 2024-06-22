@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## v0.9.0 (2024-06-22)
 
 - Updated `glam` to v0.28
+- Updated `vek` to v0.17
+- Updated `imbl` to v3
 
 ## v0.8.0 (2024-04-24)
 
