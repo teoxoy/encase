@@ -236,6 +236,7 @@ fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
         layout: Some(&pipeline_layout),
         module: &shader,
         entry_point: "main",
+        compilation_options: wgpu::PipelineCompilationOptions::default(),
     });
 
     let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
