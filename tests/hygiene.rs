@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 
 macro_rules! decl_primitives_as_traits {
-    ($($primitive:ident),*) => {$(trait $primitive {})*};
+    ($($primitive:ident),*) => {$(#[allow(dead_code)] trait $primitive {})*};
 }
 
 // from core::primitive

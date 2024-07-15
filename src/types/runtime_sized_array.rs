@@ -137,6 +137,7 @@ macro_rules! impl_rts_array_inner {
                     alignment,
                     has_uniform_min_alignment: true,
                     min_size: el_size,
+                    is_pod: false,
                     extra: $crate::private::ArrayMetadata { stride, el_padding },
                 }
             };

@@ -1,3 +1,5 @@
+use core::mem::MaybeUninit;
+
 #[track_caller]
 pub const fn consume_zsts<const N: usize>(_: [(); N]) {}
 
@@ -23,6 +25,24 @@ macro_rules! build_struct {
         // to one of the struct's fields (therefore valid and aligned)
         unsafe { field_ptr.write($data) };
     };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! if_pod_and_little_endian {
+    (if pod_and_little_endian $true:block else $false:block) => {{
+        #[cfg(target_endian = "little")]
+        // Const branch, should be eliminated at compile time.
+        if <Self as $crate::private::ShaderType>::METADATA.is_pod() {
+            $true
+        } else {
+            $false
+        }
+        #[cfg(not(target_endian = "little"))]
+        {
+            $false
+        }
+    }};
 }
 
 #[cfg(any(feature = "glam", feature = "ultraviolet", feature = "vek"))]
@@ -63,17 +83,12 @@ macro_rules! array_mut_to_2d_array_mut {
 
 pub(crate) trait ByteVecExt {
     /// Tries to extend `self` with `0`s up to `new_len`, using memset.
-    fn try_extend_zeroed(
-        &mut self,
-        new_len: usize,
-    ) -> Result<(), std::collections::TryReserveError>;
+    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError>;
 }
 
 impl ByteVecExt for Vec<u8> {
-    fn try_extend_zeroed(
-        &mut self,
-        new_len: usize,
-    ) -> Result<(), std::collections::TryReserveError> {
+    #[inline]
+    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError> {
         let additional = new_len.saturating_sub(self.len());
         if additional > 0 {
             self.try_reserve(additional)?;
@@ -86,6 +101,26 @@ impl ByteVecExt for Vec<u8> {
             // SAFETY
             // 1. new_len is less than or equal to Vec::capacity() since we reserved at least `additional` elements
             // 2. The elements at old_len..new_len are initialized since we wrote `additional` bytes
+            unsafe { self.set_len(new_len) }
+        }
+        Ok(())
+    }
+}
+
+impl<T> ByteVecExt for Vec<MaybeUninit<T>> {
+    #[inline]
+    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError> {
+        let additional = new_len.saturating_sub(self.len());
+        if additional > 0 {
+            self.try_reserve(additional)?;
+
+            // It's OK to not initialize the extended elements as MaybeUninit allows
+            // uninitialized memory.
+
+            // SAFETY
+            // 1. new_len is less than or equal to Vec::capacity() since we reserved at least `additional` elements
+            // 2. The elements at old_len..new_len are initialized since we wrote `additional` bytes
+            // 3. MaybeUninit
             unsafe { self.set_len(new_len) }
         }
         Ok(())
@@ -139,29 +174,29 @@ mod byte_vec_ext {
     use crate::utils::ByteVecExt;
 
     #[test]
-    fn try_extend_zeroed() {
-        let mut vec = Vec::new();
+    fn try_extend() {
+        let mut vec: Vec<u8> = Vec::new();
 
-        vec.try_extend_zeroed(10).unwrap();
+        vec.try_extend(10).unwrap();
 
         assert_eq!(vec.len(), 10);
         assert!(vec.iter().all(|val| *val == 0));
     }
 
     #[test]
-    fn try_extend_zeroed_noop() {
+    fn try_extend_noop() {
         let mut vec = vec![0; 12];
 
-        vec.try_extend_zeroed(10).unwrap();
+        vec.try_extend(10).unwrap();
 
         assert_eq!(vec.len(), 12);
     }
 
     #[test]
-    fn try_extend_zeroed_err() {
+    fn try_extend_err() {
         let mut vec = vec![0; 12];
 
-        assert!(vec.try_extend_zeroed(usize::MAX).is_err());
+        assert!(vec.try_extend(usize::MAX).is_err());
     }
 }
 
