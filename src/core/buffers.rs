@@ -241,7 +241,9 @@ impl<B: BufferMut> DynamicStorageBuffer<B> {
     where
         T: ShaderType + WriteInto,
     {
-        self.offset = T::METADATA.alignment().round_up(self.offset as u64) as usize;
+        let raw_alignment = T::METADATA.alignment();
+
+        self.offset = raw_alignment.round_up(self.offset as u64) as usize;
         let offset = self.offset;
 
         let mut writer = Writer::new(value, &mut self.inner, offset)?;
@@ -414,8 +416,26 @@ impl<B: BufferMut> DynamicUniformBuffer<B> {
     where
         T: ShaderType + WriteInto,
     {
-        T::assert_uniform_compat();
-        self.inner.write_struct_member(value)
+        let uniform_min_alignment = T::METADATA.uniform_min_alignment();
+        let raw_alignment = T::METADATA.alignment();
+
+        let max_alignment = match uniform_min_alignment {
+            Some(uniform_min_alignment) => {
+                AlignmentValue::max([uniform_min_alignment, raw_alignment])
+            }
+            None => raw_alignment,
+        };
+
+        self.inner.offset = max_alignment.round_up(self.inner.offset as u64) as usize;
+        let offset = self.inner.offset;
+
+        let mut writer = Writer::new(value, &mut self.inner.inner, offset)?;
+        value.write_into(&mut writer);
+
+        self.inner
+            .set_and_alloc_offset(self.inner.offset + value.size().get() as usize)?;
+
+        Ok(offset as u64)
     }
 
     /// Writes a "struct break" into the buffer. This takes the buffer offset and aligns it
