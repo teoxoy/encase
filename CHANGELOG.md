@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated `glam` to v0.29
+
 ## v0.9.0 (2024-06-22)
 
 - Updated `glam` to v0.28
