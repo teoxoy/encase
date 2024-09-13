@@ -117,4 +117,4 @@ impl_wrapper!(Box<T>; using Ref{} Mut{} From{ new });
 impl_wrapper!(std::borrow::Cow<'_, T>; (T: ?Sized + ToOwned<Owned = T>); using Ref{} From{ Owned });
 impl_wrapper!(std::rc::Rc<T>; using Ref{} From{ new });
 impl_wrapper!(std::sync::Arc<T>; using Ref{} From{ new });
-impl_wrapper!(core::cell::Cell<T>; (T: ?Sized + Copy); using Ref{ .get() } Mut{ .get_mut() } From{ new });
+impl_wrapper!(core::cell::Cell<T>; (T: Copy); using Ref{ .get() } Mut{ .get_mut() } From{ new });
