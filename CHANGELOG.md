@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## v0.10.0 (2024-09-13)
 
 - Updated `glam` to v0.29
+- Updated `nalgebra` to v0.33
 
 ## v0.9.0 (2024-06-22)
 
