@@ -51,6 +51,7 @@ imbl = { version = "3", default-features = false, optional = true }
 static-rc = { version = "0.6", features = ["alloc"], default-features = false, optional = true }
 
 [dev-dependencies]
+bytemuck = { version = "1", default-features = false }
 criterion = { version = "0.4", features = ["cargo_bench_support", "html_reports"], default-features = false }
 rand = { version = "0.8", features = ["std_rng"], default-features = false }
 mimalloc = { version = "0.1", default-features = false }
