@@ -77,6 +77,24 @@ macro_rules! impl_wrapper_inner {
             }
         }
 
+        impl<$($generics)*> $crate::private::IOType for $type
+        where
+            T: $crate::private::IOType
+        {
+            #[cfg(feature = "wgpu")]
+            const FORMAT: $crate::private::wgpu::VertexFormat = T::FORMAT;
+        }
+
+        impl<$($generics)*> $crate::private::VertexStageInput for $type
+        where
+            T: $crate::private::VertexStageInput
+        {
+            #[cfg(feature = "wgpu")]
+            const ATTRIBUTES: &'static [$crate::private::wgpu::VertexAttribute] = T::ATTRIBUTES;
+            #[cfg(feature = "wgpu")]
+            const LAYOUT: $crate::private::wgpu::VertexBufferLayout<'static> = T::LAYOUT;
+        }
+
         impl<$($generics)*> $crate::private::WriteInto for $type
         where
             T: $crate::private::WriteInto

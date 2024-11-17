@@ -60,6 +60,27 @@ impl<T: ShaderType + ShaderSize, const N: usize> ShaderType for [T; N] {
     };
 }
 
+// trait Uniform {}
+
+// enum Assert<const CHECK: bool> {}
+
+// trait IsValid {}
+// impl IsValid for Assert<true> {}
+
+// impl<T: ShaderType + ShaderSize, const N: usize> Uniform for [T; N]
+// where
+//     Self: ShaderType,
+//     Assert<
+//         {
+//             match Self::METADATA.uniform_min_alignment() {
+//                 Some(min_alignment) => min_alignment.is_aligned(Self::METADATA.stride().get()),
+//                 None => true,
+//             }
+//         },
+//     >: IsValid,
+// {
+// }
+
 impl<T: ShaderSize, const N: usize> ShaderSize for [T; N] {}
 
 impl<T: WriteInto, const N: usize> WriteInto for [T; N]

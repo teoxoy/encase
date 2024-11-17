@@ -1,3 +1,5 @@
+use crate::VertexStageInput;
+
 use super::{
     AlignmentValue, BufferMut, BufferRef, CreateFrom, ReadFrom, Reader, Result, ShaderType,
     WriteInto, Writer,
@@ -315,3 +317,90 @@ impl<B: BufferRef> DynamicUniformBuffer<B> {
         self.inner.create()
     }
 }
+
+/// Vertex buffer wrapper facilitating RW operations
+pub struct VertexBuffer<B> {
+    inner: B,
+    offset: usize,
+}
+
+impl<B> VertexBuffer<B> {
+    pub const fn new(buffer: B) -> Self {
+        Self::new_with_alignment(buffer)
+    }
+
+    pub const fn new_with_alignment(buffer: B) -> Self {
+        Self {
+            inner: buffer,
+            offset: 0,
+        }
+    }
+
+    pub fn set_offset(&mut self, offset: u64) {
+        self.offset = offset as usize;
+    }
+
+    pub fn into_inner(self) -> B {
+        self.inner
+    }
+}
+
+impl<B> From<B> for VertexBuffer<B> {
+    fn from(buffer: B) -> Self {
+        Self::new(buffer)
+    }
+}
+
+impl<B> AsRef<B> for VertexBuffer<B> {
+    fn as_ref(&self) -> &B {
+        &self.inner
+    }
+}
+
+impl<B> AsMut<B> for VertexBuffer<B> {
+    fn as_mut(&mut self) -> &mut B {
+        &mut self.inner
+    }
+}
+
+// impl<B: BufferMut> VertexBuffer<B> {
+//     pub fn write<T>(&mut self, value: &T) -> Result<u64>
+//     where
+//         T: VertexStageInput + WriteInto,
+//     {
+//         let offset = self.offset;
+
+//         let mut writer = Writer::new(value, &mut self.inner, offset)?;
+//         value.write_into(&mut writer);
+
+//         self.offset += self.alignment.round_up(value.size().get()) as usize;
+
+//         Ok(offset as u64)
+//     }
+// }
+
+// impl<B: BufferRef> VertexBuffer<B> {
+//     pub fn read<T>(&mut self, value: &mut T) -> Result<()>
+//     where
+//         T: VertexStageInput + ReadFrom,
+//     {
+//         let mut writer = Reader::new::<T>(&self.inner, self.offset)?;
+//         value.read_from(&mut writer);
+
+//         self.offset += self.alignment.round_up(value.size().get()) as usize;
+
+//         Ok(())
+//     }
+
+//     pub fn create<T>(&mut self) -> Result<T>
+//     where
+//         T: VertexStageInput + CreateFrom,
+//     {
+//         let mut writer = Reader::new::<T>(&self.inner, self.offset)?;
+//         let value = T::create_from(&mut writer);
+
+//         self.offset += self.alignment.round_up(value.size().get()) as usize;
+
+//         Ok(value)
+//     }
+// }

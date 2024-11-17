@@ -1,4 +1,15 @@
-use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer};
+use encase::{ArrayLength, CalculateSizeFor, ShaderType, StorageBuffer, VertexStageInput};
+
+#[derive(VertexStageInput)]
+#[instance]
+struct AA<'a> {
+    #[location(0)]
+    f: &'a f32,
+    #[location(1)]
+    u: &'a u32,
+    #[location(2)]
+    i: &'a i32,
+}
 
 macro_rules! gen {
     ($rng:ident, $ty:ty) => {{

@@ -265,3 +265,15 @@ pub trait CreateFrom: Sized {
     where
         B: BufferRef;
 }
+
+pub trait VertexStageInput {
+    #[cfg(feature = "wgpu")]
+    const ATTRIBUTES: &'static [wgpu::VertexAttribute];
+    #[cfg(feature = "wgpu")]
+    const LAYOUT: wgpu::VertexBufferLayout<'static>;
+}
+
+pub trait IOType {
+    #[cfg(feature = "wgpu")]
+    const FORMAT: wgpu::VertexFormat;
+}

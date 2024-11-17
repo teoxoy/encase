@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use proc_macro2::{Ident, Literal, Span, TokenStream};
 use quote::{quote, quote_spanned};
 use syn::{
@@ -6,7 +8,8 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::Comma,
-    Data, DataStruct, DeriveInput, Error, Fields, FieldsNamed, GenericParam, LitInt, Path, Type,
+    Data, DataStruct, DeriveInput, Error, Field, Fields, FieldsNamed, GenericParam, LitInt, Path,
+    Type,
 };
 
 pub use syn;
@@ -18,6 +21,15 @@ macro_rules! implement {
         pub fn derive_shader_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             let input = $crate::syn::parse_macro_input!(input as $crate::syn::DeriveInput);
             let expanded = encase_derive_impl::derive_shader_type(input, &$path);
+            proc_macro::TokenStream::from(expanded)
+        }
+
+        #[proc_macro_derive(VertexStageInput, attributes(instance, location))]
+        pub fn derive_vertex_stage_input(
+            input: proc_macro::TokenStream,
+        ) -> proc_macro::TokenStream {
+            let input = $crate::syn::parse_macro_input!(input as $crate::syn::DeriveInput);
+            let expanded = encase_derive_impl::derive_vertex_stage_input(input, &$path);
             proc_macro::TokenStream::from(expanded)
         }
     };
@@ -173,7 +185,7 @@ impl Errors {
 }
 
 pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
-    let root = &parse_quote!(#root::private);
+    let root: &Path = &parse_quote!(#root::private);
 
     let fields = match get_named_struct_fields(&input.data) {
         Ok(fields) => fields,
@@ -273,7 +285,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
 
     let field_trait_constraints = generate_field_trait_constraints(
         &input,
-        &field_data,
+        &fields,
         if is_runtime_sized {
             quote!(#root::ShaderType + #root::RuntimeSizedArray)
         } else {
@@ -652,15 +664,15 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
 
 fn generate_field_trait_constraints<'a>(
     input: &'a DeriveInput,
-    field_data: &'a [FieldData],
+    fields: &'a FieldsNamed,
     trait_for_last_field: TokenStream,
     trait_for_all_other_fields: TokenStream,
 ) -> impl Iterator<Item = TokenStream> + 'a {
     let (impl_generics, _, where_clause) = input.generics.split_for_impl();
-    field_data.iter().enumerate().map(move |(i, data)| {
-        let ty = &data.field.ty;
+    fields.named.iter().enumerate().map(move |(i, field)| {
+        let ty = &field.ty;
 
-        let t = if i == field_data.len() - 1 {
+        let t = if i == fields.named.len() - 1 {
             &trait_for_last_field
         } else {
             &trait_for_all_other_fields
@@ -676,4 +688,232 @@ fn generate_field_trait_constraints<'a>(
             };
         }
     })
+}
+
+struct LocationAttr(u32);
+
+impl Parse for LocationAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        match input
+            .parse::<LitInt>()
+            .and_then(|lit| lit.base10_parse::<u32>())
+        {
+            Ok(num) => Ok(Self(num)),
+            _ => Err(syn::Error::new(input.span(), "expected a u32 literal")),
+        }
+    }
+}
+
+pub fn derive_vertex_stage_input(input: DeriveInput, root: &Path) -> TokenStream {
+    let root: &Path = &parse_quote!(#root::private);
+
+    let fields = match get_named_struct_fields(&input.data) {
+        Ok(fields) => fields,
+        Err(e) => return e.into_compile_error(),
+    };
+
+    let instance_step_mode = input
+        .attrs
+        .iter()
+        .any(|attr| attr.path.is_ident("instance"));
+
+    let mut errors = Errors::new();
+
+    let field_data: Vec<_> = fields
+        .named
+        .iter()
+        .cloned()
+        .map(|field| {
+            let mut location = None;
+            for attr in &field.attrs {
+                let span = attr.tokens.span();
+                if attr.path.is_ident("location") {
+                    let res = attr.parse_args::<LocationAttr>();
+                    let res = res.map_err(|err| syn::Error::new(span, err));
+                    match res {
+                        Ok(val) => location = Some((val.0, span)),
+                        Err(err) => errors.append(err),
+                    }
+                }
+            }
+            if location.is_none() {
+                errors.append(syn::Error::new(
+                    field.span(),
+                    "field missing location attribute",
+                ))
+            }
+            (field, location)
+        })
+        .collect();
+
+    let mut locations = HashMap::<u32, Vec<(Field, Span)>>::new();
+
+    for (field, location) in field_data.iter() {
+        if let Some((location, span)) = location {
+            if let Some(entries) = locations.get_mut(location) {
+                entries.push((field.clone(), *span));
+            } else {
+                locations.insert(*location, vec![(field.clone(), *span)]);
+            }
+        }
+    }
+
+    for (location, fields) in locations {
+        if fields.len() > 1 {
+            for (field, span) in &fields {
+                let other_field_names = fields
+                    .iter()
+                    .filter(|(f, _)| f.ident != field.ident)
+                    .map(|(field, _)| format!("'{}'", field.ident.as_ref().unwrap()))
+                    .reduce(|acc, ident| format!("{}, {}", acc, ident));
+                errors.append(syn::Error::new(
+                    *span,
+                    format!(
+                        "field can't share the same location '{}' with field{} {}",
+                        location,
+                        if fields.len() > 2 { "s" } else { "" },
+                        other_field_names.unwrap()
+                    ),
+                ))
+            }
+        }
+    }
+
+    if let Some(ts) = errors.into_compile_error() {
+        return ts;
+    }
+
+    let field_trait_constraints = generate_field_trait_constraints(
+        &input,
+        fields,
+        quote!(#root::IOType),
+        quote!(#root::IOType),
+    );
+
+    let write_into_buffer_body = field_data.iter().map(|(field, _)| {
+        let ident = field.ident.as_ref().unwrap();
+
+        quote! {
+            #root::WriteInto::write_into(&self.#ident, writer);
+        }
+    });
+
+    let read_from_buffer_body = field_data.iter().map(|(field, _)| {
+        let ident = field.ident.as_ref().unwrap();
+
+        quote! {
+            #root::ReadFrom::read_from(&mut self.#ident, reader);
+        }
+    });
+
+    let create_from_buffer_body = field_data.iter().map(|(field, _)| {
+        let ident = field.ident.as_ref().unwrap();
+
+        quote! {
+            let #ident = #root::CreateFrom::create_from(reader);
+        }
+    });
+
+    let field_idents = field_data
+        .iter()
+        .map(|(field, _)| field.ident.as_ref().unwrap());
+    let field_types = field_data.iter().map(|(field, _)| &field.ty);
+    let field_types_2 = field_types.clone();
+    let field_types_3 = field_types.clone();
+    let field_types_4 = field_types.clone();
+
+    let name = &input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let step_mode = if instance_step_mode {
+        quote!(#root::wgpu::VertexStepMode::Instance)
+    } else {
+        quote!(#root::wgpu::VertexStepMode::Vertex)
+    };
+
+    let attributes = field_data.iter().map(|(field, location)| {
+        let ty = &field.ty;
+        let location = location.as_ref().unwrap().0;
+        quote! {{
+            let format = <#ty as #root::IOType>::FORMAT;
+            let attribute = #root::wgpu::VertexAttribute {
+                format,
+                offset,
+                shader_location: #location,
+            };
+            offset += format.size();
+            attribute
+        }}
+    });
+
+    let stride = field_data.iter().map(|(field, _)| {
+        let ty = &field.ty;
+        quote! {
+            let format = <#ty as #root::IOType>::FORMAT;
+            offset += format.size();
+        }
+    });
+
+    // constant = arrayStride = 0
+    // step_mode = vertex/instance/constant
+    // offset % min(4, sizeof(attrib.format)) = 0      (alignment can only be 2 or 4)
+    // arrayStride % 4 = 0
+    // if not 0 arrayStride >= last attrib.offset + sizeof(attrib.format)
+    // add a method .layout(step_mode)
+    // add a method .layout_with_location(step_mode)
+    // to write, accept an iterator
+
+    quote! {
+        #( #field_trait_constraints )*
+
+        impl #impl_generics #root::VertexStageInput for #name #ty_generics #where_clause
+        where
+            #( #field_types: #root::IOType, )*
+        {
+            #[cfg(feature = "wgpu")]
+            const ATTRIBUTES: &'static [wgpu::VertexAttribute] = {
+                let mut offset = 0;
+                &[ #( #attributes, )* ]
+            };
+            #[cfg(feature = "wgpu")]
+            const LAYOUT: #root::wgpu::VertexBufferLayout<'static> = {
+                let mut offset = 0;
+                #( #stride )*
+                #root::wgpu::VertexBufferLayout {
+                    array_stride: offset,
+                    step_mode: #step_mode,
+                    attributes: Self::ATTRIBUTES,
+                }
+            };
+        }
+
+        impl #impl_generics #root::WriteInto for #name #ty_generics
+        where
+            #( #field_types_2: #root::WriteInto, )*
+        {
+            fn write_into<B: #root::BufferMut>(&self, writer: &mut #root::Writer<B>) {
+                #( #write_into_buffer_body )*
+            }
+        }
+
+        impl #impl_generics #root::ReadFrom for #name #ty_generics
+        where
+            #( #field_types_3: #root::ReadFrom, )*
+        {
+            fn read_from<B: #root::BufferRef>(&mut self, reader: &mut #root::Reader<B>) {
+                #( #read_from_buffer_body )*
+            }
+        }
+
+        impl #impl_generics #root::CreateFrom for #name #ty_generics
+        where
+            #( #field_types_4: #root::CreateFrom, )*
+        {
+            fn create_from<B: #root::BufferRef>(reader: &mut #root::Reader<B>) -> Self {
+                #( #create_from_buffer_body )*
+
+                #root::build_struct!(Self, #( #field_idents ),*)
+            }
+        }
+    }
 }

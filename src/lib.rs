@@ -93,6 +93,7 @@
 /// ```
 ///
 pub use encase_derive::ShaderType;
+pub use encase_derive::VertexStageInput;
 
 #[macro_use]
 mod utils;
@@ -103,7 +104,7 @@ mod impls;
 
 pub use crate::core::{
     CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,
-    StorageBuffer, UniformBuffer,
+    StorageBuffer, UniformBuffer, VertexStageInput,
 };
 pub use types::runtime_sized_array::ArrayLength;
 
@@ -147,11 +148,13 @@ pub mod private {
     pub use super::core::BufferMut;
     pub use super::core::BufferRef;
     pub use super::core::CreateFrom;
+    pub use super::core::IOType;
     pub use super::core::Metadata;
     pub use super::core::ReadFrom;
     pub use super::core::Reader;
     pub use super::core::RuntimeSizedArray;
     pub use super::core::SizeValue;
+    pub use super::core::VertexStageInput;
     pub use super::core::WriteInto;
     pub use super::core::Writer;
     pub use super::types::array::ArrayMetadata;
@@ -164,4 +167,8 @@ pub mod private {
     pub use super::ShaderSize;
     pub use super::ShaderType;
     pub use const_panic::concat_assert;
+    #[cfg(feature = "wgpu")]
+    pub mod wgpu {
+        pub use wgpu::{VertexAttribute, VertexBufferLayout, VertexFormat, VertexStepMode};
+    }
 }

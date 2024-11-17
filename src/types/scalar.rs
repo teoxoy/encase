@@ -1,5 +1,5 @@
 use crate::core::{
-    BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderSize, ShaderType,
+    BufferMut, BufferRef, CreateFrom, IOType, Metadata, ReadFrom, Reader, ShaderSize, ShaderType,
     WriteInto, Writer,
 };
 use core::num::{NonZeroI32, NonZeroU32, Wrapping};
@@ -146,25 +146,78 @@ impl_traits_for_atomic!(AtomicU32);
 impl_traits_for_atomic!(AtomicI32);
 
 macro_rules! impl_marker_trait_for_f32 {
-    ($trait:path) => {
-        impl $trait for ::core::primitive::f32 {}
+    ($trait:path $({ $($impl_block:tt)* })? ) => {
+        impl $trait for ::core::primitive::f32 { $($($impl_block)*)? }
     };
 }
 
 macro_rules! impl_marker_trait_for_u32 {
-    ($trait:path) => {
-        impl $trait for ::core::primitive::u32 {}
-        impl $trait for ::core::option::Option<::core::num::NonZeroU32> {}
-        impl $trait for ::core::num::Wrapping<::core::primitive::u32> {}
-        impl $trait for ::core::sync::atomic::AtomicU32 {}
+    ($trait:path $({ $($impl_block:tt)* })? ) => {
+        impl $trait for ::core::primitive::u32 { $($($impl_block)*)? }
+        impl $trait for ::core::option::Option<::core::num::NonZeroU32> { $($($impl_block)*)? }
+        impl $trait for ::core::num::Wrapping<::core::primitive::u32> { $($($impl_block)*)? }
+        impl $trait for ::core::sync::atomic::AtomicU32 { $($($impl_block)*)? }
     };
 }
 
 macro_rules! impl_marker_trait_for_i32 {
-    ($trait:path) => {
-        impl $trait for ::core::primitive::i32 {}
-        impl $trait for ::core::option::Option<::core::num::NonZeroI32> {}
-        impl $trait for ::core::num::Wrapping<::core::primitive::i32> {}
-        impl $trait for ::core::sync::atomic::AtomicI32 {}
+    ($trait:path $({ $($impl_block:tt)* })? ) => {
+        impl $trait for ::core::primitive::i32 { $($($impl_block)*)? }
+        impl $trait for ::core::option::Option<::core::num::NonZeroI32> { $($($impl_block)*)? }
+        impl $trait for ::core::num::Wrapping<::core::primitive::i32> { $($($impl_block)*)? }
+        impl $trait for ::core::sync::atomic::AtomicI32 { $($($impl_block)*)? }
     };
 }
+
+// f32 float
+// i32 sint snorm
+// u32 uint unorm
+
+// x2,x4
+// u8
+// i8
+// Unorm8
+// Snorm8
+
+// x2,x4
+// u16
+// i16
+// Unorm16
+// Snorm16
+// f16
+
+// x1,x2,x3,x4
+// u32
+// i32
+// f32
+
+#[repr(transparent)]
+struct Unorm8(u8);
+#[repr(transparent)]
+struct Snorm8(i8);
+
+#[repr(transparent)]
+struct Unorm16(u16);
+#[repr(transparent)]
+struct Snorm16(i16);
+
+// cgmath
+// mint
+// nalgebra
+// vek
+
+// missing f16, and all unorm/snorm
+// use half::f16
+
+impl_marker_trait_for_f32!(IOType {
+    #[cfg(feature = "wgpu")]
+    const FORMAT: wgpu::VertexFormat = wgpu::VertexFormat::Float32;
+});
+impl_marker_trait_for_u32!(IOType {
+    #[cfg(feature = "wgpu")]
+    const FORMAT: wgpu::VertexFormat = wgpu::VertexFormat::Uint32;
+});
+impl_marker_trait_for_i32!(IOType {
+    #[cfg(feature = "wgpu")]
+    const FORMAT: wgpu::VertexFormat = wgpu::VertexFormat::Sint32;
+});

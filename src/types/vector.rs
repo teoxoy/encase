@@ -134,6 +134,28 @@ macro_rules! impl_vector_inner {
             $el_ty: $crate::private::ShaderSize
         {}
 
+        impl<$($generics)*> $crate::private::IOType for $type
+        where
+            $el_ty: $crate::private::IOType
+        {
+            #[cfg(feature = "wgpu")]
+            const FORMAT: $crate::private::wgpu::VertexFormat = {
+                use $crate::private::wgpu::VertexFormat;
+                match (<$el_ty as $crate::private::IOType>::FORMAT, $n) {
+                    (VertexFormat::Float32, 2) => VertexFormat::Float32x2,
+                    (VertexFormat::Float32, 3) => VertexFormat::Float32x3,
+                    (VertexFormat::Float32, 4) => VertexFormat::Float32x4,
+                    (VertexFormat::Uint32, 2) => VertexFormat::Uint32x2,
+                    (VertexFormat::Uint32, 3) => VertexFormat::Uint32x3,
+                    (VertexFormat::Uint32, 4) => VertexFormat::Uint32x4,
+                    (VertexFormat::Sint32, 2) => VertexFormat::Sint32x2,
+                    (VertexFormat::Sint32, 3) => VertexFormat::Sint32x3,
+                    (VertexFormat::Sint32, 4) => VertexFormat::Sint32x4,
+                    _ => ::core::unreachable!()
+                }
+            };
+        }
+
         impl<$($generics)*> $crate::private::WriteInto for $type
         where
             Self: $crate::private::AsRefVectorParts<$el_ty, $n>,
