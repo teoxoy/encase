@@ -1,4 +1,4 @@
-use std::num::NonZeroU64;
+use std::{marker::PhantomData, num::NonZeroU64};
 
 use super::{AlignmentValue, BufferMut, BufferRef, Reader, SizeValue, Writer};
 
@@ -71,6 +71,93 @@ impl<E> Metadata<E> {
         self
     }
 }
+
+// Layout / Data / Mask / Path
+
+struct Handle<T>(usize, PhantomData<T>);
+struct Range<T>(std::ops::Range<usize>, PhantomData<T>);
+
+impl<T> std::ops::Index<Handle<T>> for [T] {
+    type Output = T;
+
+    fn index(&self, index: Handle<T>) -> &Self::Output {
+        &self[index.0]
+    }
+}
+
+impl<T> std::ops::Index<Range<T>> for [T] {
+    type Output = [T];
+
+    fn index(&self, index: Range<T>) -> &Self::Output {
+        &self[index.0]
+    }
+}
+
+// data needs to have a Layout
+
+enum Layout {
+    Array(Handle<Layout>),
+    Struct(Range<Layout>),
+    Simple(Handle<LayoutData>),
+}
+
+struct DynLayoutStorage {
+    storage: Vec<Layout>,
+    data: Vec<LayoutData>,
+}
+
+struct LayoutStorage<const N: usize, const M: usize> {
+    storage: [Layout; N],
+    data: [LayoutData; M],
+}
+
+struct LayoutData {
+    size: usize,
+    alignment: usize,
+}
+struct Mask {
+    paths: Vec<Path>,
+}
+struct Path {
+    way: Vec<Handle<Layout>>,
+}
+
+// want at runtime to specify array length and struct members
+
+// enum ActiveBuilder {
+//     Array,
+//     Structure,
+// }
+
+// struct LayoutBuilder {
+//     current: Option<ActiveBuilder>,
+//     inner: DynLayoutStorage,
+// }
+
+// struct ArrayLayoutBuilder {}
+// // struct ArrayLayoutBuilder {}
+
+// impl LayoutBuilder {
+//     pub fn new() -> Self {
+//         Self {
+//             current: None,
+//             inner: DynLayoutStorage {
+//                 storage: Vec::new(),
+//                 data: Vec::new(),
+//             },
+//         }
+//     }
+
+//     pub fn scalar(&mut self, ) -> Handle<> {
+
+//     }
+
+//     pub fn array(&self) -> ArrayLayoutBuilder {
+//         ArrayLayoutBuilder {
+
+//         }
+//     }
+// }
 
 /// Base trait for all [WGSL host-shareable types](https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types)
 pub trait ShaderType {
