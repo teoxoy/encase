@@ -17,8 +17,12 @@ impl<B> StorageBuffer<B> {
         self.inner
     }
 
-    pub fn content_of<T: ShaderType + WriteInto>(item: &T) -> Result<Vec<u8>> {
-        let mut buffer = StorageBuffer::new(Vec::new());
+    pub fn content_of<T, U>(item: &T) -> Result<U>
+    where
+        T: ShaderType + WriteInto,
+        U: BufferMut + Default,
+    {
+        let mut buffer = StorageBuffer::new(U::default());
         buffer.write(item)?;
         Ok(buffer.into_inner())
     }
@@ -88,8 +92,12 @@ impl<B> UniformBuffer<B> {
         self.inner.inner
     }
 
-    pub fn to_uniform_buffer_content<T: ShaderType + WriteInto>(item: &T) -> Result<Vec<u8>> {
-        let mut buffer = UniformBuffer::new(Vec::new());
+    pub fn content_of<T, U>(item: &T) -> Result<U>
+    where
+        T: ShaderType + WriteInto,
+        U: BufferMut + Default,
+    {
+        let mut buffer = UniformBuffer::new(U::default());
         buffer.write(item)?;
         Ok(buffer.into_inner())
     }
