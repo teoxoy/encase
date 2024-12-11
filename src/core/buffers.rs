@@ -16,6 +16,12 @@ impl<B> StorageBuffer<B> {
     pub fn into_inner(self) -> B {
         self.inner
     }
+
+    pub fn content_of<T: ShaderType + WriteInto>(item: &T) -> Result<Vec<u8>> {
+        let mut buffer = StorageBuffer::new(Vec::new());
+        buffer.write(item)?;
+        Ok(buffer.into_inner())
+    }
 }
 
 impl<B> From<B> for StorageBuffer<B> {
@@ -80,6 +86,12 @@ impl<B> UniformBuffer<B> {
 
     pub fn into_inner(self) -> B {
         self.inner.inner
+    }
+
+    pub fn to_uniform_buffer_content<T: ShaderType + WriteInto>(item: &T) -> Result<Vec<u8>> {
+        let mut buffer = UniformBuffer::new(Vec::new());
+        buffer.write(item)?;
+        Ok(buffer.into_inner())
     }
 }
 
@@ -313,27 +325,5 @@ impl<B: BufferRef> DynamicUniformBuffer<B> {
     {
         T::assert_uniform_compat();
         self.inner.create()
-    }
-}
-
-pub trait ToBufferContent {
-    fn to_storage_buffer_content(&self) -> Vec<u8>;
-    fn to_uniform_buffer_content(&self) -> Vec<u8>;
-}
-
-impl<T> ToBufferContent for T
-where
-    T: ShaderType + WriteInto,
-{
-    fn to_storage_buffer_content(&self) -> Vec<u8> {
-        let mut buffer = StorageBuffer::new(Vec::new());
-        buffer.write(self).unwrap();
-        buffer.into_inner()
-    }
-
-    fn to_uniform_buffer_content(&self) -> Vec<u8> {
-        let mut buffer = UniformBuffer::new(Vec::new());
-        buffer.write(self).unwrap();
-        buffer.into_inner()
     }
 }
