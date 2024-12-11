@@ -103,7 +103,7 @@ mod impls;
 
 pub use crate::core::{
     CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,
-    StorageBuffer, ToBufferContent, UniformBuffer,
+    StorageBuffer, UniformBuffer,
 };
 pub use types::runtime_sized_array::ArrayLength;
 
