@@ -157,9 +157,8 @@ fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
     data: &[u8],
     is_uniform: bool,
 ) -> Vec<u8> {
-    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+    let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
         backends: wgpu::Backends::PRIMARY,
-        dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
         ..Default::default()
     });
     let adapter = block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
@@ -235,7 +234,7 @@ fn in_out<IN: encase::ShaderType, OUT: encase::ShaderType>(
         label: None,
         layout: Some(&pipeline_layout),
         module: &shader,
-        entry_point: "main",
+        entry_point: Some("main"),
         compilation_options: wgpu::PipelineCompilationOptions::default(),
         cache: None,
     });
