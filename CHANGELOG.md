@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Increased MSRV to 1.77
 - Updated `glam` to v0.30
 - Updated `imbl` to v5
 - Updated `ndarray` to v16
