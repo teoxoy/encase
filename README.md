@@ -5,7 +5,7 @@ Provides a mechanism to lay out data into GPU buffers ensuring WGSL's memory lay
 ## Features
 
 - supports all WGSL [host-shareable types] + wrapper types (`&T`, `&mut T`, `Box<T>`, ...)
-- supports data types from a multitude of crates as [features]
+- supports data types from a multitude of crates as [features], providing you use the same crate versions `encase` does.
 - covers a wide area of use cases (see [examples](#examples))
 
 ## Motivation
