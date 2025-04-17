@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Increased MSRV to 1.77
+- Updated `glam` to v0.30
+- Updated `imbl` to v5
+- Updated `ndarray` to v0.16
+- Updated `thiserror` to v2
+
 ## v0.10.0 (2024-09-13)
 
 - Updated `glam` to v0.29
