@@ -9,14 +9,14 @@ env:
   CARGO_INCREMENTAL: false
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: full
-  NIGHTLY: nightly-2023-02-11
+  NIGHTLY: nightly-2025-02-18
 
 jobs:
   msrv_and_minimal_versions:
     name: Check MSRV and minimal-versions
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install tools
         uses: taiki-e/install-action@v2
@@ -43,30 +43,30 @@ jobs:
     name: Check format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: cargo fmt --check --all
 
   clippy:
     name: Check clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: cargo clippy --all-targets --workspace --all-features -- -D warnings
 
   doc_tests:
     name: Run doc tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: cargo test --doc --workspace --features mint,glam
 
   docs:
     name: Build docs
     runs-on: ubuntu-latest
     env:
-      RUSTDOCFLAGS: --cfg docs
+      RUSTDOCFLAGS: --cfg docsrs
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install nightly toolchain
         run: rustup toolchain install $NIGHTLY --no-self-update --profile=minimal
@@ -77,7 +77,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install tools
         uses: taiki-e/install-action@v2
@@ -90,3 +90,16 @@ jobs:
           sudo apt install -y mesa-vulkan-drivers vulkan-validationlayers
 
       - run: cargo llvm-cov nextest --workspace --features mint,glam --fail-under-lines 80
+
+  tests_miri:
+    name: Run MIRI tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install nightly toolchain
+        run: |
+          rustup toolchain install $NIGHTLY --no-self-update --profile=minimal
+          rustup +$NIGHTLY component add miri
+
+      - run: cargo +$NIGHTLY miri test --workspace --features mint,glam

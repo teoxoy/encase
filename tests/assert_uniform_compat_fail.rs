@@ -20,7 +20,7 @@ fn test_struct() {
         b: S,
     }
 
-    TestStruct::assert_uniform_compat()
+    TestStruct::assert_uniform_compat();
 }
 
 #[test]
@@ -32,7 +32,7 @@ fn test_array() {
         b: [WrappedF32; 1],
     }
 
-    TestArray::assert_uniform_compat()
+    TestArray::assert_uniform_compat();
 }
 
 #[test]
@@ -44,7 +44,7 @@ fn test_struct_first() {
         b: f32,
     }
 
-    TestStructFirst::assert_uniform_compat()
+    TestStructFirst::assert_uniform_compat();
 }
 
 #[test]
@@ -55,7 +55,7 @@ fn test_array_stride() {
         a: [u32; 8],
     }
 
-    TestArrayStride::assert_uniform_compat()
+    TestArrayStride::assert_uniform_compat();
 }
 
 #[test]
@@ -67,5 +67,5 @@ fn test_rts_array() {
         a: Vec<f32>,
     }
 
-    TestRTSArray::assert_uniform_compat()
+    TestRTSArray::assert_uniform_compat();
 }

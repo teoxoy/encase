@@ -2,12 +2,12 @@
 ///
 /// # Args
 ///
-/// - `$type` the type (representing a wrapper) for which `ShaderType` will be imeplemented for
+/// - `$type` the type (representing a wrapper) for which `ShaderType` will be implemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
 /// - `$using` \[optional\] can be any combination of `Ref{ X } Mut{ X } From{ X }`
-/// (where `X` denotes a possible function call)
+///   (where `X` denotes a possible function call)
 #[macro_export]
 macro_rules! impl_wrapper {
     ($type:ty; using $($using:tt)*) => {
@@ -41,7 +41,7 @@ macro_rules! impl_wrapper_inner {
             T: $crate::private::ShaderType
         {
             type ExtraMetadata = T::ExtraMetadata;
-            const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = T::METADATA;
+            const METADATA: $crate::private::Metadata<Self::ExtraMetadata> = T::METADATA.no_pod();
 
             const UNIFORM_COMPAT_ASSERT: fn() = T::UNIFORM_COMPAT_ASSERT;
 
@@ -117,4 +117,4 @@ impl_wrapper!(Box<T>; using Ref{} Mut{} From{ new });
 impl_wrapper!(std::borrow::Cow<'_, T>; (T: ?Sized + ToOwned<Owned = T>); using Ref{} From{ Owned });
 impl_wrapper!(std::rc::Rc<T>; using Ref{} From{ new });
 impl_wrapper!(std::sync::Arc<T>; using Ref{} From{ new });
-impl_wrapper!(core::cell::Cell<T>; (T: ?Sized + Copy); using Ref{ .get() } Mut{ .get_mut() } From{ new });
+impl_wrapper!(core::cell::Cell<T>; (T: Copy); using Ref{ .get() } Mut{ .get_mut() } From{ new });

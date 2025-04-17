@@ -108,7 +108,7 @@ const _: () = const_panic::concat_assert!(
 );
 
 fn bench(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Troughput");
+    let mut group = c.benchmark_group("Throughput");
 
     use rand::SeedableRng;
     let mut rng = rand::rngs::StdRng::seed_from_u64(1234);
@@ -136,35 +136,35 @@ fn bench(c: &mut Criterion) {
                 || create_vecs(a, size),
                 |(src, dst)| dst.write(src).unwrap(),
                 criterion::BatchSize::LargeInput,
-            )
+            );
         });
         group.bench_function(format!("{name}_read"), |b| {
             b.iter_batched_ref(
                 || create_vecs(a, size),
                 |(src, dst)| dst.read(src).unwrap(),
                 criterion::BatchSize::LargeInput,
-            )
+            );
         });
         group.bench_function(format!("{name}_create"), |b| {
             b.iter_batched_ref(
                 || create_vecs(a, size),
                 |(_src, dst)| dst.create::<Vec<A>>().unwrap(),
                 criterion::BatchSize::LargeInput,
-            )
+            );
         });
         group.bench_function(format!("{name}_manual"), |b| {
             b.iter_batched_ref(
                 || create_aligned_vecs(size),
                 |(dst, src)| manual_memcpy(dst, src),
                 criterion::BatchSize::LargeInput,
-            )
+            );
         });
         group.bench_function(format!("{name}_stdlib"), |b| {
             b.iter_batched_ref(
                 || create_aligned_vecs(size),
                 |(dst, src)| dst.copy_from_slice(src),
                 criterion::BatchSize::LargeInput,
-            )
+            );
         });
     }
 

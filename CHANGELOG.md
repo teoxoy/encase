@@ -1,5 +1,40 @@
 # Changelog
 
+## Unreleased
+
+- Increased MSRV to 1.77
+- Updated `glam` to v0.30
+- Updated `imbl` to v5
+- Updated `ndarray` to v0.16
+- Updated `thiserror` to v2
+
+## v0.10.0 (2024-09-13)
+
+- Updated `glam` to v0.29
+- Updated `nalgebra` to v0.33
+
+## v0.9.0 (2024-06-22)
+
+- Updated `glam` to v0.28
+- Updated `vek` to v0.17
+- Updated `imbl` to v3
+
+## v0.8.0 (2024-04-24)
+
+- Internal optimization: faster copying of POD types
+- Added support for writing to uninitialized memory
+- Increased MSRV to 1.68.2
+- Updated `glam` to v0.27
+
+## v0.7.0 (2024-01-02)
+
+- Allow buffer types to accept `?Sized` types
+- Fix min `syn` version (v2.0.1)
+- Updated `glam` to v0.25
+- Updated `vek` to v0.16
+- Updated `rpds` to v1
+- Updated `archery` to v1
+
 ## v0.6.1 (2023-05-09)
 
 - Fix erroring on attributes not owned by this crate

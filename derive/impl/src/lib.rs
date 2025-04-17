@@ -594,6 +594,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                     alignment: struct_alignment,
                     has_uniform_min_alignment: true,
                     min_size,
+                    is_pod: false,
                     extra,
                 }
             };
@@ -614,6 +615,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
             Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
             #( for<'__> #field_types_2: #root::WriteInto, )*
         {
+            #[inline]
             fn write_into<B: #root::BufferMut>(&self, writer: &mut #root::Writer<B>) {
                 #set_contained_rt_sized_array_length
                 #( #write_into_buffer_body )*
@@ -625,6 +627,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
             Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
             #( for<'__> #field_types_3: #root::ReadFrom, )*
         {
+            #[inline]
             fn read_from<B: #root::BufferRef>(&mut self, reader: &mut #root::Reader<B>) {
                 #( #read_from_buffer_body )*
             }
@@ -635,6 +638,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
             Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
             #( for<'__> #field_types_4: #root::CreateFrom, )*
         {
+            #[inline]
             fn create_from<B: #root::BufferRef>(reader: &mut #root::Reader<B>) -> Self {
                 #( #create_from_buffer_body )*
 

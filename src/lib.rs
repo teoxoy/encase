@@ -1,6 +1,7 @@
-#![cfg_attr(docs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![warn(
+    clippy::semicolon_if_nothing_returned,
     future_incompatible,
     nonstandard_style,
     rust_2018_idioms,
@@ -42,7 +43,7 @@
 /// While structs using generic type parameters are supported by this derive macro
 ///
 /// - the `#[align(X)]` and `#[size(X)]` attributes will only work
-/// if they are attached to fields whose type contains no generic type parameters
+///   if they are attached to fields whose type contains no generic type parameters
 ///
 /// # Examples
 ///

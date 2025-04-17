@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 
 macro_rules! decl_primitives_as_traits {
-    ($($primitive:ident),*) => {$(trait $primitive {})*};
+    ($($primitive:ident),*) => {$(#[allow(dead_code)] trait $primitive {})*};
 }
 
 // from core::primitive
@@ -21,17 +21,17 @@ mod impl_vector {
         data: PhantomData<&'a T>,
     }
 
-    impl<'a, T, const N: usize> AsRef<[T; N]> for Test<'a, T> {
+    impl<T, const N: usize> AsRef<[T; N]> for Test<'_, T> {
         fn as_ref(&self) -> &[T; N] {
             unimplemented!()
         }
     }
-    impl<'a, T, const N: usize> AsMut<[T; N]> for Test<'a, T> {
+    impl<T, const N: usize> AsMut<[T; N]> for Test<'_, T> {
         fn as_mut(&mut self) -> &mut [T; N] {
             unimplemented!()
         }
     }
-    impl<'a, T, const N: usize> From<[T; N]> for Test<'a, T> {
+    impl<T, const N: usize> From<[T; N]> for Test<'_, T> {
         fn from(_: [T; N]) -> Self {
             unimplemented!()
         }
@@ -51,17 +51,17 @@ mod impl_matrix {
         data: PhantomData<&'a T>,
     }
 
-    impl<'a, T, const N: usize, const M: usize> AsRef<[[T; M]; N]> for Test<'a, T> {
+    impl<T, const N: usize, const M: usize> AsRef<[[T; M]; N]> for Test<'_, T> {
         fn as_ref(&self) -> &[[T; M]; N] {
             unimplemented!()
         }
     }
-    impl<'a, T, const N: usize, const M: usize> AsMut<[[T; M]; N]> for Test<'a, T> {
+    impl<T, const N: usize, const M: usize> AsMut<[[T; M]; N]> for Test<'_, T> {
         fn as_mut(&mut self) -> &mut [[T; M]; N] {
             unimplemented!()
         }
     }
-    impl<'a, T, const N: usize, const M: usize> From<[[T; M]; N]> for Test<'a, T> {
+    impl<T, const N: usize, const M: usize> From<[[T; M]; N]> for Test<'_, T> {
         fn from(_: [[T; M]; N]) -> Self {
             unimplemented!()
         }

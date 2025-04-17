@@ -48,7 +48,7 @@ let transform = AffineTransform2D {
     translate: glam::Vec2::ZERO,
 };
 
-let mut buffer = UniformBuffer::new(Vec::new());
+let mut buffer = UniformBuffer::new(Vec::<u8>::new());
 buffer.write(&transform).unwrap();
 let byte_buffer = buffer.into_inner();
 
@@ -94,7 +94,7 @@ let mut positions = Positions {
     ])
 };
 
-let mut byte_buffer = Vec::new();
+let mut byte_buffer: Vec<u8> = Vec::new();
 
 let mut buffer = StorageBuffer::new(&mut byte_buffer);
 buffer.write(&positions).unwrap();
@@ -118,7 +118,7 @@ Write different data types to dynamic storage buffer
 ```rust
 use encase::{ShaderType, DynamicStorageBuffer};
 
-let mut byte_buffer = Vec::new();
+let mut byte_buffer: Vec<u8> = Vec::new();
 
 let mut buffer = DynamicStorageBuffer::new_with_alignment(&mut byte_buffer, 64);
 let offsets = [
@@ -126,6 +126,38 @@ let offsets = [
     buffer.write(&vec![3u32; 20]).unwrap(),
     buffer.write(&glam::Vec3::ONE).unwrap(),
 ];
+
+// write byte_buffer to GPU
+
+assert_eq!(offsets, [0, 64, 192]);
+
+```
+
+Supports writing to uninitialized memory as well.
+
+```rust
+use std::mem::MaybeUninit;
+use encase::{ShaderType, DynamicStorageBuffer};
+
+let mut uninit_buffer: Vec<MaybeUninit<u8>> = Vec::new();
+
+let mut buffer = DynamicStorageBuffer::new_with_alignment(&mut uninit_buffer, 64);
+let offsets = [
+    buffer.write(&[5.; 10]).unwrap(),
+    buffer.write(&vec![3u32; 20]).unwrap(),
+    buffer.write(&glam::Vec3::ONE).unwrap(),
+];
+
+// SAFETY: Vec<u8> and Vec<MaybeUninit<u8>> share the same layout.
+let byte_buffer: Vec<u8> = unsafe { 
+    Vec::from_raw_parts(
+        uninit_buffer.as_mut_ptr().cast(), 
+        uninit_buffer.len(), 
+        uninit_buffer.capacity()
+    ) 
+};
+
+std::mem::forget(uninit_buffer);
 
 // write byte_buffer to GPU
 

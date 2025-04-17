@@ -1,6 +1,6 @@
 use crate::core::Metadata;
 
-pub trait MatrixScalar {}
+pub trait MatrixScalar: crate::ShaderSize {}
 impl_marker_trait_for_f32!(MatrixScalar);
 
 pub struct MatrixMetadata {
@@ -24,7 +24,7 @@ pub trait AsMutMatrixParts<T: MatrixScalar, const C: usize, const R: usize> {
     fn as_mut_parts(&mut self) -> &mut [[T; R]; C];
 }
 
-/// Enables the cration of a matrix (via `[[T; R]; C]`)
+/// Enables the creation of a matrix (via `[[T; R]; C]`)
 pub trait FromMatrixParts<T: MatrixScalar, const C: usize, const R: usize> {
     fn from_parts(parts: [[T; R]; C]) -> Self;
 }
@@ -41,7 +41,7 @@ pub trait FromMatrixParts<T: MatrixScalar, const C: usize, const R: usize> {
 ///
 /// - `$r` nr of rows the given matrix contains
 ///
-/// - `$type` the type (representing a matrix) for which `ShaderType` will be imeplemented for
+/// - `$type` the type (representing a matrix) for which `ShaderType` will be implemented for
 ///
 /// - `$generics` \[optional\] generics that will be passed into the `impl< >`
 ///
@@ -142,6 +142,7 @@ macro_rules! impl_matrix_inner {
                     alignment,
                     has_uniform_min_alignment: false,
                     min_size: size,
+                    is_pod: <[$el_ty; $r] as $crate::private::ShaderType>::METADATA.is_pod() && col_padding == 0,
                     extra: $crate::private::MatrixMetadata {
                         col_padding,
                     },
@@ -162,12 +163,15 @@ macro_rules! impl_matrix_inner {
             #[inline]
             fn write_into<B: $crate::private::BufferMut>(&self, writer: &mut $crate::private::Writer<B>) {
                 let columns = $crate::private::AsRefMatrixParts::<$el_ty, $c, $r>::as_ref_parts(self);
-                for col in columns {
-                    for el in col {
-                        $crate::private::WriteInto::write_into(el, writer);
+
+                $crate::if_pod_and_little_endian!(if pod_and_little_endian {
+                    $crate::private::WriteInto::write_into(columns, writer);
+                } else {
+                    for col in columns {
+                        $crate::private::WriteInto::write_into(col, writer);
+                        writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                     }
-                    writer.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                }
+                });
             }
         }
 
@@ -179,12 +183,15 @@ macro_rules! impl_matrix_inner {
             #[inline]
             fn read_from<B: $crate::private::BufferRef>(&mut self, reader: &mut $crate::private::Reader<B>) {
                 let columns = $crate::private::AsMutMatrixParts::<$el_ty, $c, $r>::as_mut_parts(self);
-                for col in columns {
-                    for el in col {
-                        $crate::private::ReadFrom::read_from(el, reader);
+
+                $crate::if_pod_and_little_endian!(if pod_and_little_endian {
+                    $crate::private::ReadFrom::read_from(columns, reader);
+                } else {
+                    for col in columns {
+                        $crate::private::ReadFrom::read_from(col, reader);
+                        reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
                     }
-                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                }
+                });
             }
         }
 
@@ -195,14 +202,15 @@ macro_rules! impl_matrix_inner {
         {
             #[inline]
             fn create_from<B: $crate::private::BufferRef>(reader: &mut $crate::private::Reader<B>) -> Self {
-                let columns = ::core::array::from_fn(|_| {
-                    let col = ::core::array::from_fn(|_| {
-                        $crate::private::CreateFrom::create_from(reader)
-                    });
-                    reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
-                    col
+                let columns = $crate::if_pod_and_little_endian!(if pod_and_little_endian {
+                    $crate::private::CreateFrom::create_from(reader)
+                } else {
+                    ::core::array::from_fn(|_| {
+                        let col = $crate::private::CreateFrom::create_from(reader);
+                        reader.advance(<Self as $crate::private::ShaderType>::METADATA.col_padding() as ::core::primitive::usize);
+                        col
+                    })
                 });
-
                 $crate::private::FromMatrixParts::<$el_ty, $c, $r>::from_parts(columns)
             }
         }
