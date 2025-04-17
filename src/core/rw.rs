@@ -54,7 +54,7 @@ impl<B: BufferMut> Writer<B> {
 
     #[inline]
     pub fn write_slice(&mut self, val: &[u8]) {
-        self.cursor.write_slice(val)
+        self.cursor.write_slice(val);
     }
 }
 
@@ -101,7 +101,7 @@ impl<B: BufferRef> Reader<B> {
 
     #[inline]
     pub fn read_slice(&mut self, val: &mut [u8]) {
-        self.cursor.read_slice(val)
+        self.cursor.read_slice(val);
     }
 
     #[inline]
@@ -222,7 +222,7 @@ impl BufferRef for [u8] {
 
     #[inline]
     fn read_slice(&self, offset: usize, val: &mut [u8]) {
-        val.copy_from_slice(&self[offset..offset + val.len()])
+        val.copy_from_slice(&self[offset..offset + val.len()]);
     }
 }
 
@@ -239,7 +239,7 @@ impl<const LEN: usize> BufferRef for [u8; LEN] {
 
     #[inline]
     fn read_slice(&self, offset: usize, val: &mut [u8]) {
-        <[u8] as BufferRef>::read_slice(self, offset, val)
+        <[u8] as BufferRef>::read_slice(self, offset, val);
     }
 }
 
@@ -256,7 +256,7 @@ impl BufferRef for Vec<u8> {
 
     #[inline]
     fn read_slice(&self, offset: usize, val: &mut [u8]) {
-        <[u8] as BufferRef>::read_slice(self, offset, val)
+        <[u8] as BufferRef>::read_slice(self, offset, val);
     }
 }
 
@@ -313,7 +313,7 @@ impl<const LEN: usize> BufferMut for [u8; LEN] {
 
     #[inline]
     fn write_slice(&mut self, offset: usize, val: &[u8]) {
-        <[u8] as BufferMut>::write_slice(self, offset, val)
+        <[u8] as BufferMut>::write_slice(self, offset, val);
     }
 }
 
@@ -325,12 +325,12 @@ impl<const LEN: usize> BufferMut for [MaybeUninit<u8>; LEN] {
 
     #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
-        <[MaybeUninit<u8>] as BufferMut>::write(self, offset, val)
+        <[MaybeUninit<u8>] as BufferMut>::write(self, offset, val);
     }
 
     #[inline]
     fn write_slice(&mut self, offset: usize, val: &[u8]) {
-        <[MaybeUninit<u8>] as BufferMut>::write_slice(self, offset, val)
+        <[MaybeUninit<u8>] as BufferMut>::write_slice(self, offset, val);
     }
 }
 
@@ -347,7 +347,7 @@ impl BufferMut for Vec<u8> {
 
     #[inline]
     fn write_slice(&mut self, offset: usize, val: &[u8]) {
-        <[u8] as BufferMut>::write_slice(self, offset, val)
+        <[u8] as BufferMut>::write_slice(self, offset, val);
     }
 
     #[inline]
@@ -365,12 +365,12 @@ impl BufferMut for Vec<MaybeUninit<u8>> {
 
     #[inline]
     fn write<const N: usize>(&mut self, offset: usize, val: &[u8; N]) {
-        <[MaybeUninit<u8>] as BufferMut>::write(self, offset, val)
+        <[MaybeUninit<u8>] as BufferMut>::write(self, offset, val);
     }
 
     #[inline]
     fn write_slice(&mut self, offset: usize, val: &[u8]) {
-        <[MaybeUninit<u8>] as BufferMut>::write_slice(self, offset, val)
+        <[MaybeUninit<u8>] as BufferMut>::write_slice(self, offset, val);
     }
 
     #[inline]
