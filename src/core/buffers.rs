@@ -16,6 +16,16 @@ impl<B> StorageBuffer<B> {
     pub fn into_inner(self) -> B {
         self.inner
     }
+
+    pub fn content_of<T, U>(item: &T) -> Result<U>
+    where
+        T: ShaderType + WriteInto,
+        U: BufferMut + Default,
+    {
+        let mut buffer = StorageBuffer::new(U::default());
+        buffer.write(item)?;
+        Ok(buffer.into_inner())
+    }
 }
 
 impl<B> From<B> for StorageBuffer<B> {
@@ -80,6 +90,16 @@ impl<B> UniformBuffer<B> {
 
     pub fn into_inner(self) -> B {
         self.inner.inner
+    }
+
+    pub fn content_of<T, U>(item: &T) -> Result<U>
+    where
+        T: ShaderType + WriteInto,
+        U: BufferMut + Default,
+    {
+        let mut buffer = UniformBuffer::new(U::default());
+        buffer.write(item)?;
+        Ok(buffer.into_inner())
     }
 }
 
