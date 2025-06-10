@@ -673,6 +673,7 @@ fn generate_field_trait_constraints<'a>(
                     fn assert_impl<T: ?::core::marker::Sized + #t>() {}
                     assert_impl::<#ty>();
                 }
+                check();
             };
         }
     })
