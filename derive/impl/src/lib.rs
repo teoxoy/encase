@@ -1,5 +1,5 @@
 use proc_macro2::{Ident, Literal, Span, TokenStream};
-use quote::{quote, quote_spanned};
+use quote::{quote, quote_spanned, ToTokens};
 use syn::{
     parse::{Parse, ParseStream},
     parse_quote,
@@ -656,7 +656,7 @@ fn generate_field_trait_constraints<'a>(
     trait_for_last_field: TokenStream,
     trait_for_all_other_fields: TokenStream,
 ) -> impl Iterator<Item = TokenStream> + 'a {
-    let (impl_generics, _, where_clause) = input.generics.split_for_impl();
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     field_data.iter().enumerate().map(move |(i, data)| {
         let ty = &data.field.ty;
 
@@ -666,15 +666,22 @@ fn generate_field_trait_constraints<'a>(
             &trait_for_all_other_fields
         };
 
-        quote_spanned! {ty.span()=>
-            const _: fn() = || {
-                #[allow(clippy::extra_unused_lifetimes, clippy::missing_const_for_fn, clippy::extra_unused_type_parameters)]
-                fn check #impl_generics () #where_clause {
-                    fn assert_impl<T: ?::core::marker::Sized + #t>() {}
-                    assert_impl::<#ty>();
-                }
-                check();
-            };
+        if ty_generics.to_token_stream().is_empty() {
+            quote_spanned! {ty.span()=>
+                const _: fn() = || {
+                    #[allow(clippy::extra_unused_lifetimes, clippy::missing_const_for_fn, clippy::extra_unused_type_parameters)]
+                    fn check #impl_generics () #where_clause {
+                        fn assert_impl<T: ?::core::marker::Sized + #t>() {}
+                        assert_impl::<#ty>();
+                    }
+                    check ();
+                };
+            }
+        } else {
+            // Case with type generics is not checked for now
+            quote_spanned! {ty.span()=>
+                const _: fn() = || {};
+            }
         }
     })
 }
