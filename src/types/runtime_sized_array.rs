@@ -246,7 +246,7 @@ macro_rules! impl_rts_array_inner {
     };
 }
 
-impl_rts_array!([T]; using len);
+impl_rts_array!(&[T]; using len);
 impl_rts_array!(Vec<T>; using len truncate);
 impl_rts_array!(VecDeque<T>; using len truncate);
 impl_rts_array!(LinkedList<T>; using len);
