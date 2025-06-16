@@ -1,6 +1,6 @@
 [package]
 name = "encase"
-version = "0.11.0"
+version = "0.11.1"
 edition = "2021"
 rust-version = "1.77"
 
@@ -28,7 +28,7 @@ harness = false
 members = ["derive", "derive/impl"]
 
 [dependencies]
-encase_derive = { version = "=0.11.0", path = "derive" }
+encase_derive = { version = "=0.11.1", path = "derive" }
 
 thiserror = { version = "2", default-features = false }
 const_panic = { version = "0.2", default-features = false }

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v0.11.1 (2025-06-16)
+
+- Fix "function `check` is never used" lint
+- Fix "this item cannot be used as its where bounds are not satisfied for the `Self` type" lint
+
 ## v0.11.0 (2025-04-25)
 
 - Added `{Storage,Uniform}Buffer::content_of()` to make it easier to convert a `ShaderType` to bytes
