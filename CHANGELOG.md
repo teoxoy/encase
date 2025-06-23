@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rename `align` attribute of `ShaderType` to `shader_align`
+
 ## v0.11.2 (2025-08-25)
 
 - Fix missing trait implementations on `[T]` introduced in v0.11.1

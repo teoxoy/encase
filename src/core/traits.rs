@@ -171,7 +171,7 @@ pub trait ShaderType {
     /// Invalid::assert_uniform_compat();
     /// ```
     ///
-    /// Will not panic (fixed via align attribute)
+    /// Will not panic (fixed via shader_align attribute)
     ///
     /// ```
     /// # use crate::encase::ShaderType;
@@ -182,7 +182,7 @@ pub trait ShaderType {
     /// #[derive(ShaderType)]
     /// struct Valid {
     ///     a: f32,
-    ///     #[align(16)]
+    ///     #[shader_align(16)]
     ///     b: S,
     /// }
     /// Valid::assert_uniform_compat();
