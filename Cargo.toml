@@ -23,6 +23,7 @@ codegen-units = 1
 [[bench]]
 name = "throughput"
 harness = false
+required-features = ["mint"]
 
 [workspace]
 members = ["derive", "derive/impl"]
@@ -58,3 +59,19 @@ wgpu = { version = "24.0.0", features = ["wgsl"] }
 futures = { version = "0.3", features = ["executor"], default-features = false }
 pprof = { version = "0.14", features = ["criterion", "flamegraph"], default-features = false }
 trybuild = { version = "1", default-features = false }
+
+[[test]]
+name = "assert_uniform_compat_success"
+required-features = ["mint"]
+
+[[test]]
+name = "general"
+required-features = ["mint"]
+
+[[test]]
+name = "hygiene"
+required-features = ["mint"]
+
+[[test]]
+name = "wgpu"
+required-features = ["mint"]
