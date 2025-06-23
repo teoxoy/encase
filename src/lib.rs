@@ -26,7 +26,7 @@
 ///
 /// Field attributes
 ///
-/// - `#[align(X)]` where `X` is a power of 2 [`u32`] literal (equivalent to [WGSL align attribute](https://gpuweb.github.io/gpuweb/wgsl/#attribute-align))
+/// - `#[shader_align(X)]` where `X` is a power of 2 [`u32`] literal (equivalent to [WGSL align attribute](https://gpuweb.github.io/gpuweb/wgsl/#attribute-align))
 ///
 ///     Used to increase the alignment of the field
 ///
@@ -42,7 +42,7 @@
 ///
 /// While structs using generic type parameters are supported by this derive macro
 ///
-/// - the `#[align(X)]` and `#[size(X)]` attributes will only work
+/// - the `#[shader_align(X)]` and `#[size(X)]` attributes will only work
 ///   if they are attached to fields whose type contains no generic type parameters
 ///
 /// # Examples

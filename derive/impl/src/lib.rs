@@ -14,7 +14,7 @@ pub use syn;
 #[macro_export]
 macro_rules! implement {
     ($path:expr) => {
-        #[proc_macro_derive(ShaderType, attributes(align, size))]
+        #[proc_macro_derive(ShaderType, attributes(shader_align, size))]
         pub fn derive_shader_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             let input = $crate::syn::parse_macro_input!(input as $crate::syn::DeriveInput);
             let expanded = encase_derive_impl::derive_shader_type(input, &$path);
@@ -197,13 +197,14 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 align: None,
             };
             for attr in &field.attrs {
-                if !(attr.meta.path().is_ident("size") || attr.meta.path().is_ident("align")) {
+                if !(attr.meta.path().is_ident("size") || attr.meta.path().is_ident("shader_align"))
+                {
                     continue;
                 }
                 match attr.meta.require_list() {
                     Ok(meta_list) => {
                         let span = meta_list.tokens.span();
-                        if meta_list.path.is_ident("align") {
+                        if meta_list.path.is_ident("shader_align") {
                             let res = attr.parse_args::<AlignmentAttr>();
                             match res {
                                 Ok(val) => data.align = Some((val.0, span)),
@@ -304,7 +305,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                             let alignment = <#ty as #root::ShaderType>::METADATA.alignment().get();
                             #root::concat_assert!(
                                 alignment <= #align,
-                                "align attribute value must be at least ", alignment, " (field's type alignment)"
+                                "shader_align attribute value must be at least ", alignment, " (field's type alignment)"
                             )
                         }
                         check();
