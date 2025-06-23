@@ -9,7 +9,7 @@ env:
   CARGO_INCREMENTAL: false
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: full
-  NIGHTLY: nightly-2025-02-18
+  NIGHTLY: nightly-2025-06-19
 
 jobs:
   msrv_and_minimal_versions:
