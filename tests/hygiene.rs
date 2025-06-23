@@ -109,7 +109,7 @@ struct TestGeneric<
     #[size(90)]
     a: &'a mut Test,
     b: &'a mut [T; N],
-    #[align(16)]
+    #[shader_align(16)]
     #[size(runtime)]
     c: &'a mut ::std::vec::Vec<[::mint::Vector3<::core::primitive::f32>; 2]>,
 }

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rename `align` attribute of `ShaderType` to `shader_align`
+
 ## v0.11.1 (2025-06-16)
 
 - Fix "function `check` is never used" lint
