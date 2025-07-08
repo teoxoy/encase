@@ -7,7 +7,7 @@ struct S {
 
 #[derive(ShaderType)]
 struct WrappedF32 {
-    #[size(16)]
+    #[shader(size(16))]
     elem: f32,
 }
 
@@ -63,7 +63,7 @@ fn test_array_stride() {
 fn test_rts_array() {
     #[derive(ShaderType)]
     struct TestRTSArray {
-        #[size(runtime)]
+        #[shader(size(runtime))]
         a: Vec<f32>,
     }
 
