@@ -62,7 +62,7 @@ struct A {
     arrm3: [mint::ColumnMatrix3<f32>; 8],
     arrm4: [mint::ColumnMatrix4<f32>; 8],
     rt_arr_len: ArrayLength,
-    #[size(runtime)]
+    #[shader(size(runtime))]
     rt_arr: Vec<mint::ColumnMatrix2x3<f32>>,
 }
 

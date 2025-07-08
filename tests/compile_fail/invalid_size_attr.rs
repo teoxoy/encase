@@ -6,10 +6,10 @@ fn main() {}
 struct Test {
     #[size]
     a: u32,
-    #[size()]
+    #[shader(size())]
     b: u32,
-    #[size(invalid)]
+    #[shader(size(invalid))]
     c: u32,
-    #[size(-1)]
+    #[shader(size(-1))]
     d: u32,
 }

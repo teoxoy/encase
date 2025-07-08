@@ -4,18 +4,17 @@ fn main() {}
 
 #[derive(ShaderType)]
 struct TestAttributes {
-    #[shader_align(16)]
+    #[shader(align(16))]
     a: u32,
-    #[size(8)]
+    #[shader(size(8))]
     b: u32,
 }
 
 #[derive(ShaderType)]
 struct TestRtArray {
-    #[size(8)]
+    #[shader(size(8))]
     a: u32,
-    #[shader_align(16)]
-    #[size(runtime)]
+    #[shader(align(16), size(runtime))]
     b: Vec<u32>,
 }
 

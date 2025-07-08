@@ -7,17 +7,17 @@ error: expected attribute arguments in parentheses: `size(...)`
 error: expected u32 literal
  --> tests/compile_fail/invalid_size_attr.rs:9:12
   |
-9 |     #[size()]
+9 |     #[shader(size())]
   |            ^
 
 error: expected u32 literal
   --> tests/compile_fail/invalid_size_attr.rs:11:12
    |
-11 |     #[size(invalid)]
+11 |     #[shader(size(invalid))]
    |            ^^^^^^^
 
 error: expected u32 literal or `runtime` identifier
   --> tests/compile_fail/invalid_size_attr.rs:13:14
    |
-13 |     #[size(-1)]
+13 |     #[shader(size(-1))]
    |              ^
