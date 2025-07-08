@@ -1,8 +1,8 @@
-error: expected attribute arguments in parentheses: `shader(align(...))`
- --> tests/compile_fail/invalid_align_attr.rs:7:7
+error: expected attribute arguments in parentheses: `align(...)`
+ --> tests/compile_fail/invalid_align_attr.rs:7:14
   |
 7 |     #[shader(align)]
-  |       ^^^^^^^^^^^^
+  |              ^^^^^
 
 error: expected a power of 2 u32 literal
  --> tests/compile_fail/invalid_align_attr.rs:9:20

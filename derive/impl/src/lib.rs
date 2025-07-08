@@ -124,12 +124,13 @@ pub struct StaticSizeAttr(u32);
 
 impl Parse for StaticSizeAttr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let span = input.span();
         match input
             .parse::<LitInt>()
             .and_then(|lit| lit.base10_parse::<u32>())
         {
             Ok(num) => Ok(Self(num)),
-            _ => Err(syn::Error::new(input.span(), "expected u32 literal")),
+            _ => Err(syn::Error::new(span, "expected u32 literal")),
         }
     }
 }
@@ -142,12 +143,13 @@ pub enum SizeAttr {
 
 impl Parse for SizeAttr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let span = input.span();
         match input.parse::<StaticSizeAttr>() {
             Ok(static_size) => Ok(SizeAttr::Static(static_size)),
             _ => match input.parse::<Path>() {
                 Ok(ident) if ident.is_ident("runtime") => Ok(SizeAttr::Runtime),
                 _ => Err(syn::Error::new(
-                    input.span(),
+                    span,
                     "expected u32 literal or `runtime` identifier",
                 )),
             },
@@ -163,31 +165,48 @@ pub enum ShaderAttr {
 
 impl Parse for ShaderAttr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let ident_span = input.span();
         let Ok(ident) = input.parse::<Ident>() else {
-            return Err(syn::Error::new(input.span(), "expected `align` or `size`"));
+            return Err(syn::Error::new(ident_span, "expected `align` or `size`"));
         };
 
         match ident.to_string().as_str() {
             "align" => {
+                if !input.peek(syn::token::Paren) {
+                    return Err(syn::Error::new(
+                        ident_span,
+                        "expected attribute arguments in parentheses: `align(...)`",
+                    ));
+                }
+
                 let args;
                 parenthesized!(args in input);
+                let attr_span = args.span();
                 let align_attr: AlignmentAttr = args.parse()?;
                 Ok(ShaderAttr::Align {
                     attr: align_attr,
-                    span: input.span(),
+                    span: attr_span,
                 })
             }
             "size" => {
+                if !input.peek(syn::token::Paren) {
+                    return Err(syn::Error::new(
+                        ident_span,
+                        "expected attribute arguments in parentheses: `size(...)`",
+                    ));
+                }
+
                 let args;
                 parenthesized!(args in input);
+                let attr_span = args.span();
                 let size_attr: SizeAttr = args.parse()?;
                 Ok(ShaderAttr::Size {
                     attr: size_attr,
-                    span: input.span(),
+                    span: attr_span,
                 })
             }
             _ => Err(syn::Error::new(
-                input.span(),
+                ident_span,
                 "unknown shader attribute, expected `align` or `size`",
             )),
         }
@@ -254,15 +273,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                     continue;
                 }
 
-                let list = match attr.meta.require_list() {
-                    Ok(list) => list,
-                    Err(err) => {
-                        errors.append(err);
-                        continue;
-                    }
-                };
-
-                let shader_attrs = match syn::parse2::<ShaderAttrList>(list.tokens.clone()) {
+                let shader_attrs = match attr.parse_args::<ShaderAttrList>() {
                     Ok(attrs) => attrs,
                     Err(err) => {
                         errors.append(err);
