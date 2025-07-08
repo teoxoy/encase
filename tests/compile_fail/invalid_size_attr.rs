@@ -4,7 +4,7 @@ fn main() {}
 
 #[derive(ShaderType)]
 struct Test {
-    #[size]
+    #[shader(size)]
     a: u32,
     #[shader(size())]
     b: u32,

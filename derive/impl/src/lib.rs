@@ -1,12 +1,14 @@
 use proc_macro2::{Ident, Literal, Span, TokenStream};
 use quote::{quote, quote_spanned, ToTokens};
 use syn::{
+    parenthesized,
     parse::{Parse, ParseStream},
     parse_quote,
     punctuated::Punctuated,
     spanned::Spanned,
     token::Comma,
-    Data, DataStruct, DeriveInput, Error, Fields, FieldsNamed, GenericParam, LitInt, Path, Type,
+    Data, DataStruct, DeriveInput, Error, Fields, FieldsNamed, GenericParam, LitInt, Path, Token,
+    Type,
 };
 
 pub use syn;
@@ -99,7 +101,8 @@ impl FieldData {
     }
 }
 
-struct AlignmentAttr(u32);
+#[derive(Debug)]
+pub struct AlignmentAttr(u32);
 
 impl Parse for AlignmentAttr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
@@ -116,7 +119,8 @@ impl Parse for AlignmentAttr {
     }
 }
 
-struct StaticSizeAttr(u32);
+#[derive(Debug)]
+pub struct StaticSizeAttr(u32);
 
 impl Parse for StaticSizeAttr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
@@ -130,7 +134,8 @@ impl Parse for StaticSizeAttr {
     }
 }
 
-enum SizeAttr {
+#[derive(Debug)]
+pub enum SizeAttr {
     Static(StaticSizeAttr),
     Runtime,
 }
@@ -147,6 +152,53 @@ impl Parse for SizeAttr {
                 )),
             },
         }
+    }
+}
+
+#[derive(Debug)]
+pub enum ShaderAttr {
+    Align { attr: AlignmentAttr, span: Span },
+    Size { attr: SizeAttr, span: Span },
+}
+
+impl Parse for ShaderAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let Ok(ident) = input.parse::<Ident>() else {
+            return Err(syn::Error::new(input.span(), "expected `align` or `size`"));
+        };
+
+        match ident.to_string().as_str() {
+            "align" => {
+                let args;
+                parenthesized!(args in input);
+                let align_attr: AlignmentAttr = args.parse()?;
+                Ok(ShaderAttr::Align {
+                    attr: align_attr,
+                    span: input.span(),
+                })
+            }
+            "size" => {
+                let args;
+                parenthesized!(args in input);
+                let size_attr: SizeAttr = args.parse()?;
+                Ok(ShaderAttr::Size {
+                    attr: size_attr,
+                    span: input.span(),
+                })
+            }
+            _ => Err(syn::Error::new(
+                input.span(),
+                "unknown shader attribute, expected `align` or `size`",
+            )),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct ShaderAttrList(Punctuated<ShaderAttr, Token![,]>);
+impl Parse for ShaderAttrList {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self(input.parse_terminated(ShaderAttr::parse, Token![,])?))
     }
 }
 
@@ -196,52 +248,53 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 size: None,
                 align: None,
             };
-            let mut shader_segments = Vec::new();
+
             for attr in &field.attrs {
-                if !(attr.meta.path().is_ident("shader"))
-                {
+                if !(attr.meta.path().is_ident("shader")) {
                     continue;
                 }
-                shader_segments.extend(&attr.meta.path().segments);
-            }
 
-            for segment in shader_segments {
-                // panic!("segment: {:?}", segment);
-                let span = segment.span();
-                let argument_tokens = segment.arguments.to_token_stream();
-                // let span = meta_list.tokens.span();
-                match segment.ident.to_string().as_str() {
-                    "align" => {
-                        let res = syn::parse2::<AlignmentAttr>(argument_tokens);
-                        match res {
-                            Ok(val) => data.align = Some((val.0, span)),
-                            Err(err) => errors.append(err),
-                        }
+                let list = match attr.meta.require_list() {
+                    Ok(list) => list,
+                    Err(err) => {
+                        errors.append(err);
+                        continue;
                     }
-                    "size" => {
-                        let res = if i == last_field_index {
-                            syn::parse2::<SizeAttr>(argument_tokens).map(|val| match val {
-                                SizeAttr::Runtime => {
+                };
+
+                let shader_attrs = match syn::parse2::<ShaderAttrList>(list.tokens.clone()) {
+                    Ok(attrs) => attrs,
+                    Err(err) => {
+                        errors.append(err);
+                        continue;
+                    }
+                };
+
+                for shader_attr in shader_attrs.0 {
+                    match shader_attr {
+                        ShaderAttr::Align { attr, span } => {
+                            data.align = Some((attr.0, span));
+                        }
+                        ShaderAttr::Size { attr, span } => match attr {
+                            SizeAttr::Runtime => {
+                                if i == last_field_index {
                                     is_runtime_sized = true;
-                                    None
+                                } else {
+                                    let err = syn::Error::new(
+                                        span,
+                                        "only the last field can be `size(runtime)`",
+                                    );
+                                    errors.append(err);
+                                    continue;
                                 }
-                                SizeAttr::Static(size) => Some((size.0, span)),
-                            })
-                        } else {
-                            syn::parse2::<StaticSizeAttr>(argument_tokens)
-                                .map(|val| Some((val.0, span)))
-                        };
-                        match res {
-                            Ok(val) => data.size = val,
-                            Err(err) => errors.append(err),
-                        }
-                    }
-                    ident => {
-
+                            }
+                            SizeAttr::Static(attr) => {
+                                data.size = Some((attr.0, span));
+                            }
+                        },
                     }
                 }
-                // Err(err) => errors.append(err),
-            };
+            }
             data
         })
         .collect();
