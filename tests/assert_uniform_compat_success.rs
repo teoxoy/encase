@@ -7,28 +7,28 @@ struct S {
 
 #[derive(ShaderType)]
 struct WrappedF32 {
-    #[size(16)]
+    #[shader(size(16))]
     elem: f32,
 }
 
 #[derive(ShaderType)]
 struct TestStruct {
     a: u32,
-    #[shader_align(16)]
+    #[shader(align(16))]
     b: S,
 }
 
 #[derive(ShaderType)]
 struct TestArray {
     a: u32,
-    #[shader_align(16)]
+    #[shader(align(16))]
     b: [WrappedF32; 1],
 }
 
 #[derive(ShaderType)]
 struct TestStructFirst {
     a: S,
-    #[shader_align(16)]
+    #[shader(align(16))]
     b: f32,
 }
 

@@ -1,4 +1,4 @@
-error: `ArrayLength` type can only be used within a struct containing a runtime-sized array marked as `#[size(runtime)]`!
+error: `ArrayLength` type can only be used within a struct containing a runtime-sized array marked as `#[shader(size(runtime))]`!
  --> tests/compile_fail/array_length_err.rs:7:8
   |
 7 |     a: ArrayLength,

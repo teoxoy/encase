@@ -2,7 +2,7 @@ use encase::ShaderType;
 
 #[derive(ShaderType)]
 struct WrappedF32 {
-    #[size(16)]
+    #[shader(size(16), align(16))]
     value: f32,
 }
 

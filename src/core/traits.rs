@@ -148,7 +148,7 @@ pub trait ShaderType {
     /// # use mint;
     /// #[derive(ShaderType)]
     /// struct Invalid {
-    ///     #[size(runtime)]
+    ///     #[shader(size(runtime))]
     ///     vec: Vec<mint::Vector4<f32>>
     /// }
     /// Invalid::assert_uniform_compat();
@@ -171,7 +171,7 @@ pub trait ShaderType {
     /// Invalid::assert_uniform_compat();
     /// ```
     ///
-    /// Will not panic (fixed via shader_align attribute)
+    /// Will not panic (fixed via #[shader(align)] attribute)
     ///
     /// ```
     /// # use crate::encase::ShaderType;
@@ -182,7 +182,7 @@ pub trait ShaderType {
     /// #[derive(ShaderType)]
     /// struct Valid {
     ///     a: f32,
-    ///     #[shader_align(16)]
+    ///     #[shader(align(16))]
     ///     b: S,
     /// }
     /// Valid::assert_uniform_compat();
@@ -198,7 +198,7 @@ pub trait ShaderType {
     /// # }
     /// #[derive(ShaderType)]
     /// struct Valid {
-    ///     #[size(16)]
+    ///     #[shader(size(16))]
     ///     a: f32,
     ///     b: S,
     /// }

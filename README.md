@@ -81,7 +81,7 @@ use encase::{ShaderType, ArrayLength, StorageBuffer};
 #[derive(ShaderType)]
 struct Positions {
     length: ArrayLength,
-    #[size(runtime)]
+    #[shader(size(runtime))]
     positions: Vec<mint::Point2<f32>>
 }
 

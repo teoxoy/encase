@@ -10,8 +10,7 @@ struct A {
     u: u32,
     v: u32,
     w: Vector2<u32>,
-    #[size(16)]
-    #[shader_align(8)]
+    #[shader(size(16), align(8))]
     x: u32,
     xx: u32,
 }
@@ -22,13 +21,12 @@ struct B {
     b: Vector3<u32>,
     c: u32,
     d: u32,
-    #[shader_align(16)]
+    #[shader(align(16))]
     e: A,
     f: Vector3<u32>,
     g: [A; 3],
     h: i32,
-    #[shader_align(32)]
-    #[size(runtime)]
+    #[shader(align(32), size(runtime))]
     i: Vec<A>,
 }
 
@@ -123,8 +121,7 @@ fn array_length() {
         array_length: ArrayLength,
         array_length_call_ret_val: u32,
         a: Vector3<u32>,
-        #[shader_align(16)]
-        #[size(runtime)]
+        #[shader(align(16), size(runtime))]
         arr: Vec<u32>,
     }
 

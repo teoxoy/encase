@@ -106,10 +106,9 @@ struct TestGeneric<
     T: 'a + ::encase::ShaderType + ::encase::ShaderSize,
     const N: ::core::primitive::usize,
 > {
-    #[size(90)]
+    #[shader(size(90))]
     a: &'a mut Test,
     b: &'a mut [T; N],
-    #[shader_align(16)]
-    #[size(runtime)]
+    #[shader(align(16), size(runtime))]
     c: &'a mut ::std::vec::Vec<[::mint::Vector3<::core::primitive::f32>; 2]>,
 }
