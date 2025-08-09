@@ -324,6 +324,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 quote_spanned! {*span=>
                     const _: () = {
                         #[track_caller]
+                        #[allow(dead_code)]
                         #[allow(clippy::extra_unused_lifetimes)]
                         const fn check #impl_generics () {
                             let size = <#ty as #root::ShaderSize>::SHADER_SIZE.get();
