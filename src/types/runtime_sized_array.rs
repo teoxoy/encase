@@ -221,6 +221,7 @@ macro_rules! impl_rts_array_inner {
             }
         }
 
+        #[allow(dead_code)]
         impl<$($generics)*> $crate::private::CreateFrom for $type
         where
             T: $crate::private::CreateFrom,
