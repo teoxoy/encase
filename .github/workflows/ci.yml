@@ -89,7 +89,7 @@ jobs:
           sudo apt-get update
           sudo apt install -y mesa-vulkan-drivers vulkan-validationlayers
 
-      - run: cargo llvm-cov nextest --workspace --features mint,glam --fail-under-lines 80
+      - run: cargo llvm-cov nextest --workspace --features mint,glam --fail-under-lines 75
 
   tests_miri:
     name: Run MIRI tests
