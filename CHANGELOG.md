@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-## v0.11.1 (2025-06-16)
+## v0.11.2 (2025-08-25)
+
+- Fix missing trait implementations on `[T]` introduced in v0.11.1
+
+## v0.11.1 (2025-06-16) - yanked
 
 - Fix "function `check` is never used" lint
 - Fix "this item cannot be used as its where bounds are not satisfied for the `Self` type" lint
