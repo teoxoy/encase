@@ -26,15 +26,15 @@
 ///
 /// Field attributes
 ///
-/// - `#[shader_align(X)]` where `X` is a power of 2 [`u32`] literal (equivalent to [WGSL align attribute](https://gpuweb.github.io/gpuweb/wgsl/#attribute-align))
+/// - `#[shader(align(X))]` where `X` is a power of 2 [`u32`] literal (equivalent to [WGSL align attribute](https://gpuweb.github.io/gpuweb/wgsl/#attribute-align))
 ///
 ///     Used to increase the alignment of the field
 ///
-/// - `#[size(X)]` where `X` is a [`u32`] literal (equivalent to [WGSL size attribute](https://gpuweb.github.io/gpuweb/wgsl/#attribute-size))
+/// - `#[shader(size(X))]` where `X` is a [`u32`] literal (equivalent to [WGSL size attribute](https://gpuweb.github.io/gpuweb/wgsl/#attribute-size))
 ///
 ///     Used to increase the size of the field
 ///
-/// - `#[size(runtime)]` can only be attached to the last field of the struct
+/// - `#[shader(size(runtime))]` can only be attached to the last field of the struct
 ///
 ///     Used to denote the fact that the field it is attached to is a runtime-sized array
 ///
@@ -42,7 +42,7 @@
 ///
 /// While structs using generic type parameters are supported by this derive macro
 ///
-/// - the `#[shader_align(X)]` and `#[size(X)]` attributes will only work
+/// - the `#[shader(align(X))]` and `#[shader(size(X))]` attributes will only work
 ///   if they are attached to fields whose type contains no generic type parameters
 ///
 /// # Examples
@@ -70,7 +70,7 @@
 /// #[derive(ShaderType)]
 /// struct Positions {
 ///     length: ArrayLength,
-///     #[size(runtime)]
+///     #[shader(size(runtime))]
 ///     positions: Vec<mint::Point2<f32>>
 /// }
 /// ```
@@ -88,7 +88,7 @@
 ///     const N: usize,
 /// > {
 ///     array: [&'a mut E; N],
-///     #[size(runtime)]
+///     #[shader(size(runtime))]
 ///     rts_array: &'a mut Vec<&'b T>,
 /// }
 /// ```

@@ -64,7 +64,7 @@ struct A {
     arrm2: [mint::ColumnMatrix2<f32>; 8],
     arrm3: [mint::ColumnMatrix3<f32>; 8],
     arrm4: [mint::ColumnMatrix4<f32>; 8],
-    #[size(1600)]
+    #[shader(size(1600))]
     _pad: u32,
 }
 

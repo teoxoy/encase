@@ -4,12 +4,12 @@ fn main() {}
 
 #[derive(ShaderType)]
 struct Test {
-    #[shader_align]
+    #[shader(align)]
     a: u32,
-    #[shader_align()]
+    #[shader(align())]
     b: u32,
-    #[shader_align(invalid)]
+    #[shader(align(invalid))]
     c: u32,
-    #[shader_align(3)]
+    #[shader(align(3))]
     d: u32,
 }

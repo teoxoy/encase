@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Rename `align` attribute of `ShaderType` to `shader_align`
+- Place `align`/`size` inside a `shader()` attribute instead of being free-floating
 
 ## v0.11.2 (2025-08-25)
 
