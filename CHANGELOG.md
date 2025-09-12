@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.12.0 (2025-09-12)
+
 - Place `align`/`size` inside a `shader()` attribute instead of being free-floating
 - Remove trait implementations on foreign types
 
