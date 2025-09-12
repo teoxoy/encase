@@ -1,0 +1,11 @@
+error: duplicate `align(X)` attribute
+ --> tests/compile_fail/duplicate_attributes.rs:7:30
+  |
+7 |     #[shader(align(8), align(16))]
+  |                              ^^
+
+error: duplicate `size(X)` attribute
+ --> tests/compile_fail/duplicate_attributes.rs:9:34
+  |
+9 |     #[shader(size(runtime), size(16))]
+  |                                  ^^

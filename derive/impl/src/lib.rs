@@ -284,25 +284,39 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
                 for shader_attr in shader_attrs.0 {
                     match shader_attr {
                         ShaderAttr::Align { attr, span } => {
+                            if data.align.is_some() {
+                                let err = syn::Error::new(span, "duplicate `align(X)` attribute");
+                                errors.append(err);
+                                continue;
+                            }
+
                             data.align = Some((attr.0, span));
                         }
-                        ShaderAttr::Size { attr, span } => match attr {
-                            SizeAttr::Runtime => {
-                                if i == last_field_index {
-                                    is_runtime_sized = true;
-                                } else {
-                                    let err = syn::Error::new(
-                                        span,
-                                        "only the last field can be `size(runtime)`",
-                                    );
-                                    errors.append(err);
-                                    continue;
+                        ShaderAttr::Size { attr, span } => {
+                            if data.size.is_some() || is_runtime_sized {
+                                let err = syn::Error::new(span, "duplicate `size(X)` attribute");
+                                errors.append(err);
+                                continue;
+                            }
+
+                            match attr {
+                                SizeAttr::Runtime => {
+                                    if i == last_field_index {
+                                        is_runtime_sized = true;
+                                    } else {
+                                        let err = syn::Error::new(
+                                            span,
+                                            "only the last field can be `size(runtime)`",
+                                        );
+                                        errors.append(err);
+                                        continue;
+                                    }
+                                }
+                                SizeAttr::Static(attr) => {
+                                    data.size = Some((attr.0, span));
                                 }
                             }
-                            SizeAttr::Static(attr) => {
-                                data.size = Some((attr.0, span));
-                            }
-                        },
+                        }
                     }
                 }
             }
