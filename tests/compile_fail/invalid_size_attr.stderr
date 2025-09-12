@@ -16,8 +16,14 @@ error: expected u32 literal or `runtime` identifier
 11 |     #[shader(size(invalid))]
    |                   ^^^^^^^
 
-error: expected u32 literal or `runtime` identifier
+error: only the last field can be `size(runtime)`
   --> tests/compile_fail/invalid_size_attr.rs:13:19
    |
-13 |     #[shader(size(-1))]
+13 |     #[shader(size(runtime))]
+   |                   ^^^^^^^
+
+error: expected u32 literal or `runtime` identifier
+  --> tests/compile_fail/invalid_size_attr.rs:15:19
+   |
+15 |     #[shader(size(-1))]
    |                   ^
