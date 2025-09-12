@@ -57,8 +57,10 @@ rand = { version = "0.9", features = ["std_rng"], default-features = false }
 mimalloc = { version = "0.1", default-features = false }
 wgpu = { version = "24.0.0", features = ["wgsl"] }
 futures = { version = "0.3", features = ["executor"], default-features = false }
-pprof = { version = "0.14", features = ["criterion", "flamegraph"], default-features = false }
 trybuild = { version = "1", default-features = false }
+
+[target.'cfg(target_family = "unix")'.dev-dependencies]
+pprof = { version = "0.14", features = ["criterion", "flamegraph"], default-features = false }
 
 [[test]]
 name = "assert_uniform_compat_success"

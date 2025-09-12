@@ -1,6 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion, Throughput};
 use encase::{ShaderType, StorageBuffer};
-use pprof::criterion::{Output, PProfProfiler};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -193,10 +192,17 @@ fn create_vecs(a: A, size: usize) -> (Vec<A>, StorageBuffer<Vec<u8>>) {
     (src, dst)
 }
 
+#[cfg(target_family = "unix")]
 criterion_group! {
     name = benches;
     config = Criterion::default()
-        .with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
+        .with_profiler(pprof::criterion::PProfProfiler::new(100, pprof::criterion::Output::Flamegraph(None)));
+    targets = bench
+}
+#[cfg(not(target_family = "unix"))]
+criterion_group! {
+    name = benches;
+    config = Criterion::default();
     targets = bench
 }
 criterion_main!(benches);
