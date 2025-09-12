@@ -37,7 +37,7 @@ jobs:
       # -Z avoid-dev-deps doesn't work
       - run: cargo +$NIGHTLY hack generate-lockfile --remove-dev-deps -Z minimal-versions
 
-      - run: cargo +$MSRV check --workspace --all-features
+      - run: cargo +$MSRV check --workspace
 
   format:
     name: Check format
@@ -51,14 +51,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cargo clippy --all-targets --workspace --all-features -- -D warnings
+      - run: cargo clippy --all-targets --workspace -- -D warnings
 
   doc_tests:
     name: Run doc tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cargo test --doc --workspace --features mint,glam
+      - run: cargo test --doc --workspace
 
   docs:
     name: Build docs
@@ -71,7 +71,7 @@ jobs:
       - name: Install nightly toolchain
         run: rustup toolchain install $NIGHTLY --no-self-update --profile=minimal
 
-      - run: cargo +$NIGHTLY doc --workspace --all-features
+      - run: cargo +$NIGHTLY doc --workspace
 
   tests:
     name: Run tests
@@ -89,7 +89,7 @@ jobs:
           sudo apt-get update
           sudo apt install -y mesa-vulkan-drivers vulkan-validationlayers
 
-      - run: cargo llvm-cov nextest --workspace --features mint,glam --fail-under-lines 75
+      - run: cargo llvm-cov nextest --workspace --fail-under-lines 75
 
   tests_miri:
     name: Run MIRI tests
@@ -102,4 +102,4 @@ jobs:
           rustup toolchain install $NIGHTLY --no-self-update --profile=minimal
           rustup +$NIGHTLY component add miri
 
-      - run: cargo +$NIGHTLY miri test --workspace --features mint,glam
+      - run: cargo +$NIGHTLY miri test --workspace

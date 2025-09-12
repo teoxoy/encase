@@ -120,7 +120,7 @@ pub trait ShaderType {
     ///
     /// ```should_panic
     /// # use crate::encase::ShaderType;
-    /// <Vec<mint::Vector4<f32>>>::assert_uniform_compat();
+    /// <Vec<test_impl::Vec4f>>::assert_uniform_compat();
     /// ```
     ///
     /// Will panic since the stride is 4 bytes
@@ -134,8 +134,7 @@ pub trait ShaderType {
     ///
     /// ```
     /// # use crate::encase::ShaderType;
-    /// # use mint;
-    /// <[mint::Vector4<f32>; 2]>::assert_uniform_compat();
+    /// <[test_impl::Vec4f; 2]>::assert_uniform_compat();
     /// ```
     ///
     /// ## Struct
@@ -145,11 +144,10 @@ pub trait ShaderType {
     ///
     /// ```should_panic
     /// # use crate::encase::ShaderType;
-    /// # use mint;
     /// #[derive(ShaderType)]
     /// struct Invalid {
     ///     #[shader(size(runtime))]
-    ///     vec: Vec<mint::Vector4<f32>>
+    ///     vec: Vec<test_impl::Vec4f>
     /// }
     /// Invalid::assert_uniform_compat();
     /// ```

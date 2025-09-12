@@ -50,12 +50,11 @@
 /// Simple
 ///
 /// ```
-/// # use mint;
 /// # use crate::encase::ShaderType;
 /// #[derive(ShaderType)]
 /// struct AffineTransform2D {
-///     matrix: mint::ColumnMatrix2<f32>,
-///     translate: mint::Vector2<f32>
+///     matrix: test_impl::Mat2x2f,
+///     translate: test_impl::Vec2f,
 /// }
 /// ```
 ///
@@ -64,14 +63,13 @@
 /// _The [`ArrayLength`] type can be used to explicitly write or read the length of the contained runtime-sized array_
 ///
 /// ```
-/// # use mint;
 /// # use crate::encase::ShaderType;
 /// # use crate::encase::ArrayLength;
 /// #[derive(ShaderType)]
 /// struct Positions {
 ///     length: ArrayLength,
 ///     #[shader(size(runtime))]
-///     positions: Vec<mint::Point2<f32>>
+///     positions: Vec<test_impl::Vec2f>
 /// }
 /// ```
 ///
@@ -99,8 +97,6 @@ pub use encase_derive::ShaderType;
 mod utils;
 mod core;
 mod types;
-
-mod impls;
 
 pub use crate::core::{
     CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,

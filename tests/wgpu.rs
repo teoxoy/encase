@@ -2,14 +2,14 @@
 
 use encase::{ArrayLength, ShaderType, StorageBuffer};
 use futures::executor::block_on;
-use mint::{Vector2, Vector3};
+use test_impl::*;
 use wgpu::{include_wgsl, util::DeviceExt};
 
 #[derive(Debug, ShaderType, PartialEq)]
 struct A {
     u: u32,
     v: u32,
-    w: Vector2<u32>,
+    w: Vec2u,
     #[shader(size(16), align(8))]
     x: u32,
     xx: u32,
@@ -17,13 +17,13 @@ struct A {
 
 #[derive(Debug, ShaderType, PartialEq)]
 struct B {
-    a: Vector2<u32>,
-    b: Vector3<u32>,
+    a: Vec2u,
+    b: Vec3u,
     c: u32,
     d: u32,
     #[shader(align(16))]
     e: A,
-    f: Vector3<u32>,
+    f: Vec3u,
     g: [A; 3],
     h: i32,
     #[shader(align(32), size(runtime))]
@@ -33,54 +33,37 @@ struct B {
 #[test]
 fn test_wgpu() {
     let b = B {
-        a: Vector2 { x: 45, y: 564 },
-        b: Vector3 {
-            x: 465,
-            y: 56664,
-            z: 5646,
-        },
+        a: Vec2u::from([45, 564]),
+        b: Vec3u::from([465, 56664, 5646]),
         c: 4,
         d: 3,
         e: A {
             u: 5,
             v: 566,
-            w: Vector2 { x: 4345, y: 43564 },
+            w: Vec2u::from([4345, 43564]),
             x: 5444,
             xx: 305444,
         },
-        f: Vector3 {
-            x: 455465,
-            y: 55665464,
-            z: 5564546,
-        },
+        f: Vec3u::from([455465, 55665464, 5564546]),
         g: [
             A {
                 u: 105,
                 v: 10566,
-                w: Vector2 {
-                    x: 14345,
-                    y: 143564,
-                },
+                w: Vec2u::from([14345, 143564]),
                 x: 105444,
                 xx: 305444,
             },
             A {
                 u: 205,
                 v: 20566,
-                w: Vector2 {
-                    x: 24345,
-                    y: 243564,
-                },
+                w: Vec2u::from([24345, 243564]),
                 x: 205444,
                 xx: 305444,
             },
             A {
                 u: 305,
                 v: 30566,
-                w: Vector2 {
-                    x: 34345,
-                    y: 343564,
-                },
+                w: Vec2u::from([34345, 343564]),
                 x: 305444,
                 xx: 305444,
             },
@@ -89,10 +72,7 @@ fn test_wgpu() {
         i: Vec::from([A {
             u: 205,
             v: 20566,
-            w: Vector2 {
-                x: 24345,
-                y: 243564,
-            },
+            w: Vec2u::from([24345, 243564]),
             x: 205444,
             xx: 305444,
         }]),
@@ -120,7 +100,7 @@ fn array_length() {
     struct A {
         array_length: ArrayLength,
         array_length_call_ret_val: u32,
-        a: Vector3<u32>,
+        a: Vec3u,
         #[shader(align(16), size(runtime))]
         arr: Vec<u32>,
     }
@@ -128,7 +108,7 @@ fn array_length() {
     let in_value = A {
         array_length: ArrayLength,
         array_length_call_ret_val: 4,
-        a: Vector3 { x: 5, y: 4, z: 6 },
+        a: Vec3u::from([5, 4, 6]),
         arr: vec![45],
     };
 

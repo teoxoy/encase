@@ -45,42 +45,6 @@ macro_rules! if_pod_and_little_endian {
     }};
 }
 
-#[cfg(any(feature = "glam", feature = "ultraviolet", feature = "vek"))]
-macro_rules! array_ref_to_2d_array_ref {
-    ($array:expr, $ty:ty, $c:literal, $r:literal) => {
-        // SAFETY:
-        // transmuting from &[T; R * C] to &[[T; R]; C] is sound since:
-        //  the references have the same size
-        //   size_of::<&[T; R * C]>()                           = size_of::<usize>()
-        //   size_of::<&[[T; R]; C]>()                          = size_of::<usize>()
-        //  the values behind the references have the same size and alignment
-        //   size_of::<[T; R * C]>()                            = size_of::<T>() * R * C
-        //   size_of::<[[T; R]; C]>() = size_of::<[T; R]>() * C = size_of::<T>() * R * C
-        //   align_of::<[T; R * C]>()                           = align_of::<T>()
-        //   align_of::<[[T; R]; C]>() = align_of::<[T; R]>()   = align_of::<T>()
-        // ref: https://doc.rust-lang.org/reference/type-layout.html
-        unsafe { ::core::mem::transmute::<&[$ty; $r * $c], &[[$ty; $r]; $c]>($array) }
-    };
-}
-
-#[cfg(any(feature = "glam", feature = "ultraviolet", feature = "vek"))]
-macro_rules! array_mut_to_2d_array_mut {
-    ($array:expr, $ty:ty, $c:literal, $r:literal) => {
-        // SAFETY:
-        // transmuting from &mut [T; R * C] to &mut [[T; R]; C] is sound since:
-        //  the references have the same size
-        //   size_of::<&mut [T; R * C]>()                       = size_of::<usize>()
-        //   size_of::<&mut [[T; R]; C]>()                      = size_of::<usize>()
-        //  the values behind the references have the same size and alignment
-        //   size_of::<[T; R * C]>()                            = size_of::<T>() * R * C
-        //   size_of::<[[T; R]; C]>() = size_of::<[T; R]>() * C = size_of::<T>() * R * C
-        //   align_of::<[T; R * C]>()                           = align_of::<T>()
-        //   align_of::<[[T; R]; C]>() = align_of::<[T; R]>()   = align_of::<T>()
-        // ref: https://doc.rust-lang.org/reference/type-layout.html
-        unsafe { ::core::mem::transmute::<&mut [$ty; $r * $c], &mut [[$ty; $r]; $c]>($array) }
-    };
-}
-
 pub(crate) trait ByteVecExt {
     /// Tries to extend `self` with `0`s up to `new_len`, using memset.
     fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError>;

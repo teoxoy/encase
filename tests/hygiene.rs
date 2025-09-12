@@ -96,7 +96,7 @@ mod impl_rts_array {
 
 #[derive(::encase::ShaderType)]
 struct Test {
-    a: [::mint::Vector3<::core::primitive::f32>; 2],
+    a: [::test_impl::Vec3f; 2],
     b: ::core::primitive::u32,
 }
 
@@ -110,5 +110,5 @@ struct TestGeneric<
     a: &'a mut Test,
     b: &'a mut [T; N],
     #[shader(align(16), size(runtime))]
-    c: &'a mut ::std::vec::Vec<[::mint::Vector3<::core::primitive::f32>; 2]>,
+    c: &'a mut ::std::vec::Vec<[::test_impl::Vec3f; 2]>,
 }

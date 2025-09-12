@@ -5,7 +5,7 @@ Provides a mechanism to lay out data into GPU buffers ensuring WGSL's memory lay
 ## Features
 
 - supports all WGSL [host-shareable types] + wrapper types (`&T`, `&mut T`, `Box<T>`, ...)
-- supports data types from a multitude of crates as [features]
+- trait-based architecture to enable integration with types from third-party libraries
 - covers a wide area of use cases (see [examples](#examples))
 
 ## Motivation
@@ -39,13 +39,13 @@ use encase::{ShaderType, UniformBuffer};
 
 #[derive(ShaderType)]
 struct AffineTransform2D {
-    matrix: glam::Mat2,
-    translate: glam::Vec2
+    matrix: test_impl::Mat2x2f,
+    translate: test_impl::Vec2f,
 }
 
 let transform = AffineTransform2D {
-    matrix: glam::Mat2::IDENTITY,
-    translate: glam::Vec2::ZERO,
+    matrix: test_impl::Mat2x2f::IDENTITY,
+    translate: test_impl::Vec2f::ZERO,
 };
 
 let mut buffer = UniformBuffer::new(Vec::<u8>::new());
@@ -68,9 +68,9 @@ let byte_buffer = [1u8; 256 + 8];
 
 let mut buffer = DynamicUniformBuffer::new(&byte_buffer);
 buffer.set_offset(256);
-let vector: mint::Vector2<i32> = buffer.create().unwrap();
+let vector: test_impl::Vec2i = buffer.create().unwrap();
 
-assert_eq!(vector, mint::Vector2 { x: 16843009, y: 16843009 });
+assert_eq!(vector, test_impl::Vec2i::from([16843009, 16843009]));
 ```
 
 Write and read back data from storage buffer
@@ -82,15 +82,15 @@ use encase::{ShaderType, ArrayLength, StorageBuffer};
 struct Positions {
     length: ArrayLength,
     #[shader(size(runtime))]
-    positions: Vec<mint::Point2<f32>>
+    positions: Vec<test_impl::Vec2f>
 }
 
 let mut positions = Positions {
     length: ArrayLength,
     positions: Vec::from([
-        mint::Point2 { x: 4.5, y: 3.4 },
-        mint::Point2 { x: 1.5, y: 7.4 },
-        mint::Point2 { x: 4.3, y: 1.9 },
+        test_impl::Vec2f::from([4.5, 3.4]),
+        test_impl::Vec2f::from([1.5, 7.4]),
+        test_impl::Vec2f::from([4.3, 1.9]),
     ])
 };
 
@@ -124,7 +124,7 @@ let mut buffer = DynamicStorageBuffer::new_with_alignment(&mut byte_buffer, 64);
 let offsets = [
     buffer.write(&[5.; 10]).unwrap(),
     buffer.write(&vec![3u32; 20]).unwrap(),
-    buffer.write(&glam::Vec3::ONE).unwrap(),
+    buffer.write(&test_impl::Vec3f::ONE).unwrap(),
 ];
 
 // write byte_buffer to GPU
@@ -145,7 +145,7 @@ let mut buffer = DynamicStorageBuffer::new_with_alignment(&mut uninit_buffer, 64
 let offsets = [
     buffer.write(&[5.; 10]).unwrap(),
     buffer.write(&vec![3u32; 20]).unwrap(),
-    buffer.write(&glam::Vec3::ONE).unwrap(),
+    buffer.write(&test_impl::Vec3f::ONE).unwrap(),
 ];
 
 // SAFETY: Vec<u8> and Vec<MaybeUninit<u8>> share the same layout.
@@ -166,7 +166,6 @@ assert_eq!(offsets, [0, 64, 192]);
 ```
 
 [host-shareable types]: https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types
-[features]: https://docs.rs/crate/encase/latest/features
 [`ShaderType`]: https://docs.rs/encase/latest/encase/trait.ShaderType.html
 
 [`WriteInto`]: https://docs.rs/encase/latest/encase/internal/trait.WriteInto.html
