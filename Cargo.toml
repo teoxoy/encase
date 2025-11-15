@@ -42,5 +42,10 @@ futures = { version = "0.3", features = ["executor"], default-features = false }
 trybuild = { version = "1", default-features = false }
 test_impl = { path = "./test_impl" }
 
+[features]
+default = ["std"]
+std = []
+no_std = []
+
 [target.'cfg(target_family = "unix")'.dev-dependencies]
 pprof = { version = "0.14", features = ["criterion", "flamegraph"], default-features = false }

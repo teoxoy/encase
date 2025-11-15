@@ -1,4 +1,5 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(feature = "no_std", no_std)]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![warn(
     clippy::semicolon_if_nothing_returned,
@@ -102,6 +103,7 @@ pub use crate::core::{
     CalculateSizeFor, DynamicStorageBuffer, DynamicUniformBuffer, ShaderSize, ShaderType,
     StorageBuffer, UniformBuffer,
 };
+
 pub use types::runtime_sized_array::ArrayLength;
 
 pub mod internal {
@@ -112,6 +114,7 @@ pub mod internal {
 }
 
 /// Module containing items necessary to implement `ShaderType` for runtime-sized arrays
+#[cfg(feature = "std")]
 pub mod rts_array {
     #[doc(inline)]
     pub use super::impl_rts_array;

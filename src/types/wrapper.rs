@@ -113,8 +113,13 @@ macro_rules! impl_wrapper_inner {
 
 impl_wrapper!(&T; using Ref{});
 impl_wrapper!(&mut T; using Ref{} Mut{});
+#[cfg(feature = "std")]
 impl_wrapper!(Box<T>; using Ref{} Mut{} From{ new });
+#[cfg(feature = "std")]
 impl_wrapper!(std::borrow::Cow<'_, T>; (T: ?Sized + ToOwned<Owned = T>); using Ref{} From{ Owned });
+#[cfg(feature = "std")]
 impl_wrapper!(std::rc::Rc<T>; using Ref{} From{ new });
+#[cfg(feature = "std")]
 impl_wrapper!(std::sync::Arc<T>; using Ref{} From{ new });
+#[cfg(feature = "std")]
 impl_wrapper!(core::cell::Cell<T>; (T: Copy); using Ref{ .get() } Mut{ .get_mut() } From{ new });

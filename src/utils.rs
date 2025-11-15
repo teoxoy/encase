@@ -1,5 +1,3 @@
-use core::mem::MaybeUninit;
-
 #[track_caller]
 pub const fn consume_zsts<const N: usize>(_: [(); N]) {}
 
@@ -45,11 +43,13 @@ macro_rules! if_pod_and_little_endian {
     }};
 }
 
+#[cfg(feature = "std")]
 pub(crate) trait ByteVecExt {
     /// Tries to extend `self` with `0`s up to `new_len`, using memset.
     fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError>;
 }
 
+#[cfg(feature = "std")]
 impl ByteVecExt for Vec<u8> {
     #[inline]
     fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError> {
@@ -71,7 +71,8 @@ impl ByteVecExt for Vec<u8> {
     }
 }
 
-impl<T> ByteVecExt for Vec<MaybeUninit<T>> {
+#[cfg(feature = "std")]
+impl<T> ByteVecExt for Vec<core::mem::MaybeUninit<T>> {
     #[inline]
     fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError> {
         let additional = new_len.saturating_sub(self.len());

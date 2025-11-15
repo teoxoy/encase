@@ -177,6 +177,7 @@ impl<B: BufferMut> Cursor<B> {
 #[error("could not enlarge buffer")]
 pub struct EnlargeError;
 
+#[cfg(feature = "std")]
 impl From<std::collections::TryReserveError> for EnlargeError {
     fn from(_: std::collections::TryReserveError) -> Self {
         Self
@@ -243,6 +244,7 @@ impl<const LEN: usize> BufferRef for [u8; LEN] {
     }
 }
 
+#[cfg(feature = "std")]
 impl BufferRef for Vec<u8> {
     #[inline]
     fn len(&self) -> usize {
@@ -334,6 +336,7 @@ impl<const LEN: usize> BufferMut for [MaybeUninit<u8>; LEN] {
     }
 }
 
+#[cfg(feature = "std")]
 impl BufferMut for Vec<u8> {
     #[inline]
     fn capacity(&self) -> usize {
@@ -357,6 +360,7 @@ impl BufferMut for Vec<u8> {
     }
 }
 
+#[cfg(feature = "std")]
 impl BufferMut for Vec<MaybeUninit<u8>> {
     #[inline]
     fn capacity(&self) -> usize {
@@ -401,6 +405,10 @@ macro_rules! impl_buffer_ref_for_wrappers {
     )*};
 }
 
+#[cfg(feature = "no_std")]
+impl_buffer_ref_for_wrappers!(&T, &mut T);
+
+#[cfg(feature = "std")]
 impl_buffer_ref_for_wrappers!(&T, &mut T, Box<T>, std::rc::Rc<T>, std::sync::Arc<T>);
 
 macro_rules! impl_buffer_mut_for_wrappers {
@@ -429,6 +437,10 @@ macro_rules! impl_buffer_mut_for_wrappers {
     )*};
 }
 
+#[cfg(feature = "no_std")]
+impl_buffer_mut_for_wrappers!(&mut T);
+
+#[cfg(feature = "std")]
 impl_buffer_mut_for_wrappers!(&mut T, Box<T>);
 
 #[cfg(test)]
