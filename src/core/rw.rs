@@ -1,4 +1,6 @@
 use super::ShaderType;
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
 use core::mem::MaybeUninit;
 use thiserror::Error;
 
@@ -177,9 +179,9 @@ impl<B: BufferMut> Cursor<B> {
 #[error("could not enlarge buffer")]
 pub struct EnlargeError;
 
-#[cfg(feature = "std")]
-impl From<std::collections::TryReserveError> for EnlargeError {
-    fn from(_: std::collections::TryReserveError) -> Self {
+#[cfg(feature = "alloc")]
+impl From<alloc::collections::TryReserveError> for EnlargeError {
+    fn from(_: alloc::collections::TryReserveError) -> Self {
         Self
     }
 }
@@ -244,7 +246,7 @@ impl<const LEN: usize> BufferRef for [u8; LEN] {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl BufferRef for Vec<u8> {
     #[inline]
     fn len(&self) -> usize {
@@ -336,7 +338,7 @@ impl<const LEN: usize> BufferMut for [MaybeUninit<u8>; LEN] {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl BufferMut for Vec<u8> {
     #[inline]
     fn capacity(&self) -> usize {
@@ -360,7 +362,7 @@ impl BufferMut for Vec<u8> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl BufferMut for Vec<MaybeUninit<u8>> {
     #[inline]
     fn capacity(&self) -> usize {
@@ -405,11 +407,13 @@ macro_rules! impl_buffer_ref_for_wrappers {
     )*};
 }
 
-#[cfg(feature = "no_std")]
 impl_buffer_ref_for_wrappers!(&T, &mut T);
 
-#[cfg(feature = "std")]
-impl_buffer_ref_for_wrappers!(&T, &mut T, Box<T>, std::rc::Rc<T>, std::sync::Arc<T>);
+#[cfg(feature = "alloc")]
+impl_buffer_ref_for_wrappers!(alloc::boxed::Box<T>, alloc::rc::Rc<T>);
+
+#[cfg(all(feature = "alloc", target_has_atomic = "ptr"))]
+impl_buffer_ref_for_wrappers!(alloc::sync::Arc<T>);
 
 macro_rules! impl_buffer_mut_for_wrappers {
     ($($type:ty),*) => {$(
@@ -437,15 +441,15 @@ macro_rules! impl_buffer_mut_for_wrappers {
     )*};
 }
 
-#[cfg(feature = "no_std")]
 impl_buffer_mut_for_wrappers!(&mut T);
 
-#[cfg(feature = "std")]
-impl_buffer_mut_for_wrappers!(&mut T, Box<T>);
+#[cfg(feature = "alloc")]
+impl_buffer_mut_for_wrappers!(alloc::boxed::Box<T>);
 
 #[cfg(test)]
 mod buffer_ref {
     use super::BufferRef;
+    use alloc::vec::Vec;
 
     #[test]
     fn array() {
@@ -468,6 +472,7 @@ mod buffer_ref {
 mod buffer_mut {
     use super::BufferMut;
     use crate::core::EnlargeError;
+    use alloc::vec::Vec;
 
     #[test]
     fn array() {
@@ -505,6 +510,7 @@ mod buffer_mut {
 #[cfg(test)]
 mod error {
     use super::Error;
+    use alloc::format;
 
     #[test]
     fn derived_traits() {
@@ -514,7 +520,7 @@ mod error {
         };
 
         {
-            use std::error::Error;
+            use core::error::Error;
             assert!(err.source().is_none());
         }
 
@@ -533,6 +539,7 @@ mod error {
 #[cfg(test)]
 mod enlarge_error {
     use super::EnlargeError;
+    use alloc::{format, vec::Vec};
 
     #[test]
     fn derived_traits() {
@@ -543,7 +550,7 @@ mod enlarge_error {
         };
         let err = EnlargeError::from(try_reserve_error);
 
-        use std::error::Error;
+        use core::error::Error;
         assert!(err.source().is_none());
 
         assert_eq!(format!("{}", err.clone()), "could not enlarge buffer");

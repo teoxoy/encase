@@ -43,9 +43,8 @@ trybuild = { version = "1", default-features = false }
 test_impl = { path = "./test_impl" }
 
 [features]
-default = ["std"]
-std = []
-no_std = []
+default = ["alloc"]
+alloc = []
 
 [target.'cfg(target_family = "unix")'.dev-dependencies]
 pprof = { version = "0.14", features = ["criterion", "flamegraph"], default-features = false }

@@ -1,6 +1,9 @@
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
+use alloc::{borrow::Cow, rc::Rc, sync::Arc};
 use core::cell::Cell;
 use encase::ShaderType;
-use std::{borrow::Cow, rc::Rc, sync::Arc};
 
 fn main() {}
 

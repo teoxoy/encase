@@ -136,7 +136,7 @@ assert_eq!(offsets, [0, 64, 192]);
 Supports writing to uninitialized memory as well.
 
 ```rust
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 use encase::{ShaderType, DynamicStorageBuffer};
 
 let mut uninit_buffer: Vec<MaybeUninit<u8>> = Vec::new();
@@ -157,7 +157,7 @@ let byte_buffer: Vec<u8> = unsafe {
     ) 
 };
 
-std::mem::forget(uninit_buffer);
+core::mem::forget(uninit_buffer);
 
 // write byte_buffer to GPU
 

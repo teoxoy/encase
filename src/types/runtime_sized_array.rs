@@ -1,7 +1,10 @@
-#[cfg(feature = "std")]
-use std::collections::{LinkedList, VecDeque};
+#[cfg(feature = "alloc")]
+use alloc::{
+    collections::{LinkedList, VecDeque},
+    vec::Vec,
+};
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 use crate::core::RuntimeSizedArray;
 use crate::core::{
     BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, ShaderSize, WriteInto, Writer,
@@ -250,14 +253,14 @@ macro_rules! impl_rts_array_inner {
 }
 
 impl_rts_array!([T]; using len);
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl_rts_array!(Vec<T>; using len truncate);
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl_rts_array!(VecDeque<T>; using len truncate);
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl_rts_array!(LinkedList<T>; using len);
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl<T> Truncate for LinkedList<T> {
     fn truncate(&mut self, len: usize) {
         if len < self.len() {
@@ -269,6 +272,8 @@ impl<T> Truncate for LinkedList<T> {
 #[cfg(test)]
 mod array_length {
     use super::ArrayLength;
+    #[cfg(feature = "alloc")]
+    use alloc::format;
 
     #[test]
     fn derived_traits() {

@@ -1,3 +1,8 @@
+#[cfg(feature = "alloc")]
+use alloc::{collections::TryReserveError, vec::Vec};
+#[cfg(feature = "alloc")]
+use core::mem::MaybeUninit;
+
 #[track_caller]
 pub const fn consume_zsts<const N: usize>(_: [(); N]) {}
 
@@ -43,16 +48,16 @@ macro_rules! if_pod_and_little_endian {
     }};
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 pub(crate) trait ByteVecExt {
     /// Tries to extend `self` with `0`s up to `new_len`, using memset.
-    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError>;
+    fn try_extend(&mut self, new_len: usize) -> Result<(), TryReserveError>;
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl ByteVecExt for Vec<u8> {
     #[inline]
-    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError> {
+    fn try_extend(&mut self, new_len: usize) -> Result<(), TryReserveError> {
         let additional = new_len.saturating_sub(self.len());
         if additional > 0 {
             self.try_reserve(additional)?;
@@ -71,10 +76,10 @@ impl ByteVecExt for Vec<u8> {
     }
 }
 
-#[cfg(feature = "std")]
-impl<T> ByteVecExt for Vec<core::mem::MaybeUninit<T>> {
+#[cfg(feature = "alloc")]
+impl<T> ByteVecExt for Vec<MaybeUninit<T>> {
     #[inline]
-    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError> {
+    fn try_extend(&mut self, new_len: usize) -> Result<(), TryReserveError> {
         let additional = new_len.saturating_sub(self.len());
         if additional > 0 {
             self.try_reserve(additional)?;
@@ -137,6 +142,8 @@ impl<T> SliceExt<T> for [T] {
 #[cfg(test)]
 mod byte_vec_ext {
     use crate::utils::ByteVecExt;
+    #[cfg(feature = "alloc")]
+    use alloc::{vec, vec::Vec};
 
     #[test]
     fn try_extend() {

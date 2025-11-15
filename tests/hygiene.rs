@@ -1,6 +1,9 @@
 #![no_implicit_prelude]
 #![allow(non_camel_case_types)]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 macro_rules! decl_primitives_as_traits {
     ($($primitive:ident),*) => {$(#[allow(dead_code)] trait $primitive {})*};
 }
@@ -110,5 +113,5 @@ struct TestGeneric<
     a: &'a mut Test,
     b: &'a mut [T; N],
     #[shader(align(16), size(runtime))]
-    c: &'a mut ::std::vec::Vec<[::test_impl::Vec3f; 2]>,
+    c: &'a mut ::alloc::vec::Vec<[::test_impl::Vec3f; 2]>,
 }

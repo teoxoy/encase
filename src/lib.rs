@@ -1,5 +1,4 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![cfg_attr(feature = "no_std", no_std)]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![warn(
     clippy::semicolon_if_nothing_returned,
@@ -20,6 +19,10 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/teoxoy/encase/3d6d2e4d7670863e97463a15ceeafac6d13ee73e/logo.svg"
 )]
+#![no_std]
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
 
 /// Used to implement `ShaderType` for structs
 ///
@@ -114,7 +117,7 @@ pub mod internal {
 }
 
 /// Module containing items necessary to implement `ShaderType` for runtime-sized arrays
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 pub mod rts_array {
     #[doc(inline)]
     pub use super::impl_rts_array;
