@@ -80,6 +80,7 @@ impl AlignmentValue {
 #[cfg(test)]
 mod test {
     use super::AlignmentValue;
+    use alloc::format;
 
     #[test]
     fn new() {

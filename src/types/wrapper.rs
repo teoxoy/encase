@@ -1,3 +1,5 @@
+use alloc::borrow::ToOwned;
+
 /// Used to implement `ShaderType` for the given wrapper type
 ///
 /// # Args
@@ -113,8 +115,8 @@ macro_rules! impl_wrapper_inner {
 
 impl_wrapper!(&T; using Ref{});
 impl_wrapper!(&mut T; using Ref{} Mut{});
-impl_wrapper!(Box<T>; using Ref{} Mut{} From{ new });
-impl_wrapper!(std::borrow::Cow<'_, T>; (T: ?Sized + ToOwned<Owned = T>); using Ref{} From{ Owned });
-impl_wrapper!(std::rc::Rc<T>; using Ref{} From{ new });
-impl_wrapper!(std::sync::Arc<T>; using Ref{} From{ new });
+impl_wrapper!(alloc::boxed::Box<T>; using Ref{} Mut{} From{ new });
+impl_wrapper!(alloc::borrow::Cow<'_, T>; (T: ?Sized + ToOwned<Owned = T>); using Ref{} From{ Owned });
+impl_wrapper!(alloc::rc::Rc<T>; using Ref{} From{ new });
+impl_wrapper!(alloc::sync::Arc<T>; using Ref{} From{ new });
 impl_wrapper!(core::cell::Cell<T>; (T: Copy); using Ref{ .get() } Mut{ .get_mut() } From{ new });

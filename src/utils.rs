@@ -1,3 +1,4 @@
+use alloc::vec::Vec;
 use core::mem::MaybeUninit;
 
 #[track_caller]
@@ -47,12 +48,12 @@ macro_rules! if_pod_and_little_endian {
 
 pub(crate) trait ByteVecExt {
     /// Tries to extend `self` with `0`s up to `new_len`, using memset.
-    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError>;
+    fn try_extend(&mut self, new_len: usize) -> Result<(), alloc::collections::TryReserveError>;
 }
 
 impl ByteVecExt for Vec<u8> {
     #[inline]
-    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError> {
+    fn try_extend(&mut self, new_len: usize) -> Result<(), alloc::collections::TryReserveError> {
         let additional = new_len.saturating_sub(self.len());
         if additional > 0 {
             self.try_reserve(additional)?;
@@ -73,7 +74,7 @@ impl ByteVecExt for Vec<u8> {
 
 impl<T> ByteVecExt for Vec<MaybeUninit<T>> {
     #[inline]
-    fn try_extend(&mut self, new_len: usize) -> Result<(), std::collections::TryReserveError> {
+    fn try_extend(&mut self, new_len: usize) -> Result<(), alloc::collections::TryReserveError> {
         let additional = new_len.saturating_sub(self.len());
         if additional > 0 {
             self.try_reserve(additional)?;
@@ -136,6 +137,8 @@ impl<T> SliceExt<T> for [T] {
 #[cfg(test)]
 mod byte_vec_ext {
     use crate::utils::ByteVecExt;
+    use alloc::vec;
+    use alloc::vec::Vec;
 
     #[test]
     fn try_extend() {
