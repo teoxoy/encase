@@ -41,6 +41,7 @@ impl SizeValue {
 #[cfg(test)]
 mod test {
     use super::SizeValue;
+    use alloc::format;
 
     #[test]
     fn new() {

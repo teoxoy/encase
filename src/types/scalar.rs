@@ -121,7 +121,7 @@ macro_rules! impl_traits_for_atomic {
         impl WriteInto for $type {
             #[inline]
             fn write_into<B: BufferMut>(&self, writer: &mut Writer<B>) {
-                let value = self.load(std::sync::atomic::Ordering::Relaxed);
+                let value = self.load(core::sync::atomic::Ordering::Relaxed);
                 WriteInto::write_into(&value, writer);
             }
         }

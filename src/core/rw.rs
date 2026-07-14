@@ -1,4 +1,6 @@
 use super::ShaderType;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 use core::mem::MaybeUninit;
 use thiserror::Error;
 
@@ -177,8 +179,8 @@ impl<B: BufferMut> Cursor<B> {
 #[error("could not enlarge buffer")]
 pub struct EnlargeError;
 
-impl From<std::collections::TryReserveError> for EnlargeError {
-    fn from(_: std::collections::TryReserveError) -> Self {
+impl From<alloc::collections::TryReserveError> for EnlargeError {
+    fn from(_: alloc::collections::TryReserveError) -> Self {
         Self
     }
 }
@@ -401,7 +403,7 @@ macro_rules! impl_buffer_ref_for_wrappers {
     )*};
 }
 
-impl_buffer_ref_for_wrappers!(&T, &mut T, Box<T>, std::rc::Rc<T>, std::sync::Arc<T>);
+impl_buffer_ref_for_wrappers!(&T, &mut T, Box<T>, alloc::rc::Rc<T>, alloc::sync::Arc<T>);
 
 macro_rules! impl_buffer_mut_for_wrappers {
     ($($type:ty),*) => {$(
@@ -434,6 +436,7 @@ impl_buffer_mut_for_wrappers!(&mut T, Box<T>);
 #[cfg(test)]
 mod buffer_ref {
     use super::BufferRef;
+    use alloc::vec::Vec;
 
     #[test]
     fn array() {
@@ -456,6 +459,7 @@ mod buffer_ref {
 mod buffer_mut {
     use super::BufferMut;
     use crate::core::EnlargeError;
+    use alloc::vec::Vec;
 
     #[test]
     fn array() {
@@ -493,6 +497,7 @@ mod buffer_mut {
 #[cfg(test)]
 mod error {
     use super::Error;
+    use alloc::format;
 
     #[test]
     fn derived_traits() {
@@ -502,7 +507,7 @@ mod error {
         };
 
         {
-            use std::error::Error;
+            use core::error::Error;
             assert!(err.source().is_none());
         }
 
@@ -521,6 +526,8 @@ mod error {
 #[cfg(test)]
 mod enlarge_error {
     use super::EnlargeError;
+    use alloc::format;
+    use alloc::vec::Vec;
 
     #[test]
     fn derived_traits() {
@@ -531,7 +538,7 @@ mod enlarge_error {
         };
         let err = EnlargeError::from(try_reserve_error);
 
-        use std::error::Error;
+        use core::error::Error;
         assert!(err.source().is_none());
 
         assert_eq!(format!("{}", err.clone()), "could not enlarge buffer");

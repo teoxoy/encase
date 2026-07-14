@@ -19,6 +19,9 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/teoxoy/encase/3d6d2e4d7670863e97463a15ceeafac6d13ee73e/logo.svg"
 )]
+#![no_std]
+
+extern crate alloc;
 
 /// Used to implement `ShaderType` for structs
 ///

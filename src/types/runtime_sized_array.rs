@@ -1,4 +1,5 @@
-use std::collections::{LinkedList, VecDeque};
+use alloc::collections::{LinkedList, VecDeque};
+use alloc::vec::Vec;
 
 use crate::core::{
     BufferMut, BufferRef, CreateFrom, Metadata, ReadFrom, Reader, RuntimeSizedArray, ShaderSize,
@@ -263,6 +264,7 @@ impl<T> Truncate for LinkedList<T> {
 #[cfg(test)]
 mod array_length {
     use super::ArrayLength;
+    use alloc::format;
 
     #[test]
     fn derived_traits() {
