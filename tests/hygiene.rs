@@ -17,6 +17,7 @@ mod impl_vector {
         unimplemented,
     };
 
+    #[expect(dead_code)]
     pub struct Test<'a, T> {
         data: PhantomData<&'a T>,
     }
@@ -47,6 +48,7 @@ mod impl_matrix {
         unimplemented,
     };
 
+    #[expect(dead_code)]
     pub struct Test<'a, T> {
         data: PhantomData<&'a T>,
     }
@@ -100,6 +102,7 @@ struct Test {
     b: ::core::primitive::u32,
 }
 
+#[expect(dead_code)]
 #[derive(::encase::ShaderType)]
 struct TestGeneric<
     'a,
