@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v0.12.1 (2026-08-16)
+
+- Fix UB when multiplying `SizeValue` by zero
+- Add `no_std` support
+
 ## v0.12.0 (2025-09-12)
 
 - Place `align`/`size` inside a `shader()` attribute instead of being free-floating
