@@ -226,7 +226,13 @@ pub trait ShaderType {
     // }
 }
 
-/// Trait implemented for all [WGSL fixed-footprint types](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types)
+/// Marker trait for [`ShaderType`]s whose WGSL representation has a
+/// [fixed footprint](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types).
+///
+/// Although WGSL `bool` has a fixed footprint, it is
+/// [not host-shareable](https://gpuweb.github.io/gpuweb/wgsl/#internal-value-layout)
+/// because its internal layout is not specified. Rust [`bool`] therefore does not implement
+/// [`ShaderType`] or `ShaderSize`; use a [`u32`] for boolean values in shader buffers.
 pub trait ShaderSize: ShaderType {
     /// Represents [WGSL Size](https://gpuweb.github.io/gpuweb/wgsl/#alignment-and-size) (equivalent to [`ShaderType::min_size`])
     const SHADER_SIZE: NonZeroU64 = Self::METADATA.min_size().0;
