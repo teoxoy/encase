@@ -226,7 +226,8 @@ pub trait ShaderType {
     // }
 }
 
-/// Marker trait for [`ShaderType`]s whose WGSL representation has a
+/// Marker trait for [`ShaderType`]s representing
+/// [host-shareable](https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types) WGSL types with a
 /// [fixed footprint](https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types).
 ///
 /// Although WGSL `bool` has a fixed footprint, it is
