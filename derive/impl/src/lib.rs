@@ -1,5 +1,7 @@
+mod codegen;
+
 use proc_macro2::{Ident, Literal, Span, TokenStream};
-use quote::{quote, quote_spanned, ToTokens};
+use quote::{quote, quote_spanned};
 use syn::{
     parenthesized,
     parse::{Parse, ParseStream},
@@ -12,6 +14,11 @@ use syn::{
 };
 
 pub use syn;
+
+use crate::codegen::{
+    gen_create_from_impl, gen_field_trait_constraints, gen_read_from_impl, gen_shader_size_impl,
+    gen_shader_type_impl, gen_write_into_impl,
+};
 
 #[macro_export]
 macro_rules! implement {
@@ -358,9 +365,7 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
         return ts;
     }
 
-    let nr_of_fields = &Literal::usize_suffixed(field_data.len());
-
-    let field_trait_constraints = generate_field_trait_constraints(
+    let field_trait_constraints = gen_field_trait_constraints(
         &input,
         &field_data,
         if is_runtime_sized {
@@ -426,223 +431,15 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
             })
     };
 
-    let uniform_check = field_data.iter().enumerate().map(|(i, data)| {
-        let ty = &data.field.ty;
-        let ty_check = quote_spanned! {ty.span()=>
-            <#ty as #root::ShaderType>::UNIFORM_COMPAT_ASSERT()
-        };
-        let ident = data.ident();
-        let name = ident.to_string();
-        let field_offset_check = quote_spanned! {ident.span()=>
-            if let ::core::option::Option::Some(min_alignment) =
-                <#ty as #root::ShaderType>::METADATA.uniform_min_alignment()
-            {
-                let offset = <Self as #root::ShaderType>::METADATA.offset(#i);
+    let shader_type_impl = gen_shader_type_impl(&input, &field_data, root, is_runtime_sized);
 
-                #root::concat_assert!(
-                    min_alignment.is_aligned(offset),
-                    "offset of field '", #name, "' must be a multiple of ", min_alignment.get(),
-                    " (current offset: ", offset, ")"
-                )
-            }
-        };
-        let field_offset_diff = if i != 0 {
-            let prev_field = &field_data[i - 1];
-            let prev_field_ty = &prev_field.field.ty;
-            let prev_ident_name = prev_field.ident().to_string();
-            quote_spanned! {ident.span()=>
-                if let ::core::option::Option::Some(min_alignment) =
-                    <#prev_field_ty as #root::ShaderType>::METADATA.uniform_min_alignment()
-                {
-                    let prev_offset = <Self as #root::ShaderType>::METADATA.offset(#i - 1);
-                    let offset = <Self as #root::ShaderType>::METADATA.offset(#i);
-                    let diff = offset - prev_offset;
+    let write_into_impl = gen_write_into_impl(&input, &field_data, root, is_runtime_sized);
 
-                    let prev_size = <#prev_field_ty as #root::ShaderSize>::SHADER_SIZE.get();
-                    let prev_size = min_alignment.round_up(prev_size);
+    let read_from_impl = gen_read_from_impl(&input, &field_data, root);
 
-                    #root::concat_assert!(
-                        diff >= prev_size,
-                        "offset between fields '", #prev_ident_name, "' and '", #name, "' must be at least ",
-                        min_alignment.get(), " (currently: ", diff, ")"
-                    )
-                }
-            }
-        } else {
-            quote! {()}
-        };
-        quote! {
-            #ty_check,
-            #field_offset_check,
-            #field_offset_diff
-        }
-    });
+    let create_from_impl = gen_create_from_impl(&input, &field_data, root);
 
-    let alignments = field_data.iter().map(|data| data.alignment(root));
-
-    let paddings = field_data.iter().enumerate().map(|(i, current)| {
-        let is_first = i == 0;
-        let is_last = i == field_data.len() - 1;
-
-        let mut out = TokenStream::new();
-
-        if !is_first {
-            let prev_i = i - 1;
-
-            let alignment = current.alignment(root);
-
-            let extra_padding = field_data
-                .get(prev_i)
-                .and_then(|prev| prev.extra_padding(root))
-                .map(|extra_padding| quote!(+ #extra_padding));
-
-            out.extend(quote! {
-                offsets[#i] = #alignment.round_up(offset);
-
-                let padding = #alignment.padding_needed_for(offset);
-                offset += padding;
-                paddings[#prev_i] = padding #extra_padding;
-            });
-        };
-
-        if is_last && is_runtime_sized {
-            return out;
-        }
-
-        let size = current.size(root);
-        out.extend(quote! {
-            offset += #size;
-        });
-
-        if is_last {
-            let extra_padding = current
-                .extra_padding(root)
-                .map(|extra_padding| quote!(+ #extra_padding));
-
-            out.extend(quote! {
-                paddings[#i] = struct_alignment.padding_needed_for(offset) #extra_padding;
-            });
-        }
-
-        out
-    });
-
-    fn gen_body<'a>(
-        field_data: &'a [FieldData],
-        root: &'a Path,
-        get_main: impl Fn(&Ident) -> TokenStream + 'a,
-        get_padding: impl Fn(TokenStream) -> TokenStream + 'a,
-    ) -> impl Iterator<Item = TokenStream> + 'a {
-        field_data.iter().enumerate().map(move |(i, data)| {
-            let ident = data.ident();
-
-            let padding = {
-                let i = Literal::usize_suffixed(i);
-                quote! { <Self as #root::ShaderType>::METADATA.padding(#i) }
-            };
-
-            let main = get_main(ident);
-            let padding = get_padding(padding);
-
-            quote! {
-                #main
-                #padding
-            }
-        })
-    }
-
-    let write_into_buffer_body = gen_body(
-        &field_data,
-        root,
-        |ident| {
-            quote! {
-                #root::WriteInto::write_into(&self.#ident, writer);
-            }
-        },
-        |padding| {
-            quote! {
-                #root::Writer::advance(writer, #padding as ::core::primitive::usize);
-            }
-        },
-    );
-
-    let read_from_buffer_body = gen_body(
-        &field_data,
-        root,
-        |ident| {
-            quote! {
-                #root::ReadFrom::read_from(&mut self.#ident, reader);
-            }
-        },
-        |padding| {
-            quote! {
-                #root::Reader::advance(reader, #padding as ::core::primitive::usize);
-            }
-        },
-    );
-
-    let create_from_buffer_body = gen_body(
-        &field_data,
-        root,
-        move |ident| {
-            quote! {
-                let #ident = #root::CreateFrom::create_from(reader);
-            }
-        },
-        |padding| {
-            quote! {
-                #root::Reader::advance(reader, #padding as ::core::primitive::usize);
-            }
-        },
-    );
-
-    let field_idents = field_data.iter().map(|data| data.ident());
-    let last_field = field_data.last().unwrap();
-    let last_field_min_size = last_field.min_size(root);
-    let last_field_ident = last_field.ident();
-
-    let field_types = field_data.iter().map(|data| &data.field.ty);
-    let field_types_2 = field_types.clone();
-    let field_types_3 = field_types.clone();
-    let field_types_4 = field_types.clone();
-    let all_other = field_types.clone().take(last_field_index);
-    let last_field_type = &last_field.field.ty;
-
-    let name = &input.ident;
-    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-
-    let set_contained_rt_sized_array_length = if is_runtime_sized {
-        quote! {
-            writer.ctx.rts_array_length = ::core::option::Option::Some(
-                #root::RuntimeSizedArray::len(&self.#last_field_ident)
-                as ::core::primitive::u32
-            );
-        }
-    } else {
-        TokenStream::new()
-    };
-
-    let extra = match is_runtime_sized {
-        true => quote! {
-            impl #impl_generics #root::CalculateSizeFor for #name #ty_generics
-            where
-                Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
-                #last_field_type: #root::CalculateSizeFor,
-            {
-                fn calculate_size_for(nr_of_el: ::core::primitive::u64) -> ::core::num::NonZeroU64 {
-                    let mut offset = <Self as #root::ShaderType>::METADATA.last_offset();
-                    offset += <#last_field_type as #root::CalculateSizeFor>::calculate_size_for(nr_of_el).get();
-                    #root::SizeValue::new(<Self as #root::ShaderType>::METADATA.alignment().round_up(offset)).0
-                }
-            }
-        },
-        false => quote! {
-            impl #impl_generics #root::ShaderSize for #name #ty_generics
-            where
-                #( #field_types: #root::ShaderSize, )*
-            {}
-        },
-    };
+    let extra = gen_shader_size_impl(&input, &field_data, root, is_runtime_sized);
 
     // Note:
     // The unused HRTBs on WriteInto, ReadFrom and CreateFrom are there
@@ -656,121 +453,14 @@ pub fn derive_shader_type(input: DeriveInput, root: &Path) -> TokenStream {
 
         #( #size_check )*
 
-        impl #impl_generics #root::ShaderType for #name #ty_generics #where_clause
-        where
-            #( #all_other: #root::ShaderType + #root::ShaderSize, )*
-            #last_field_type: #root::ShaderType,
-        {
-            type ExtraMetadata = #root::StructMetadata<#nr_of_fields>;
-            const METADATA: #root::Metadata<Self::ExtraMetadata> = {
-                let struct_alignment = #root::AlignmentValue::max([ #( #alignments, )* ]);
+        #shader_type_impl
 
-                let extra = {
-                    let mut paddings = [0; #nr_of_fields];
-                    let mut offsets = [0; #nr_of_fields];
-                    let mut offset = 0;
-                    #( #paddings )*
-                    #root::StructMetadata { offsets, paddings }
-                };
+        #write_into_impl
 
-                let min_size = {
-                    let mut offset = extra.offsets[#nr_of_fields - 1];
-                    offset += #last_field_min_size;
-                    #root::SizeValue::new(struct_alignment.round_up(offset))
-                };
+        #read_from_impl
 
-                #root::Metadata {
-                    alignment: struct_alignment,
-                    has_uniform_min_alignment: true,
-                    min_size,
-                    is_pod: false,
-                    extra,
-                }
-            };
-
-            const UNIFORM_COMPAT_ASSERT: fn() = || #root::consume_zsts([
-                #( #uniform_check, )*
-            ]);
-
-            fn size(&self) -> ::core::num::NonZeroU64 {
-                let mut offset = Self::METADATA.last_offset();
-                offset += #root::ShaderType::size(&self.#last_field_ident).get();
-                #root::SizeValue::new(Self::METADATA.alignment().round_up(offset)).0
-            }
-        }
-
-        impl #impl_generics #root::WriteInto for #name #ty_generics
-        where
-            Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
-            #( for<'__> #field_types_2: #root::WriteInto, )*
-        {
-            #[inline]
-            fn write_into<B: #root::BufferMut>(&self, writer: &mut #root::Writer<B>) {
-                #set_contained_rt_sized_array_length
-                #( #write_into_buffer_body )*
-            }
-        }
-
-        impl #impl_generics #root::ReadFrom for #name #ty_generics
-        where
-            Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
-            #( for<'__> #field_types_3: #root::ReadFrom, )*
-        {
-            #[inline]
-            fn read_from<B: #root::BufferRef>(&mut self, reader: &mut #root::Reader<B>) {
-                #( #read_from_buffer_body )*
-            }
-        }
-
-        impl #impl_generics #root::CreateFrom for #name #ty_generics
-        where
-            Self: #root::ShaderType<ExtraMetadata = #root::StructMetadata<#nr_of_fields>>,
-            #( for<'__> #field_types_4: #root::CreateFrom, )*
-        {
-            #[inline]
-            fn create_from<B: #root::BufferRef>(reader: &mut #root::Reader<B>) -> Self {
-                #( #create_from_buffer_body )*
-
-                #root::build_struct!(Self, #( #field_idents ),*)
-            }
-        }
+        #create_from_impl
 
         #extra
     }
-}
-
-fn generate_field_trait_constraints<'a>(
-    input: &'a DeriveInput,
-    field_data: &'a [FieldData],
-    trait_for_last_field: TokenStream,
-    trait_for_all_other_fields: TokenStream,
-) -> impl Iterator<Item = TokenStream> + 'a {
-    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-    field_data.iter().enumerate().map(move |(i, data)| {
-        let ty = &data.field.ty;
-
-        let t = if i == field_data.len() - 1 {
-            &trait_for_last_field
-        } else {
-            &trait_for_all_other_fields
-        };
-
-        if ty_generics.to_token_stream().is_empty() {
-            quote_spanned! {ty.span()=>
-                const _: fn() = || {
-                    #[allow(clippy::extra_unused_lifetimes, clippy::missing_const_for_fn, clippy::extra_unused_type_parameters)]
-                    fn check #impl_generics () #where_clause {
-                        fn assert_impl<T: ?::core::marker::Sized + #t>() {}
-                        assert_impl::<#ty>();
-                    }
-                    check ();
-                };
-            }
-        } else {
-            // Case with type generics is not checked for now
-            quote_spanned! {ty.span()=>
-                const _: fn() = || {};
-            }
-        }
-    })
 }
