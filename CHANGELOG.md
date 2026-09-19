@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.13.0 (2026-09-19)
+
+- Updated `syn` to v3
+
 ## v0.12.1 (2026-08-16)
 
 - Fix UB when multiplying `SizeValue` by zero
